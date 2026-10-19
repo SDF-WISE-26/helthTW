@@ -1,14 +1,12 @@
 {
-  "name": "include-yours",
+  "name": "helthtw",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "ready": "vp check && vp run -r test && vp run -r build",
+    "prepare": "vp config --no-agent",
+    "ready": "vp check && vp test --passWithNoTests && vp run -r build",
     "dev": "vp run -r --parallel dev"
-  },
-  "engines": {
-    "node": ">=22.18.0"
   },
   "devDependencies": {
     "vite-plus": "catalog:"
@@ -19,5 +17,8 @@
       "version": "12.14.0",
       "onFail": "download"
     }
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

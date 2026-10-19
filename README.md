@@ -2,6 +2,18 @@
 
 A starter for creating a Vite+ monorepo.
 
+## Prerequisites
+
+- **Vite+ (`vp`):** [installation guide](https://viteplus.dev/guide/)
+- **Node.js 24 LTS (24.11 or newer)**
+- **Docker**
+
+## install deps
+
+```bash
+vp install
+```
+
 ## Development
 
 - Check everything is ready:
