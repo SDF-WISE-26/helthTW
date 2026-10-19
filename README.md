@@ -8,10 +8,24 @@ A starter for creating a Vite+ monorepo.
 - **Node.js 24 LTS (24.11 or newer)**
 - **Docker**
 
-## install deps
+## Getting started
+
+1. Install dependencies:
 
 ```bash
 vp install
+```
+
+2. Start the dev database (Postgres on `localhost:5432`):
+
+```bash
+docker compose up -d
+```
+
+3. Start frontend and backend:
+
+```bash
+vp run dev
 ```
 
 ## Development
@@ -32,10 +46,4 @@ vp run -r test
 
 ```bash
 vp run -r build
-```
-
-- Run the development server:
-
-```bash
-vp run dev
 ```
