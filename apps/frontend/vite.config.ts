@@ -28,4 +28,9 @@ export default defineConfig({
     ],
   },
   plugins: lazyPlugins(() => [react()]),
+  server: {
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+  },
 });

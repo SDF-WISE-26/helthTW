@@ -17,6 +17,8 @@ peerDependencyRules:
     - vite
   allowedVersions:
     vite: '*'
+allowBuilds:
+  esbuild: true
 minimumReleaseAgeExclude:
   - '@oxc-project/runtime@0.154.0'
   - '@oxc-project/types@0.154.0'
