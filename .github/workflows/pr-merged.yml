@@ -1,0 +1,72 @@
+name: PR merged
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  board:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-26.04
+    permissions:
+      issues: write
+      pull-requests: read
+    steps:
+      - id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Move ticket to PO Abnahme
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          issue=$(echo "$BRANCH" | sed -nE 's#^(feature|hotfix|bug)/([0-9]+)$#\2#p')
+          if [ -z "$issue" ]; then
+            echo "::error::Der Branch '$BRANCH' muss feature|hotfix|bug/<ticket> heißen"
+            exit 1
+          fi
+          echo "ISSUE=$issue" >> "$GITHUB_ENV"
+          read -r project field option item < <(gh api graphql \
+            -f org="${GITHUB_REPOSITORY%/*}" -f repo="${GITHUB_REPOSITORY#*/}" -F issue="$issue" \
+            -f query='query($org: String!, $repo: String!, $issue: Int!) {
+              organization(login: $org) {
+                projectV2(number: 1) {
+                  id
+                  field(name: "Status") { ... on ProjectV2SingleSelectField { id options { id name } } }
+                }
+              }
+              repository(owner: $org, name: $repo) {
+                issue(number: $issue) { projectItems(first: 20) { nodes { id project { number } } } }
+              }
+            }' \
+            --jq '.data as $d | $d.organization.projectV2 as $p | [
+              $p.id, $p.field.id,
+              ($p.field.options[] | select(.name == "PO Abnahme") | .id),
+              ($d.repository.issue.projectItems.nodes[] | select(.project.number == 1) | .id)
+            ] | @tsv')
+          if [ -z "$item" ]; then
+            echo "::error::Ticket #$issue ist nicht auf dem Board oder die Spalte 'PO Abnahme' fehlt"
+            exit 1
+          fi
+          gh api graphql -f project="$project" -f item="$item" -f field="$field" -f option="$option" \
+            -f query='mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project, itemId: $item, fieldId: $field, value: { singleSelectOptionId: $option }
+              }) { projectV2Item { id } }
+            }' > /dev/null
+          echo "Ticket #$issue wurde nach 'PO Abnahme' verschoben"
+
+      - name: Close ticket
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          approvers=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews" \
+            --jq '[.[] | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED")]
+              | group_by(.user.login) | map(last | select(.state == "APPROVED") | "@" + .user.login) | join(", ")')
+          gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY" \
+            --comment "Gemergt mit #$PR, approved von: ${approvers:-niemandem}"

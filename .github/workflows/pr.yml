@@ -1,0 +1,56 @@
+name: PR
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  ticket:
+    runs-on: ubuntu-26.04
+    steps:
+      - id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Ticket is in review
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          issue=$(echo "$BRANCH" | sed -nE 's#^(feature|hotfix|bug)/([0-9]+)$#\2#p')
+          if [ -z "$issue" ]; then
+            echo "::error::Der Branch '$BRANCH' muss feature|hotfix|bug/<ticket> heißen"
+            exit 1
+          fi
+          status=$(gh api graphql \
+            -f owner="${GITHUB_REPOSITORY%/*}" -f repo="${GITHUB_REPOSITORY#*/}" -F issue="$issue" \
+            -f query='query($owner: String!, $repo: String!, $issue: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $issue) {
+                  projectItems(first: 20) {
+                    nodes {
+                      project { number }
+                      fieldValueByName(name: "Status") { ... on ProjectV2ItemFieldSingleSelectValue { name } }
+                    }
+                  }
+                }
+              }
+            }' \
+            --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number == 1) | .fieldValueByName.name')
+          if [ "$status" != "In review" ]; then
+            echo "::error::Ticket #$issue steht in '${status:-nicht auf dem Board}', erwartet wird 'In review'"
+            exit 1
+          fi
+
+  squashed:
+    runs-on: ubuntu-26.04
+    steps:
+      - if: github.event.pull_request.commits != 1
+        run: |
+          echo "::error::Der PR hat ${{ github.event.pull_request.commits }} Commits, bitte zu einem zusammenfassen (squash)"
+          exit 1
