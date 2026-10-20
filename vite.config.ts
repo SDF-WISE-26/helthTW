@@ -5,7 +5,8 @@ export default defineConfig({
     ignorePatterns: ["**/routeTree.gen.ts"],
   },
   staged: {
-    "*": "vp check --fix",
+    "*": ["vp check --fix", "secretlint"],
+    "*.{ts,tsx}": () => "vp test --passWithNoTests",
   },
   lint: {
     ignorePatterns: ["**/routeTree.gen.ts"],
