@@ -1,11 +1,14 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  fmt: {},
+  fmt: {
+    ignorePatterns: ["**/routeTree.gen.ts"],
+  },
   staged: {
     "*": "vp check --fix",
   },
   lint: {
+    ignorePatterns: ["**/routeTree.gen.ts"],
     plugins: ["typescript", "oxc"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: {

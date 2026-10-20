@@ -1,6 +1,7 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { api } from "./api";
-import "./App.css";
+import { api } from "../api";
+import "../App.css";
 
 type Status =
   | { kind: "idle" }
@@ -8,7 +9,11 @@ type Status =
   | { kind: "ok"; message: string }
   | { kind: "error"; message: string };
 
-function App() {
+export const Route = createFileRoute("/")({
+  component: Index,
+});
+
+function Index() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
 
@@ -53,5 +58,3 @@ function App() {
     </main>
   );
 }
-
-export default App;
