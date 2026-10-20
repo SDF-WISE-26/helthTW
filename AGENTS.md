@@ -25,3 +25,26 @@ release. Add a tool name to select part of the graph. For example, run
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## Project Docs
+
+| Path                                     | Content                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------ |
+| [`docs/workflow.md`](docs/workflow.md)   | Branches, commits, PRs, automated checks                                 |
+| [`docs/decisions.md`](docs/decisions.md) | Decisions with reasons, numbered. Read before changing the architecture. |
+| [`docs/specs/`](docs/specs/)             | What each area must do, one file per area (e.g. `frontend.md`)           |
+
+## Project Rules
+
+- Branches: `feature/<ticket>`, `bug/<ticket>` or `hotfix/<ticket>`, ticket number only.
+- Commits and PR titles follow Conventional Commits: `<type>(<scope>): <description>`. The scope is required, lowercase (e.g. `frontend`, `backend`, `db`, `repo`). Allowed types: `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`.
+- A PR contains exactly one commit.
+
+## Maintaining Docs
+
+- Keep everything as short as possible. New files only if the content fits nowhere else.
+- Changes to `docs/` go through PRs like code.
+- `decisions.md`: append at the bottom in the same structure. Only decisions that are expensive to reverse or were discussed. Accepted on merge. Never overwrite: add a new number and mark the old one "ersetzt durch 00xx".
+- `specs/`: describe _what_ an area must do, not how it looks or is built.
+- `workflow.md`: update in the same PR when hooks or pipelines change.
+- The repo is public: no names, emails, credentials, interview or health data.
