@@ -10,17 +10,20 @@
     "preview": "vp preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-devtools": "catalog:",
     "hono": "catalog:",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@tanstack/router-plugin": "catalog:",
     "@types/node": "catalog:",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "backend": "workspace:*",
     "typescript": "catalog:",
     "vite": "catalog:",

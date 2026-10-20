@@ -1,40 +1,25 @@
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { api } from "../api";
+import { usersQueryOptions } from "../queries/users";
 import "../App.css";
 
-type Status =
-  | { kind: "idle" }
-  | { kind: "loading" }
-  | { kind: "ok"; message: string }
-  | { kind: "error"; message: string };
-
 export const Route = createFileRoute("/")({
+  loader: ({ context: { queryClient } }) =>
+    queryClient.query({ ...usersQueryOptions, staleTime: "static" }),
   component: Index,
 });
 
 function Index() {
-  const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
+  const { data: users } = useSuspenseQuery(usersQueryOptions);
 
-  useEffect(() => {
-    api.api.users
-      .$get()
-      .then((res) => res.json())
-      .then(setUsers);
-  }, []);
-
-  async function ping() {
-    setStatus({ kind: "loading" });
-    try {
+  const ping = useMutation({
+    mutationFn: async () => {
       const res = await api.api.ping.$get();
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setStatus({ kind: "ok", message: data.message });
-    } catch (err) {
-      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
-    }
-  }
+      return res.json();
+    },
+  });
 
   return (
     <main>
@@ -46,14 +31,14 @@ function Index() {
           </option>
         ))}
       </select>
-      <button type="button" onClick={ping} disabled={status.kind === "loading"}>
+      <button type="button" onClick={() => ping.mutate()} disabled={ping.isPending}>
         Ping API
       </button>
-      <p className={`status ${status.kind}`}>
-        {status.kind === "idle" && "Press the button to ping the backend."}
-        {status.kind === "loading" && "Pinging…"}
-        {status.kind === "ok" && `API replied: ${status.message}`}
-        {status.kind === "error" && `Request failed: ${status.message}`}
+      <p className={`status ${ping.status === "success" ? "ok" : ping.status}`}>
+        {ping.isIdle && "Press the button to ping the backend."}
+        {ping.isPending && "Pinging…"}
+        {ping.isSuccess && `API replied: ${ping.data.message}`}
+        {ping.isError && `Request failed: ${ping.error.message}`}
       </p>
     </main>
   );
