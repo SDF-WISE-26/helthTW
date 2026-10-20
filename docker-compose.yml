@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:17-alpine
+    command: ["postgres", "-c", "timezone=Europe/Berlin"]
     restart: unless-stopped
     environment:
       POSTGRES_USER: helthtw

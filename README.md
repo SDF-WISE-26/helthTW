@@ -22,7 +22,14 @@ vp install
 docker compose up -d
 ```
 
-3. Start frontend and backend:
+3. Create the tables and fill them with dev data (CAREFUL! this wipes existing data):
+
+```bash
+vp run backend#db:push
+vp run backend#db:seed
+```
+
+4. Start frontend and backend:
 
 ```bash
 vp run dev

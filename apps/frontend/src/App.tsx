@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "./api";
 import "./App.css";
 
@@ -10,6 +10,14 @@ type Status =
 
 function App() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    api.api.users
+      .$get()
+      .then((res) => res.json())
+      .then(setUsers);
+  }, []);
 
   async function ping() {
     setStatus({ kind: "loading" });
@@ -26,6 +34,13 @@ function App() {
   return (
     <main>
       <h1>helthTW</h1>
+      <select>
+        {users.map((user) => (
+          <option key={user.id} value={user.id}>
+            {user.name}
+          </option>
+        ))}
+      </select>
       <button type="button" onClick={ping} disabled={status.kind === "loading"}>
         Ping API
       </button>
