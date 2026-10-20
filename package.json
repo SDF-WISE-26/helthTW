@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "prepare": "vp config --no-agent",
-    "ready": "vp check && vp test --passWithNoTests && vp run -r build",
+    "ready": "vp check && secretlint \"**/*\" && vp test --passWithNoTests && vp run -r build",
     "dev": "vp run -r --parallel dev"
   },
   "devDependencies": {
+    "@secretlint/secretlint-rule-preset-recommend": "catalog:",
+    "secretlint": "catalog:",
     "vite-plus": "catalog:"
   },
   "devEngines": {
