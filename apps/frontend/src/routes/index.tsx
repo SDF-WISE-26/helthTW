@@ -15,7 +15,7 @@ function Index() {
 
   const ping = useMutation({
     mutationFn: async () => {
-      const res = await api.api.ping.$get();
+      const res = await api.api.alive_ping.$get();
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
