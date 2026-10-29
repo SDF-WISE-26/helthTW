@@ -72,3 +72,27 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Entscheidung:** Doku liegt als Markdown in `docs/`: Workflow in `workflow.md`, alle Entscheidungen in einer Datei `decisions.md`, Specs pro Bereich in `specs/`. Einstieg und Pflegeregeln stehen in `AGENTS.md`.
 - **Warum:** Versioniert mit dem Code und für Team und KI-Agenten an einer Stelle auffindbar. Wenige, kurze Dateien, damit das Repo nicht zugemüllt wird.
 - **Verworfen:** Eine Datei pro Entscheidung (zu viele Dateien). Wiki oder externe Tools (getrennt vom Code). `README.md` in `docs/` (es soll nur eine README im Repo geben).
+
+## 0010: Frontend-Code nach Bereichen
+
+- **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25
+- **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/frontend/src/features/<bereich>/` mit seinen Komponenten, Queries und Hooks. Dateien in `routes/` bleiben dünn: Loader und Feature-Komponenten, keine eigene Logik. Geteiltes liegt in `components/ui/` (shadcn), `components/layout/` (App-Shell, Hilfe-Button) und `lib/`. Feste, geprüfte Texte wie der Krisenbildschirm liegen in `content/`.
+- **Warum:** Die Bereiche folgen den Epics, so arbeiten mehrere Leute parallel, ohne sich in die Quere zu kommen. Ein Bereich lässt sich als Ganzes finden, prüfen und löschen.
+- **Verworfen:** Ordner nach Typ (`components/`, `queries/`, `hooks/` für alles), wird mit zehn Bereichen unübersichtlich.
+- **Achtung:** Bereiche dürfen sich gegenseitig importieren, `components/` und `lib/` importieren nie aus `features/`. Schwere Teile wie der Avatar werden nur auf ihrer Route geladen.
+
+## 0011: PWA mit vite-plugin-pwa
+
+- **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25, #53
+- **Entscheidung:** Das Frontend ist eine PWA. Manifest und Service Worker erzeugt `vite-plugin-pwa` beim Build. Der Krisenbildschirm steckt fest im Code und damit in der gecachten App-Shell.
+- **Warum:** Offline-Hilfe, Installation und Web Push setzen einen Service Worker voraus. Das Plugin ist der Standard für Vite und erzeugt beides ohne eigenen Caching-Code.
+- **Verworfen:** Service Worker von Hand (Caching ist fehleranfällig). Native App (zweite Codebasis).
+- **Achtung:** Offen ist, wie Infomaterial und Kontakte offline kommen (Service Worker cacht API-Antworten, Query-Cache in IndexedDB oder Inhalte im Build), das entscheidet #53 mit #62. Für Push braucht es den Modus `injectManifest`. Zusammenspiel mit Vite+ noch ungeprüft.
+
+## 0012: React Hook Form mit Zod
+
+- **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25, #31
+- **Entscheidung:** Formulare laufen über React Hook Form, validiert mit Zod-Schemas über `@hookform/resolvers`.
+- **Warum:** Am weitesten verbreitet, viele Beispiele mit shadcn, gleiche Abwägung wie bei Radix in 0008. Unsere Formulare sind klein, mehr Typsicherheit bringt dort wenig.
+- **Verworfen:** TanStack Form (passt zu Query und Router, aber jünger und weniger Beispiele). `useState` von Hand (Validierung und Fehlerzustände bauen wir nach).
+- **Achtung:** Radix-Felder sind kontrolliert und brauchen `Controller`. Schemas kommen aus dem gemeinsamen Paket aus #31.
