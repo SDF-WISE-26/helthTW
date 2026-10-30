@@ -30,12 +30,21 @@ Commit-Nachrichten und PR-Titel folgen dem Conventional-Commits-Standard: `<typ>
 
 ## Was automatisch geprüft wird
 
-| Wann                                   | Was                                                                                         |
-| -------------------------------------- | ------------------------------------------------------------------------------------------- |
-| vor jedem Commit                       | `vp check --fix` und secretlint auf geänderten Dateien; sind `.ts`/`.tsx` dabei, alle Tests |
-| Commit-Nachricht                       | Format wie oben                                                                             |
-| vor jedem Push                         | `vp run ready`: Check, secretlint, Tests, Build                                             |
-| Push auf `feature/`, `bug/`, `hotfix/` | CI: `vp run ready` und gitleaks über die ganze History                                      |
-| PR gegen `main`                        | Titel, Branchname, Ticket steht in „In review“, genau ein Commit                            |
+| Wann                                            | Was                                                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| vor jedem Commit                                | `vp check --fix` und secretlint auf geänderten Dateien; sind `.ts`/`.tsx` dabei, alle Tests |
+| Commit-Nachricht                                | Format wie oben                                                                             |
+| vor jedem Push                                  | `vp run ready`: Check, secretlint, Tests, Build                                             |
+| Push auf `feature/`, `bug/`, `hotfix/`          | CI: `vp run ready` und gitleaks über die ganze History                                      |
+| PR gegen `main`                                 | Titel, Branchname, Ticket steht in „In review“, genau ein Commit                            |
+| Merge auf `main`                                | CI, dann Deploy auf die prod-vm (siehe unten)                                               |
+| sonntags 23:00, von Hand unter Actions → Deploy | Deploy von `main`, mit einem Commit-Hash im Feld `rollback` ein Rollback                    |
 
 Die lokalen Hooks sind erst aktiv, wenn `vp install` einmal gelaufen ist.
+
+## Deployment und Datenbank
+
+- Jeder Merge auf `main` geht live. Kommt die neue Version nicht hoch, startet `deploy.sh` die vorige wieder und der Job wird rot. Betrieb, Rollback und Einrichtung der VMs: [`deployment.md`](deployment.md).
+- Schema ändern: `apps/backend/src/db/schema.ts` anpassen, `vp run backend#db:generate`, die erzeugte Migration in `apps/backend/drizzle/` im selben PR committen. Der Deploy spielt sie ein. Lokal bleibt `db:push`.
+- Eine Migration muss auch mit der vorigen Version funktionieren, denn ein Rollback holt nur den Code zurück: neue Spalten nullable oder mit Default, Spalten erst ein Release später löschen. Eingespielte Migrationen nie ändern, sondern eine neue anlegen.
+- Wer `deploy/compose.yml` oder `deploy/deploy.sh` ändert, muss sie nach dem Merge von Hand auf der prod-vm installieren. Bis dahin bricht der Deploy mit einem Hinweis ab.

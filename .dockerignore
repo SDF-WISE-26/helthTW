@@ -1,0 +1,6 @@
+# Keeps the build context small and local secrets out of images.
+**/node_modules
+**/dist
+# secrets should be on production VM only
+**/.env
+.git
