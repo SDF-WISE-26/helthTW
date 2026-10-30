@@ -1,11 +1,11 @@
 # Deployment
 
-Einrichtung und Betrieb der beiden HTW-VMs. Warum es so gebaut ist, steht in Entscheidung 0010 in [`decisions.md`](decisions.md).
+Einrichtung und Betrieb der beiden HTW-VMs. Warum es so gebaut ist, steht in den Entscheidungen 0010 bis 0012 in [`decisions.md`](decisions.md).
 
 ## Überblick
 
 ```
-GitHub: Merge auf main, sonntags 23:00 oder von Hand → .github/workflows/deploy.yml
+GitHub: Release veröffentlicht (Rollback von Hand) → .github/workflows/deploy.yml
   ├─ ci      auf GitHubs Runnern: vp run ready, gitleaks
   └─ deploy  auf dem Runner der ops-vm (Label htw-ops):
              docker build → docker save | ssh prod deploy <sha> → Health-Check von außen
@@ -39,8 +39,9 @@ Die Chains stehen in HTWs `/etc/nftables.conf` auf jeder VM: `sudo cat /etc/nfta
 
 ### Deploy und Rollback
 
-- Jeder Merge auf `main` wird deployt. Sonntags um 23:00 (Europe/Berlin) wird `main` noch einmal deployt. In öffentlichen Repos schaltet GitHub Zeitpläne nach 60 Tagen ohne Aktivität ab, unter Actions → Deploy lassen sie sich wieder einschalten.
-- Von Hand: Actions → Deploy → Run workflow. Ist das Feld `rollback` leer, wird `main` deployt. Mit einem Commit-Hash startet der Workflow diese Version ohne Build. Sie muss eine der letzten 5 sein, die `status` zeigt.
+- Deployt wird nur ein Release: Releases → Draft a new release. Unter „Choose a tag“ die nächste Version als neuen Tag eintippen, z. B. `v0.2.0` (Schema in Entscheidung 0012), Target `main`, „Generate release notes“, Publish release. Die Notizen listen die PRs seit dem letzten Release mit ihrem Titel. Im Terminal: `gh release create v0.2.0 --target main --generate-notes`.
+- Ein Pre-Release deployt nicht. Zeigt das Release auf einen Commit, der nicht auf `main` liegt, bricht der Deploy ab.
+- Rollback: Actions → Deploy → Run workflow mit einem Commit-Hash. Der Workflow startet diese Version ohne Build. Sie muss eine der letzten 5 sein, die `status` zeigt.
 - Ohne GitHub, auf der prod-vm: `sudo -u deploy -H /srv/helthtw/deploy.sh rollback <sha>`.
 - Kommt eine neue Version nicht gesund hoch, startet `deploy.sh` die vorige und der Job wird rot.
 - Ein Rollback holt nur den Code zurück, Migrationen bleiben. Was das für Migrationen heißt, steht in [`workflow.md`](workflow.md).
@@ -63,7 +64,7 @@ sudo docker exec helthtw-prod-web-1 wget -qO- -T 5 http://localhost:8080/api/ali
 
 ### compose.yml oder deploy.sh geändert
 
-Nach dem Merge bricht der Deploy bei „Installed files match the repo“ ab. Neu installieren wie in [prod-vm, Schritt 3](#3-nutzer-deploy-und-srvhelthtw), mit dem Merge-Commit und dessen Prüfsummen. Danach den Lauf unter Actions erneut starten.
+Beim nächsten Release bricht der Deploy bei „Installed files match the repo“ ab. Neu installieren wie in [prod-vm, Schritt 3](#3-nutzer-deploy-und-srvhelthtw), mit dem Tag des Release als `<commit>`. Danach den Lauf unter Actions erneut starten.
 
 - Vorher die alte Datei sichern: `sudo cp -a /srv/helthtw/compose.yml /srv/helthtw/compose.yml.alt`. Der automatische Rollback nutzt immer die installierte `compose.yml`. Ist die neue kaputt, hilft er nicht, nur die gesicherte.
 - Ein Rollback auf ältere Images läuft mit der neuen `compose.yml`. Die muss also auch zu ihnen passen.
@@ -337,7 +338,7 @@ sudo -iu github-runner ssh prod 'status; id'   # deploy: usage: ... (das ; ist n
 In GitHub unter Settings des Repos:
 
 - Actions → General → „Approval for running fork pull request workflows from contributors“: **Require approval for all external contributors**. Sonst könnte ein Fork-PR einen eigenen Workflow auf unserem Runner starten.
-- Environments → New environment **`production`**, „Deployment branches and tags“: Selected, nur **`main`**, keine Reviewer.
+- Environments → New environment **`production`**, „Deployment branches and tags“: Selected, Branch **`main`** (Rollback) und Tag **`v0.*.*`** (Releases, siehe Entscheidung 0012), keine Reviewer.
 - Keine Variable für die URL anlegen: Die Logs öffentlicher Repos sind öffentlich, Variablen erscheinen darin im Klartext. Die URL steht in der `.env` des Runners.
 
 Unter Actions → Runners → New self-hosted runner → Linux x64 stehen Download-Link, Prüfsumme und ein Token, das eine Stunde gilt.
@@ -367,7 +368,7 @@ In GitHub steht der Runner danach auf **Idle**, mit den Labels `self-hosted`, `L
 
 ## Erster Deploy und Abschluss
 
-1. Actions → Deploy → Run workflow mit leerem Feld. Danach zeigt `http://<prod-host>` die Seite, „Ping API“ antwortet.
+1. Ein Release anlegen wie unter [Deploy und Rollback](#deploy-und-rollback). Danach zeigt `http://<prod-host>` die Seite, „Ping API“ antwortet.
 2. Beide VMs mit `sudo reboot` neu starten. Danach sind alle Container healthy, der Runner steht wieder auf Idle und `sudo nft list tables` zeigt alle fünf Tabellen.
 3. Testdaten, falls gewünscht. In der Produktion gibt es keinen Seed, `db:seed` braucht die Dev-Werkzeuge und leert vorher die Tabelle.
    ```bash
@@ -383,4 +384,5 @@ Wird nur eine VM ersetzt, ändern sich deren Adresse und Schlüssel:
 
 - HTWs Netz verwirft Anfragen aus dem VPN an genau `/api/ping`, die Anfrage hängt dann ohne Antwort. Deshalb heißt der Endpunkt `/api/alive_ping`.
 - Die Proxy-Meldung des Runners („Runner is running behind proxy server …“) steht in jedem öffentlichen Log und lässt sich nicht verstecken. Die URL der prod-vm versteckt der Workflow mit `add-mask`.
+- Ein Release, das ein Workflow mit `GITHUB_TOKEN` anlegt, startet keinen Deploy. So verhindert GitHub Schleifen.
 - Ein abgeschnittener Deploy-Log heißt nicht, dass nichts passiert ist. Verlässlich ist `sudo docker ps --format '{{.Names}}: {{.CreatedAt}}'` auf der prod-vm.
