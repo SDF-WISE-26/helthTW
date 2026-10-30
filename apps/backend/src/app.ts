@@ -6,7 +6,8 @@ import { usersTable } from "./db/schema";
 const app = new Hono()
   .basePath("/api")
   .get("/", (c) => c.text("Hello Hono!"))
-  .get("/ping", (c) => c.json({ message: "pong" }, 200))
+  // Not /api/ping: HTW's network drops requests to exactly that path when they come through the VPN.
+  .get("/alive_ping", (c) => c.json({ message: "pong" }, 200))
   .get("/users", async (c) => c.json(await db.select().from(usersTable), 200));
 
 export default app;

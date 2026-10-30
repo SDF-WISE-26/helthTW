@@ -72,3 +72,11 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Entscheidung:** Doku liegt als Markdown in `docs/`: Workflow in `workflow.md`, alle Entscheidungen in einer Datei `decisions.md`, Specs pro Bereich in `specs/`. Einstieg und Pflegeregeln stehen in `AGENTS.md`.
 - **Warum:** Versioniert mit dem Code und für Team und KI-Agenten an einer Stelle auffindbar. Wenige, kurze Dateien, damit das Repo nicht zugemüllt wird.
 - **Verworfen:** Eine Datei pro Entscheidung (zu viele Dateien). Wiki oder externe Tools (getrennt vom Code). `README.md` in `docs/` (es soll nur eine README im Repo geben).
+
+## 0010: Deployment auf HTW-VMs
+
+- **Status:** angenommen · **Datum:** 2026-10-27 · **Beteiligt:** @Lezhor · **Bezug:** #18, #24, #34, #102
+- **Entscheidung:** Zwei VMs im HTW-Netz. Auf der ops-vm baut ein selbst gehosteter GitHub-Runner beide Images und schickt sie per `docker save | ssh` an die prod-vm, dort startet `deploy/deploy.sh` sie mit Docker Compose. Deploy bei jedem Merge auf `main`, sonntags um 23:00 und von Hand. Vorerst nur HTTP und nur aus dem HTW-Netz erreichbar. Einrichtung und Betrieb in [`deployment.md`](deployment.md).
+- **Warum:** Der Runner baut die Verbindung zu GitHub selbst auf, ins HTW-Netz muss kein Port geöffnet werden. Ohne Registry braucht es keine Zugangsdaten in GitHub. Der Deploy-Schlüssel darf auf der prod-vm nur `deploy.sh` starten, `compose.yml` und `deploy.sh` liegen dort root-eigen und kommen nie über SSH: Eine übernommene ops-vm könnte eigene Images starten, aber nicht mit mehr Rechten, als `compose.yml` erlaubt.
+- **Verworfen:** Builds auf GitHubs Runnern (die erreichen das HTW-Netz nicht). Eine Registry wie GHCR (Token auf der prod-vm, mehr Teile). Vorschau-Deploys pro PR (verschoben auf #103).
+- **Achtung:** Der Runner hängt am Repo, weil GitHub Free keine Runner-Gruppen hat. Wer Schreibrechte hat, kann ihn mit einem Workflow auf dem eigenen Branch nutzen. Nie `pull_request` als Auslöser in `deploy.yml`. Ein Rollback holt nur den Code zurück, Migrationen bleiben. HTTPS und Backups fehlen noch.
