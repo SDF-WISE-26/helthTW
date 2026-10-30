@@ -5,7 +5,10 @@ Kurzfassung der Regeln, die Git-Hooks und CI durchsetzen. Die PR-Prüfungen komm
 ## Branches
 
 - `main` ist geschützt, niemand pusht direkt darauf.
-- Pro Ticket ein Branch von `main`: `feature/<nr>`, `bug/<nr>` oder `hotfix/<nr>`, nur mit der Ticketnummer, z. B. `feature/28`. Andere Namen lehnt die PR-Pipeline ab.
+- Pro Ticket ein Branch von `main`: `feature/<nr>`, `bug/<nr>` oder `hotfix/<nr>`, nur mit der Ticketnummer, z. B. `feature/28`.
+- `doku/<name>` für reine Doku-Änderungen: braucht kein Ticket und darf nach `main`.
+- `experiment/<name>` zum Ausprobieren: läuft durch die CI, darf aber nicht nach `main`.
+- Andere Namen lehnt die PR-Pipeline ab.
 - Commits aus diesen Branches werden gesquasht: Pro PR landet genau ein Commit auf `main`, damit die History sauber bleibt.
 
 ## Commits
@@ -35,7 +38,7 @@ Commit-Nachrichten und PR-Titel folgen dem Conventional-Commits-Standard: `<typ>
 | vor jedem Commit                                | `vp check --fix` und secretlint auf geänderten Dateien; sind `.ts`/`.tsx` dabei, alle Tests |
 | Commit-Nachricht                                | Format wie oben                                                                             |
 | vor jedem Push                                  | `vp run ready`: Check, secretlint, Tests, Build                                             |
-| Push auf `feature/`, `bug/`, `hotfix/`          | CI: `vp run ready` und gitleaks über die ganze History                                      |
+| Push auf einen der Branchtypen oben             | CI: `vp run ready` und gitleaks über die ganze History                                      |
 | PR gegen `main`                                 | Titel, Branchname, Ticket steht in „In review“, genau ein Commit                            |
 | Merge auf `main`                                | CI, dann Deploy auf die prod-vm (siehe unten)                                               |
 | sonntags 23:00, von Hand unter Actions → Deploy | Deploy von `main`, mit einem Commit-Hash im Feld `rollback` ein Rollback                    |

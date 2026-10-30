@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["feature/**", "hotfix/**", "bug/**"]
+    branches: ["feature/**", "hotfix/**", "bug/**", "experiment/**", "doku/**"]
   workflow_call:
 
 jobs:
