@@ -28,11 +28,12 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Project Docs
 
-| Path                                     | Content                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------ |
-| [`docs/workflow.md`](docs/workflow.md)   | Branches, commits, PRs, automated checks                                 |
-| [`docs/decisions.md`](docs/decisions.md) | Decisions with reasons, numbered. Read before changing the architecture. |
-| [`docs/specs/`](docs/specs/)             | What each area must do, one file per area (e.g. `frontend.md`)           |
+| Path                                       | Content                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| [`docs/workflow.md`](docs/workflow.md)     | Branches, commits, PRs, automated checks                                 |
+| [`docs/decisions.md`](docs/decisions.md)   | Decisions with reasons, numbered. Read before changing the architecture. |
+| [`docs/specs/`](docs/specs/)               | What each area must do, one file per area (e.g. `frontend.md`)           |
+| [`docs/deployment.md`](docs/deployment.md) | The HTW VMs: operations, rollback, setup from scratch                    |
 
 ## Project Rules
 

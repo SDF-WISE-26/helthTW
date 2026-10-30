@@ -1,0 +1,107 @@
+# Production stack on the prod-vm, started by deploy.sh.
+# Needs IMAGE_TAG (the commit hash) and a .env next to this file with POSTGRES_PASSWORD.
+# Our images are loaded with `docker load`, never pulled, so a same-named image on Docker Hub can't sneak in.
+name: helthtw-prod
+
+x-defaults: &defaults
+  restart: unless-stopped
+  # setuid programs in the images (su, mount, ...) can't raise privileges.
+  security_opt: ["no-new-privileges:true"]
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+# Our own images: read-only and without kernel capabilities.
+x-app: &app
+  <<: *defaults
+  pull_policy: never
+  # As PID 1, Node ignores the SIGTERM of docker stop and got killed on every deploy. docker-init passes it on.
+  init: true
+  read_only: true
+  cap_drop: [ALL]
+
+x-database-url: &database-url postgres://helthtw:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/helthtw
+
+services:
+  # Not like our own images: its entrypoint needs root to hand the data folder to the postgres user.
+  postgres:
+    <<: *defaults
+    image: postgres:17-alpine
+    command: ["postgres", "-c", "timezone=Europe/Berlin"]
+    environment:
+      POSTGRES_USER: helthtw
+      POSTGRES_DB: helthtw
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U helthtw -d helthtw"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    mem_limit: 512m
+
+  # Runs once per deploy and exits; the backend only starts if it succeeded.
+  migrate:
+    <<: *app
+    image: helthtw-backend:${IMAGE_TAG:?set IMAGE_TAG}
+    restart: "no"
+    command: ["node", "dist/migrate.mjs"]
+    environment:
+      DATABASE_URL: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 256m
+
+  backend:
+    <<: *app
+    image: helthtw-backend:${IMAGE_TAG}
+    environment:
+      DATABASE_URL: *database-url
+      PORT: "3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      # No curl in the image, so Node's fetch does the check.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/api/alive_ping').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+      # Every second while starting, so web follows right away and a deploy is down for seconds only.
+      start_interval: 1s
+    mem_limit: 256m
+
+  web:
+    <<: *app
+    image: helthtw-web:${IMAGE_TAG}
+    # The caddy binary carries this file capability; without it Linux refuses to start it.
+    cap_add: [NET_BIND_SERVICE]
+    # Caddy keeps its state here, so it has to be writable for nobody.
+    tmpfs: ["/data:mode=1777", "/config:mode=1777"]
+    ports:
+      - "${WEB_PORT:-80}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+    mem_limit: 128m
+
+volumes:
+  postgres-data:

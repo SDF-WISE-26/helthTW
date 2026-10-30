@@ -73,7 +73,31 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Warum:** Versioniert mit dem Code und für Team und KI-Agenten an einer Stelle auffindbar. Wenige, kurze Dateien, damit das Repo nicht zugemüllt wird.
 - **Verworfen:** Eine Datei pro Entscheidung (zu viele Dateien). Wiki oder externe Tools (getrennt vom Code). `README.md` in `docs/` (es soll nur eine README im Repo geben).
 
-## 0010: Frontend-Code nach Bereichen
+## 0010: Deployment auf HTW-VMs
+
+- **Status:** angenommen, Auslöser ersetzt durch 0011 · **Datum:** 2026-10-27 · **Beteiligt:** @Lezhor · **Bezug:** #18, #24, #34, #102
+- **Entscheidung:** Zwei VMs im HTW-Netz. Auf der ops-vm baut ein selbst gehosteter GitHub-Runner beide Images und schickt sie per `docker save | ssh` an die prod-vm, dort startet `deploy/deploy.sh` sie mit Docker Compose. Deploy bei jedem Merge auf `main`, sonntags um 23:00 und von Hand. Vorerst nur HTTP und nur aus dem HTW-Netz erreichbar. Einrichtung und Betrieb in [`deployment.md`](deployment.md).
+- **Warum:** Der Runner baut die Verbindung zu GitHub selbst auf, ins HTW-Netz muss kein Port geöffnet werden. Ohne Registry braucht es keine Zugangsdaten in GitHub. Der Deploy-Schlüssel darf auf der prod-vm nur `deploy.sh` starten, `compose.yml` und `deploy.sh` liegen dort root-eigen und kommen nie über SSH: Eine übernommene ops-vm könnte eigene Images starten, aber nicht mit mehr Rechten, als `compose.yml` erlaubt.
+- **Verworfen:** Builds auf GitHubs Runnern (die erreichen das HTW-Netz nicht). Eine Registry wie GHCR (Token auf der prod-vm, mehr Teile). Vorschau-Deploys pro PR (verschoben auf #103).
+- **Achtung:** Der Runner hängt am Repo, weil GitHub Free keine Runner-Gruppen hat. Wer Schreibrechte hat, kann ihn mit einem Workflow auf dem eigenen Branch nutzen. Nie `pull_request` als Auslöser in `deploy.yml`. Ein Rollback holt nur den Code zurück, Migrationen bleiben. HTTPS und Backups fehlen noch.
+
+## 0011: Deploy nur über Releases
+
+- **Status:** angenommen · **Datum:** 2026-10-30 · **Beteiligt:** @Lezhor, @behritt · **Bezug:** #110
+- **Entscheidung:** Auf die prod-vm kommt nur ein veröffentlichtes GitHub-Release, dessen Commit auf `main` liegt. Releases legt das Team von Hand an. Die Release-Notizen erzeugt GitHub aus den Titeln der PRs seit dem letzten Release. Von Hand gibt es sonst nur den Rollback.
+- **Warum:** Frontend und Backend entwickeln verschiedene Leute in eigenem Tempo, nicht jeder Stand von `main` passt zusammen. Das Team entscheidet jedes Mal, wann ein Stand live geht, z. B. direkt nach einem Merge, nach einem bestimmten Feature oder zur Sonntagsfrist.
+- **Verworfen:** Deploy bei jedem Merge und automatische Releases am Sonntag (s. o.). Gruppierte Notizen per `.github/release.yml` (die Liste der PR-Titel reicht). Vorschau von `main` auf eigener Instanz (verschoben auf #107).
+- **Achtung:** PR-Titel landen in den Release-Notizen und müssen dort verständlich sein.
+
+## 0012: Versionsnummern
+
+- **Status:** angenommen · **Datum:** 2026-10-30 · **Beteiligt:** @Lezhor, @behritt · **Bezug:** #110
+- **Entscheidung:** Release-Tags heißen `v0.MINOR.PATCH`, das erste Release ist `v0.1.0`. Die Major-Version bleibt für den ganzen Prototyp 0. Minor steigt, wenn neue Funktionen dabei sind, Patch, wenn nur Fehler behoben sind.
+- **Warum:** Auf ein endgültiges Schema hat sich das Team noch nicht geeinigt. Major, Minor und Patch kennt jeder, die 0 zeigt, dass es ein Prototyp ist.
+- **Verworfen:** Ein Datum als Tag, z. B. `v2026.11.01` (noch nicht entschieden). Start bei `v1.0.0` (es bleibt ein Prototyp).
+- **Achtung:** Das Environment `production` lässt nur Tags `v0.*.*` deployen. Für eine `v1.0.0` dort die Tag-Regel ändern.
+
+## 0013: Frontend-Code nach Bereichen
 
 - **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25
 - **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/frontend/src/features/<bereich>/` mit seinen Komponenten, Queries und Hooks. Dateien in `routes/` bleiben dünn: Loader und Feature-Komponenten, keine eigene Logik. Geteiltes liegt in `components/ui/` (shadcn), `components/layout/` (App-Shell, Hilfe-Button) und `lib/`. Feste, geprüfte Texte wie der Krisenbildschirm liegen in `content/`.
@@ -81,7 +105,7 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Verworfen:** Ordner nach Typ (`components/`, `queries/`, `hooks/` für alles), wird mit zehn Bereichen unübersichtlich.
 - **Achtung:** Bereiche dürfen sich gegenseitig importieren, `components/` und `lib/` importieren nie aus `features/`. Schwere Teile wie der Avatar werden nur auf ihrer Route geladen.
 
-## 0011: PWA mit vite-plugin-pwa
+## 0014: PWA mit vite-plugin-pwa
 
 - **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25, #53
 - **Entscheidung:** Das Frontend ist eine PWA. Manifest und Service Worker erzeugt `vite-plugin-pwa` beim Build. Der Krisenbildschirm steckt fest im Code und damit in der gecachten App-Shell.
@@ -89,7 +113,7 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Verworfen:** Service Worker von Hand (Caching ist fehleranfällig). Native App (zweite Codebasis).
 - **Achtung:** Offen ist, wie Infomaterial und Kontakte offline kommen (Service Worker cacht API-Antworten, Query-Cache in IndexedDB oder Inhalte im Build), das entscheidet #53 mit #62. Für Push braucht es den Modus `injectManifest`. Zusammenspiel mit Vite+ noch ungeprüft.
 
-## 0012: React Hook Form mit Zod
+## 0015: React Hook Form mit Zod
 
 - **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25, #31
 - **Entscheidung:** Formulare laufen über React Hook Form, validiert mit Zod-Schemas über `@hookform/resolvers`.

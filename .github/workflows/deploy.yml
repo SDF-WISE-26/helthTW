@@ -1,0 +1,97 @@
+name: Deploy
+
+# Builds on our runner on the ops-vm and streams the images to deploy.sh on the prod-vm.
+# Never add pull_request here: a PR's own workflow code would then run on our runner.
+on:
+  # Only a published release goes live, never a merge. Pre-releases don't trigger this.
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      rollback:
+        description: "Commit-Hash einer Version, die noch auf der prod-vm liegt (eine der letzten 5)."
+        required: true
+
+permissions:
+  contents: read
+
+# One deploy at a time. A newer run waits, the running one finishes.
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  ci:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
+    runs-on: [self-hosted, htw-ops]
+    environment: production
+    timeout-minutes: 30
+    env:
+      SHA: ${{ github.sha }}
+    steps:
+      # PROD_URL comes from the runner's .env, so the prod-vm's name isn't in GitHub. These logs are public.
+      - name: Hide the prod-vm's name in the logs
+        run: |
+          host=${PROD_URL:?PROD_URL fehlt in der .env des Runners}
+          host=${host#*://}
+          echo "::add-mask::${host%%[:/]*}"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      # A release can point at any branch. Only reviewed code from main goes live.
+      - name: Release is on main
+        run: |
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "::error::Das Release zeigt auf einen Commit, der nicht auf main liegt"
+            exit 1
+          fi
+      - name: Installed files match the repo
+        run: |
+          status=$(ssh prod status)
+          echo "$status"
+          if [ "$(cd deploy && sha256sum compose.yml deploy.sh)" != "$(tail -n 2 <<<"$status")" ]; then
+            echo "::error::compose.yml oder deploy.sh auf der prod-vm weichen vom Repo ab, bitte neu installieren (docs/deployment.md)"
+            exit 1
+          fi
+      - name: Build images
+        run: |
+          docker build -f apps/backend/Dockerfile -t "helthtw-backend:$SHA" .
+          docker build -f apps/frontend/Dockerfile -t "helthtw-web:$SHA" .
+      - name: Deploy
+        run: docker save "helthtw-backend:$SHA" "helthtw-web:$SHA" | ssh prod deploy "$SHA"
+      - name: App answers
+        run: curl --noproxy '*' -fsS --retry 10 --retry-delay 3 --retry-all-errors --max-time 5 "$PROD_URL/api/alive_ping"
+      # The prod-vm keeps its own copy. The build cache makes the next build fast, but the disk has 15 GB.
+      - name: Clean up
+        if: always()
+        run: |
+          docker image rm "helthtw-backend:$SHA" "helthtw-web:$SHA" 2>/dev/null || true
+          docker builder prune -f --max-used-space 5GB
+
+  rollback:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, htw-ops]
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - name: Hide the prod-vm's name in the logs
+        run: |
+          host=${PROD_URL:?PROD_URL fehlt in der .env des Runners}
+          host=${host#*://}
+          echo "::add-mask::${host%%[:/]*}"
+      # deploy.sh only accepts a 40-character hash of a version that is still on the VM.
+      - name: Roll back
+        env:
+          SHA: ${{ inputs.rollback }}
+        run: ssh prod rollback "$SHA"
+      - name: App answers
+        run: curl --noproxy '*' -fsS --retry 10 --retry-delay 3 --retry-all-errors --max-time 5 "$PROD_URL/api/alive_ping"

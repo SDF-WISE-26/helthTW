@@ -1,0 +1,33 @@
+# Serves the built frontend and forwards API calls to the backend container.
+{
+	# No admin API and no saved config: the container is replaced on every deploy.
+	admin off
+	persist_config off
+}
+
+# Unprivileged port, compose maps it to 80 on the VM.
+:8080 {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy backend:3000
+	}
+
+	# File names in assets/ contain a content hash, so they never change.
+	# A missing one stays a 404: after a deploy, an open tab may still ask for an old chunk.
+	handle /assets/* {
+		root * /srv
+		@exists file
+		header @exists Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle {
+		root * /srv
+		# index.html names the current assets, so the browser has to check it on every load.
+		header Cache-Control "no-cache"
+		# Unknown paths are client-side routes (TanStack Router), so they get index.html.
+		try_files {path} /index.html
+		file_server
+	}
+}
