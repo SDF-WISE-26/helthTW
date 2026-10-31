@@ -47,7 +47,7 @@ Die lokalen Hooks sind erst aktiv, wenn `vp install` einmal gelaufen ist.
 
 ## Deployment und Datenbank
 
-- Jeder Merge auf `main` geht live. Kommt die neue Version nicht hoch, startet `deploy.sh` die vorige wieder und der Job wird rot. Betrieb, Rollback und Einrichtung der VMs: [`deployment.md`](deployment.md).
+- Ein Merge geht nicht live, erst ein Release von `main`. Wann, entscheidet das Team. Die Release-Notizen bestehen aus den Titeln der PRs seit dem letzten Release, deshalb PR-Titel so schreiben, dass man sie dort versteht. Kommt die neue Version nicht hoch, startet `deploy.sh` die vorige wieder und der Job wird rot. Release, Rollback und Einrichtung der VMs: [`deployment.md`](deployment.md).
 - Schema ändern: `apps/backend/src/db/schema.ts` anpassen, `vp run backend#db:generate`, die erzeugte Migration in `apps/backend/drizzle/` im selben PR committen. Der Deploy spielt sie ein. Lokal bleibt `db:push`.
 - Eine Migration muss auch mit der vorigen Version funktionieren, denn ein Rollback holt nur den Code zurück: neue Spalten nullable oder mit Default, Spalten erst ein Release später löschen. Eingespielte Migrationen nie ändern, sondern eine neue anlegen.
-- Wer `deploy/compose.yml` oder `deploy/deploy.sh` ändert, muss sie nach dem Merge von Hand auf der prod-vm installieren. Bis dahin bricht der Deploy mit einem Hinweis ab.
+- Wer `deploy/compose.yml` oder `deploy/deploy.sh` ändert, muss sie beim nächsten Release von Hand auf der prod-vm installieren. Bis dahin bricht der Deploy mit einem Hinweis ab.
