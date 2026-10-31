@@ -100,10 +100,10 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 ## 0013: Frontend-Code nach Bereichen
 
 - **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25
-- **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/frontend/src/features/<bereich>/` mit seinen Komponenten, Queries und Hooks. Dateien in `routes/` bleiben dünn: Loader und Feature-Komponenten, keine eigene Logik. Geteiltes liegt in `components/ui/` (shadcn), `components/layout/` (App-Shell, Hilfe-Button) und `lib/`. Feste, geprüfte Texte wie der Krisenbildschirm liegen in `content/`.
-- **Warum:** Die Bereiche folgen den Epics, so arbeiten mehrere Leute parallel, ohne sich in die Quere zu kommen. Ein Bereich lässt sich als Ganzes finden, prüfen und löschen.
-- **Verworfen:** Ordner nach Typ (`components/`, `queries/`, `hooks/` für alles), wird mit zehn Bereichen unübersichtlich.
-- **Achtung:** Bereiche dürfen sich gegenseitig importieren, `components/` und `lib/` importieren nie aus `features/`. Schwere Teile wie der Avatar werden nur auf ihrer Route geladen.
+- **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/frontend/src/features/<bereich>/` mit seinen Komponenten, Queries und Hooks. Ein Bereich besitzt eigene Daten und Logik, er ist weder ein Epic noch ein Bildschirm. Ordnernamen sind englisch, ein Ordner entsteht erst, wenn jemand daran arbeitet. Ein Bildschirm ist eine dünne Route in `routes/` und setzt Teile aus einem oder mehreren Bereichen zusammen, z. B. Startseite und Einstellungen. Geteiltes liegt in `components/ui/` (shadcn), `components/layout/` (App-Shell, Hilfe-Button) und `lib/`. Feste, geprüfte Texte wie der Krisenbildschirm liegen in `content/`.
+- **Warum:** Mehrere Leute arbeiten parallel, ohne sich in die Quere zu kommen. Ein Bereich lässt sich als Ganzes finden, prüfen und löschen. Bildschirme ändern sich oft, Fachbereiche selten.
+- **Verworfen:** Ordner nach Typ (`components/`, `queries/`, `hooks/` für alles), wird mit zehn Bereichen unübersichtlich. Ein Ordner pro Epic (Audit hat keine Oberfläche, Kontakte nutzen viele Bereiche). Ein Ordner pro Bildschirm (Startseite und Einstellungen greifen auf viele Bereiche zu).
+- **Achtung:** Bereiche dürfen sich gegenseitig importieren, aber nicht im Kreis, z. B. `incidents` → `questionnaires`, nie umgekehrt. `components/` und `lib/` importieren nie aus `features/`. Schwere Teile wie der Avatar werden nur auf ihrer Route geladen.
 
 ## 0014: PWA mit vite-plugin-pwa
 
