@@ -9,6 +9,8 @@ jobs:
     uses: ./.github/workflows/ci.yml
 
   ticket:
+    # doku/** has no ticket. experiment/** fails the name check below, so it can't reach main.
+    if: ${{ !startsWith(github.head_ref, 'doku/') }}
     runs-on: ubuntu-26.04
     steps:
       - id: app
@@ -24,12 +26,14 @@ jobs:
         run: |
           issue=$(echo "$BRANCH" | sed -nE 's#^(feature|hotfix|bug)/([0-9]+)$#\2#p')
           if [ -z "$issue" ]; then
-            echo "::error::Der Branch '$BRANCH' muss feature|hotfix|bug/<ticket> heißen"
+            echo "::error::Der Branch '$BRANCH' muss feature|hotfix|bug/<ticket> oder doku/<name> heißen"
             exit 1
           fi
           status=$(gh api graphql \
             -f owner="${GITHUB_REPOSITORY%/*}" -f repo="${GITHUB_REPOSITORY#*/}" -F issue="$issue" \
             -f query='query($owner: String!, $repo: String!, $issue: Int!) {
+              # fails loudly if the token cannot see the board, issue.projectItems would just be empty
+              organization(login: $owner) { projectV2(number: 1) { title } }
               repository(owner: $owner, name: $repo) {
                 issue(number: $issue) {
                   projectItems(first: 20) {
