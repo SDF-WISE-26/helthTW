@@ -9,50 +9,331 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root"
-import { Route as IndexRouteImport } from "./routes/index"
+import { Route as TabsRouteImport } from "./routes/_tabs"
+import { Route as EmergencyRouteImport } from "./routes/emergency"
+import { Route as InstallRouteImport } from "./routes/install"
+import { Route as OnboardingRouteImport } from "./routes/onboarding"
+import { Route as SettingsRouteImport } from "./routes/settings"
+import { Route as TabsIndexRouteImport } from "./routes/_tabs/index"
+import { Route as TabsChatRouteImport } from "./routes/_tabs/chat"
+import { Route as TabsContactsRouteImport } from "./routes/_tabs/contacts"
+import { Route as TabsWellbeingRouteImport } from "./routes/_tabs/wellbeing"
+import { Route as IncidentsNewRouteImport } from "./routes/incidents/new"
+import { Route as QuestionnairesQuestionnaireIdRouteImport } from "./routes/questionnaires/$questionnaireId"
+import { Route as TabsInfoIndexRouteImport } from "./routes/_tabs/info/index"
+import { Route as TabsInfoTopicIndexRouteImport } from "./routes/_tabs/info/$topic/index"
+import { Route as TabsInfoTopicArticleRouteImport } from "./routes/_tabs/info/$topic/$article"
 
-const IndexRoute = IndexRouteImport.update({
+const TabsRoute = TabsRouteImport.update({
+  id: "/_tabs",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmergencyRoute = EmergencyRouteImport.update({
+  id: "/emergency",
+  path: "/emergency",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallRoute = InstallRouteImport.update({
+  id: "/install",
+  path: "/install",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: "/onboarding",
+  path: "/onboarding",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: "/settings",
+  path: "/settings",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TabsIndexRoute = TabsIndexRouteImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsChatRoute = TabsChatRouteImport.update({
+  id: "/chat",
+  path: "/chat",
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsContactsRoute = TabsContactsRouteImport.update({
+  id: "/contacts",
+  path: "/contacts",
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsWellbeingRoute = TabsWellbeingRouteImport.update({
+  id: "/wellbeing",
+  path: "/wellbeing",
+  getParentRoute: () => TabsRoute,
+} as any)
+const IncidentsNewRoute = IncidentsNewRouteImport.update({
+  id: "/incidents/new",
+  path: "/incidents/new",
   getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionnairesQuestionnaireIdRoute =
+  QuestionnairesQuestionnaireIdRouteImport.update({
+    id: "/questionnaires/$questionnaireId",
+    path: "/questionnaires/$questionnaireId",
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const TabsInfoIndexRoute = TabsInfoIndexRouteImport.update({
+  id: "/info/",
+  path: "/info/",
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsInfoTopicIndexRoute = TabsInfoTopicIndexRouteImport.update({
+  id: "/info/$topic/",
+  path: "/info/$topic/",
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsInfoTopicArticleRoute = TabsInfoTopicArticleRouteImport.update({
+  id: "/info/$topic/$article",
+  path: "/info/$topic/$article",
+  getParentRoute: () => TabsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute
+  "/": typeof TabsIndexRoute
+  "/emergency": typeof EmergencyRoute
+  "/install": typeof InstallRoute
+  "/onboarding": typeof OnboardingRoute
+  "/settings": typeof SettingsRoute
+  "/chat": typeof TabsChatRoute
+  "/contacts": typeof TabsContactsRoute
+  "/wellbeing": typeof TabsWellbeingRoute
+  "/incidents/new": typeof IncidentsNewRoute
+  "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
+  "/info/": typeof TabsInfoIndexRoute
+  "/info/$topic/$article": typeof TabsInfoTopicArticleRoute
+  "/info/$topic/": typeof TabsInfoTopicIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute
+  "/emergency": typeof EmergencyRoute
+  "/install": typeof InstallRoute
+  "/onboarding": typeof OnboardingRoute
+  "/settings": typeof SettingsRoute
+  "/chat": typeof TabsChatRoute
+  "/contacts": typeof TabsContactsRoute
+  "/wellbeing": typeof TabsWellbeingRoute
+  "/incidents/new": typeof IncidentsNewRoute
+  "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
+  "/": typeof TabsIndexRoute
+  "/info": typeof TabsInfoIndexRoute
+  "/info/$topic/$article": typeof TabsInfoTopicArticleRoute
+  "/info/$topic": typeof TabsInfoTopicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  "/": typeof IndexRoute
+  "/_tabs": typeof TabsRouteWithChildren
+  "/emergency": typeof EmergencyRoute
+  "/install": typeof InstallRoute
+  "/onboarding": typeof OnboardingRoute
+  "/settings": typeof SettingsRoute
+  "/_tabs/chat": typeof TabsChatRoute
+  "/_tabs/contacts": typeof TabsContactsRoute
+  "/_tabs/wellbeing": typeof TabsWellbeingRoute
+  "/incidents/new": typeof IncidentsNewRoute
+  "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
+  "/_tabs/": typeof TabsIndexRoute
+  "/_tabs/info/": typeof TabsInfoIndexRoute
+  "/_tabs/info/$topic/$article": typeof TabsInfoTopicArticleRoute
+  "/_tabs/info/$topic/": typeof TabsInfoTopicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/"
+  fullPaths:
+    | "/"
+    | "/emergency"
+    | "/install"
+    | "/onboarding"
+    | "/settings"
+    | "/chat"
+    | "/contacts"
+    | "/wellbeing"
+    | "/incidents/new"
+    | "/questionnaires/$questionnaireId"
+    | "/info/"
+    | "/info/$topic/$article"
+    | "/info/$topic/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/"
-  id: "__root__" | "/"
+  to:
+    | "/emergency"
+    | "/install"
+    | "/onboarding"
+    | "/settings"
+    | "/chat"
+    | "/contacts"
+    | "/wellbeing"
+    | "/incidents/new"
+    | "/questionnaires/$questionnaireId"
+    | "/"
+    | "/info"
+    | "/info/$topic/$article"
+    | "/info/$topic"
+  id:
+    | "__root__"
+    | "/_tabs"
+    | "/emergency"
+    | "/install"
+    | "/onboarding"
+    | "/settings"
+    | "/_tabs/chat"
+    | "/_tabs/contacts"
+    | "/_tabs/wellbeing"
+    | "/incidents/new"
+    | "/questionnaires/$questionnaireId"
+    | "/_tabs/"
+    | "/_tabs/info/"
+    | "/_tabs/info/$topic/$article"
+    | "/_tabs/info/$topic/"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  TabsRoute: typeof TabsRouteWithChildren
+  EmergencyRoute: typeof EmergencyRoute
+  InstallRoute: typeof InstallRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SettingsRoute: typeof SettingsRoute
+  IncidentsNewRoute: typeof IncidentsNewRoute
+  QuestionnairesQuestionnaireIdRoute: typeof QuestionnairesQuestionnaireIdRoute
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/": {
-      id: "/"
+    "/_tabs": {
+      id: "/_tabs"
+      path: ""
+      fullPath: "/"
+      preLoaderRoute: typeof TabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/emergency": {
+      id: "/emergency"
+      path: "/emergency"
+      fullPath: "/emergency"
+      preLoaderRoute: typeof EmergencyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/install": {
+      id: "/install"
+      path: "/install"
+      fullPath: "/install"
+      preLoaderRoute: typeof InstallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/onboarding": {
+      id: "/onboarding"
+      path: "/onboarding"
+      fullPath: "/onboarding"
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/settings": {
+      id: "/settings"
+      path: "/settings"
+      fullPath: "/settings"
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/_tabs/": {
+      id: "/_tabs/"
       path: "/"
       fullPath: "/"
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof TabsIndexRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    "/_tabs/chat": {
+      id: "/_tabs/chat"
+      path: "/chat"
+      fullPath: "/chat"
+      preLoaderRoute: typeof TabsChatRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    "/_tabs/contacts": {
+      id: "/_tabs/contacts"
+      path: "/contacts"
+      fullPath: "/contacts"
+      preLoaderRoute: typeof TabsContactsRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    "/_tabs/wellbeing": {
+      id: "/_tabs/wellbeing"
+      path: "/wellbeing"
+      fullPath: "/wellbeing"
+      preLoaderRoute: typeof TabsWellbeingRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    "/incidents/new": {
+      id: "/incidents/new"
+      path: "/incidents/new"
+      fullPath: "/incidents/new"
+      preLoaderRoute: typeof IncidentsNewRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    "/questionnaires/$questionnaireId": {
+      id: "/questionnaires/$questionnaireId"
+      path: "/questionnaires/$questionnaireId"
+      fullPath: "/questionnaires/$questionnaireId"
+      preLoaderRoute: typeof QuestionnairesQuestionnaireIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/_tabs/info/": {
+      id: "/_tabs/info/"
+      path: "/info"
+      fullPath: "/info/"
+      preLoaderRoute: typeof TabsInfoIndexRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    "/_tabs/info/$topic/": {
+      id: "/_tabs/info/$topic/"
+      path: "/info/$topic"
+      fullPath: "/info/$topic/"
+      preLoaderRoute: typeof TabsInfoTopicIndexRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    "/_tabs/info/$topic/$article": {
+      id: "/_tabs/info/$topic/$article"
+      path: "/info/$topic/$article"
+      fullPath: "/info/$topic/$article"
+      preLoaderRoute: typeof TabsInfoTopicArticleRouteImport
+      parentRoute: typeof TabsRoute
     }
   }
 }
 
+interface TabsRouteChildren {
+  TabsChatRoute: typeof TabsChatRoute
+  TabsContactsRoute: typeof TabsContactsRoute
+  TabsWellbeingRoute: typeof TabsWellbeingRoute
+  TabsIndexRoute: typeof TabsIndexRoute
+  TabsInfoIndexRoute: typeof TabsInfoIndexRoute
+  TabsInfoTopicArticleRoute: typeof TabsInfoTopicArticleRoute
+  TabsInfoTopicIndexRoute: typeof TabsInfoTopicIndexRoute
+}
+
+const TabsRouteChildren: TabsRouteChildren = {
+  TabsChatRoute: TabsChatRoute,
+  TabsContactsRoute: TabsContactsRoute,
+  TabsWellbeingRoute: TabsWellbeingRoute,
+  TabsIndexRoute: TabsIndexRoute,
+  TabsInfoIndexRoute: TabsInfoIndexRoute,
+  TabsInfoTopicArticleRoute: TabsInfoTopicArticleRoute,
+  TabsInfoTopicIndexRoute: TabsInfoTopicIndexRoute,
+}
+
+const TabsRouteWithChildren = TabsRoute._addFileChildren(TabsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  TabsRoute: TabsRouteWithChildren,
+  EmergencyRoute: EmergencyRoute,
+  InstallRoute: InstallRoute,
+  OnboardingRoute: OnboardingRoute,
+  SettingsRoute: SettingsRoute,
+  IncidentsNewRoute: IncidentsNewRoute,
+  QuestionnairesQuestionnaireIdRoute: QuestionnairesQuestionnaireIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

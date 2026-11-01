@@ -40,6 +40,7 @@ release. Add a tool name to select part of the graph. For example, run
 - Branches: `feature/<ticket>`, `bug/<ticket>` or `hotfix/<ticket>`, ticket number only. Without a ticket: `doku/<name>` (may merge to `main`) and `experiment/<name>` (must not).
 - Commits and PR titles follow Conventional Commits: `<type>(<scope>): <description>`. The scope is required, lowercase (e.g. `frontend`, `backend`, `db`, `repo`). Allowed types: `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`.
 - A PR contains exactly one commit.
+- Frontend code is grouped by area in `apps/frontend/src/features/<area>/`, routes stay thin (decision 0013).
 
 ## Maintaining Docs
 
