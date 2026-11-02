@@ -120,3 +120,11 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Warum:** Am weitesten verbreitet, viele Beispiele mit shadcn, gleiche Abwägung wie bei Radix in 0008. Unsere Formulare sind klein, mehr Typsicherheit bringt dort wenig.
 - **Verworfen:** TanStack Form (passt zu Query und Router, aber jünger und weniger Beispiele). `useState` von Hand (Validierung und Fehlerzustände bauen wir nach).
 - **Achtung:** Radix-Felder sind kontrolliert und brauchen `Controller`. Schemas kommen aus dem gemeinsamen Paket aus #31.
+
+## 0017: Service Worker mit injectManifest
+
+- **Status:** angenommen · **Datum:** 2026-11-02 · **Beteiligt:** @LilGravyyyy · **Bezug:** #53, #62, #68
+- **Entscheidung:** `vite-plugin-pwa` läuft im Modus `injectManifest` mit eigenem `src/sw.ts`. Der Service Worker cacht beim Build die ganze App-Shell (alle Chunks und Icons) und beantwortet Navigationen außer `/api/*` mit `index.html`. Eine neue Version übernimmt erst beim nächsten Start, ohne `skipWaiting`. API-Daten cacht er nicht. Die Icons sind Platzhalter, erzeugt aus `public/favicon.svg`.
+- **Warum:** Push (#68) braucht einen eigenen Service Worker. Ein Neuladen mitten im Check-in oder im Harter-Einsatz-Flow würde Eingaben verlieren. Wie Infomaterial und Kontakte offline kommen, hängt am Datenmodell und gehört zu #62.
+- **Verworfen:** `generateSW` (für Push später Umbau). `autoUpdate` (lädt alle offenen Tabs neu). Hinweis „Neue Version, neu laden“ (eigene UI, kann später dazukommen).
+- **Achtung:** Service Worker laufen nur über HTTPS oder `localhost`, auf der prod-vm erst mit #109. Im Dev-Server gibt es keinen, testen mit `vp run frontend#build` und `vp preview`. Nach Änderungen an `favicon.svg` die Icons mit `vp run frontend#generate-pwa-assets` neu erzeugen.
