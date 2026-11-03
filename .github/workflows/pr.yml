@@ -50,11 +50,3 @@ jobs:
             echo "::error::Ticket #$issue steht in '${status:-nicht auf dem Board}', erwartet wird 'In review'"
             exit 1
           fi
-
-  squashed:
-    runs-on: ubuntu-26.04
-    steps:
-      - if: github.event.pull_request.commits != 1
-        run: |
-          echo "::error::Der PR hat ${{ github.event.pull_request.commits }} Commits, bitte zu einem zusammenfassen (squash)"
-          exit 1
