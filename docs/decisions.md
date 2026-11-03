@@ -120,3 +120,11 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Warum:** Am weitesten verbreitet, viele Beispiele mit shadcn, gleiche Abwägung wie bei Radix in 0008. Unsere Formulare sind klein, mehr Typsicherheit bringt dort wenig.
 - **Verworfen:** TanStack Form (passt zu Query und Router, aber jünger und weniger Beispiele). `useState` von Hand (Validierung und Fehlerzustände bauen wir nach).
 - **Achtung:** Radix-Felder sind kontrolliert und brauchen `Controller`. Schemas kommen aus dem gemeinsamen Paket aus #31.
+
+## 0016: Backend-Code nach Modulen
+
+- **Status:** angenommen · **Datum:** 2026-11-01 · **Beteiligt:** @behritt · **Bezug:** #17
+- **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/backend/src/modules/<bereich>/` mit `<bereich>.routes.ts` und `<bereich>.service.ts`. Routes erledigen nur HTTP: prüfen, Service aufrufen, Status setzen. Services enthalten Logik und Drizzle-Abfragen, bekommen einfache Werte und nie den Hono-`Context`. Geteiltes liegt in `lib/` und `middleware/`. Der REST-Vertrag steht in [`specs/backend.md`](specs/backend.md), `users` ist das Referenzmodul.
+- **Warum:** Gleiche Logik wie im Frontend (0013): Mehrere Leute arbeiten parallel, ein Bereich lässt sich als Ganzes finden, prüfen und löschen.
+- **Verworfen:** Klassisches MVC (Ordner nach Typ werden unübersichtlich, Views gibt es nicht). Eigene Repository-Schicht (Drizzle ist schon dünn, das wäre nur Boilerplate).
+- **Achtung:** Routen verkettet schreiben und in `app.ts` per `.route()` einhängen, sonst bricht `AppType` (0003). Geworfene Fehler tauchen nicht in den RPC-Typen auf, das Frontend prüft weiter `res.ok` (0006). Module dürfen nur die Services anderer Module importieren, nicht im Kreis. `lib/` und `middleware/` importieren nie aus `modules/`.
