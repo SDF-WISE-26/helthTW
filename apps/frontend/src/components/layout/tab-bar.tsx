@@ -1,18 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, House, MessageCircle, Phone } from "lucide-react";
+import { BookOpen, House, MessageCircle } from "lucide-react";
 
 const TABS = [
   { to: "/", label: "Start", icon: House },
   { to: "/info", label: "Info", icon: BookOpen },
   { to: "/chat", label: "Chat", icon: MessageCircle },
-  { to: "/contacts", label: "Kontakte", icon: Phone },
 ] as const;
 
 export function TabBar() {
   return (
     <nav
       aria-label="Hauptnavigation"
-      className="sticky bottom-0 grid grid-cols-4 border-t bg-background"
+      className="sticky bottom-0 grid grid-cols-3 border-t bg-background"
     >
       {TABS.map(({ to, label, icon: Icon }) => (
         <Link

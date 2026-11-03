@@ -14,6 +14,8 @@ function Info() {
           Thema
         </Link>
       </Button>
+      <h2 className="text-xl font-bold">Kontakte</h2>
+      <p>Ansprechpartner + Notrufnummern</p>
     </>
   );
 }

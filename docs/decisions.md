@@ -128,3 +128,11 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Warum:** Gleiche Logik wie im Frontend (0013): Mehrere Leute arbeiten parallel, ein Bereich lässt sich als Ganzes finden, prüfen und löschen.
 - **Verworfen:** Klassisches MVC (Ordner nach Typ werden unübersichtlich, Views gibt es nicht). Eigene Repository-Schicht (Drizzle ist schon dünn, das wäre nur Boilerplate).
 - **Achtung:** Routen verkettet schreiben und in `app.ts` per `.route()` einhängen, sonst bricht `AppType` (0003). Geworfene Fehler tauchen nicht in den RPC-Typen auf, das Frontend prüft weiter `res.ok` (0006). Module dürfen nur die Services anderer Module importieren, nicht im Kreis. `lib/` und `middleware/` importieren nie aus `modules/`.
+
+## 0017: Inhalte Git-basiert
+
+- **Status:** vorgeschlagen · **Datum:** 2026-11-03 · **Beteiligt:** @justingebert · **Bezug:** #43, #54
+- **Entscheidung:** Infomaterial und Kontakte liegen als Dateien im Repo, eigene Bilder und PDFs ebenso. Änderungen laufen per PR mit Review, ein Schema prüft die Dateien in CI. Datenformat und ob das Backend die Dateien in die Datenbank synchronisiert oder direkt liest, entscheidet #54.
+- **Warum:** Jede Änderung an Gesundheitsinhalten ist versioniert und geprüft, der PR ist der Nachweis. Kein zusätzlicher Dienst auf den VMs. Inhalte und Code bleiben zusammen.
+- **Verworfen:** Selbst gehostetes Headless-CMS wie Directus, Strapi oder Payload (eigener Dienst mit Logins, Updates und Backups, Änderungen außerhalb von Git). CMS als SaaS wie Contentful oder Sanity (externer Anbieter, Limits, schwer zu begründen vor der DSGVO-Prüfung #91).
+- **Achtung:** Das Repo ist öffentlich: fremde PDFs und Bilder verlinken statt hosten, außer sie sind frei lizenziert. `db:seed` löscht alle Daten und ist kein Weg für Inhalte in Produktion. Ein Git-basiertes CMS wie Keystatic oder Decap lässt sich später ergänzen, falls Nicht-Entwickler Inhalte pflegen.
