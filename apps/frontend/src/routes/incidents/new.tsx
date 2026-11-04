@@ -52,7 +52,7 @@ function LogIncident() {
         <Link to="/chat">Chat</Link>
       </Button>
       <Button asChild variant="outline" size="lg">
-        <Link to="/contacts">Kontakte</Link>
+        <Link to="/info">Kontakte</Link>
       </Button>
       <Button asChild size="lg">
         <Link to="/">Fertig</Link>
