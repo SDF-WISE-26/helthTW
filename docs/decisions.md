@@ -136,3 +136,11 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Warum:** Jede Änderung an Gesundheitsinhalten ist versioniert und geprüft, der PR ist der Nachweis. Kein zusätzlicher Dienst auf den VMs. Inhalte und Code bleiben zusammen.
 - **Verworfen:** Selbst gehostetes Headless-CMS wie Directus, Strapi oder Payload (eigener Dienst mit Logins, Updates und Backups, Änderungen außerhalb von Git). CMS als SaaS wie Contentful oder Sanity (externer Anbieter, Limits, schwer zu begründen vor der DSGVO-Prüfung #91).
 - **Achtung:** Das Repo ist öffentlich: fremde PDFs und Bilder verlinken statt hosten, außer sie sind frei lizenziert. `db:seed` löscht alle Daten und ist kein Weg für Inhalte in Produktion. Ein Git-basiertes CMS wie Keystatic oder Decap lässt sich später ergänzen, falls Nicht-Entwickler Inhalte pflegen.
+
+## 0018: Service Worker mit injectManifest
+
+- **Status:** angenommen · **Datum:** 2026-11-02 · **Beteiligt:** @LilGravyyyy · **Bezug:** #53, #62, #68
+- **Entscheidung:** `vite-plugin-pwa` läuft im Modus `injectManifest` mit eigenem `src/sw.ts`. Der Service Worker cacht beim Build die ganze App-Shell (alle Chunks und Icons) und beantwortet Navigationen außer `/api/*` mit `index.html`. Eine neue Version übernimmt erst beim nächsten Start, ohne `skipWaiting`. API-Daten cacht er nicht. Die Icons sind Platzhalter, erzeugt aus `public/favicon.svg`.
+- **Warum:** Push (#68) braucht einen eigenen Service Worker. Ein Neuladen mitten im Check-in oder im Harter-Einsatz-Flow würde Eingaben verlieren. Wie Infomaterial und Kontakte offline kommen, hängt am Datenmodell und gehört zu #62.
+- **Verworfen:** `generateSW` (für Push später Umbau). `autoUpdate` (lädt alle offenen Tabs neu). Hinweis „Neue Version, neu laden“ (eigene UI, kann später dazukommen).
+- **Achtung:** Service Worker laufen nur über HTTPS oder `localhost`, auf der prod-vm erst mit #109. Im Dev-Server gibt es keinen, testen mit `vp run frontend#build` und `vp preview`. Nach Änderungen an `favicon.svg` die Icons mit `vp run frontend#generate-pwa-assets` neu erzeugen.
