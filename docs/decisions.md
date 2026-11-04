@@ -144,3 +144,10 @@ Append new decisions at the bottom, numbered consecutively and in the same struc
 - **Why:** Push (#68) needs its own service worker. A reload in the middle of a check-in or the hard-incident flow would lose input. How info material and contacts get offline depends on the data model and belongs to #62.
 - **Rejected:** `generateSW` (would need restructuring for push later). `autoUpdate` (reloads all open tabs). A "New version, reload" notice (its own UI, can be added later).
 - **Caution:** Service workers only run over HTTPS or on `localhost`, on the prod-vm only with #109. The dev server has none, test with `vp run frontend#build` and `vp preview`. After changes to `favicon.svg`, regenerate the icons with `vp run frontend#generate-pwa-assets`.
+
+## 0019: Shared package as source
+
+- **Status:** accepted · **Date:** 2026-11-04 · **Involved:** @justingebert · **Ref:** #31
+- **Decision:** `packages/shared` holds code used by both frontend and backend, mostly Zod schemas. Rules for what belongs there are in its `README.md`. It has no build step: `exports` point at `src/<folder>/index.ts`, imported as `@helthtw/shared/<folder>`. Packages in `packages/` get the `@helthtw/` scope so imports are clearly ours, apps keep their short names for `vp run backend#…`. Vite bundles it into the frontend, the backend bundles it into `dist` via `deps.alwaysBundle`. Real schemas come with the tickets that need them (#54, #136), until then `@helthtw/shared/example` is a placeholder.
+- **Why:** Only used inside this repo, so a build would just add a watcher in `dev` and stale `dist/` folders. One folder per area like 0013 and 0016, so parallel PRs do not collide on one index file.
+- **Caution:** Without `alwaysBundle` the backend bundle keeps `@helthtw/shared` external and Node fails on the `.ts` files in production. Both Dockerfiles copy `packages/shared`, a new package under `packages/` needs the same.
