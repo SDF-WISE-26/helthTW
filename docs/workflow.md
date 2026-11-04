@@ -1,53 +1,53 @@
-# Arbeitsweise mit Git
+# Git workflow
 
-Kurzfassung der Regeln, die Git-Hooks und CI durchsetzen. Die PR-Prüfungen kommen mit PR #27.
+Summary of the rules that Git hooks and CI enforce. The PR checks come with PR #27.
 
 ## Branches
 
-- `main` ist geschützt, niemand pusht direkt darauf.
-- Pro Ticket ein Branch von `main`: `feature/<nr>`, `bug/<nr>` oder `hotfix/<nr>`, nur mit der Ticketnummer, z. B. `feature/28`.
-- `doku/<name>` für reine Doku-Änderungen: braucht kein Ticket und darf nach `main`.
-- `experiment/<name>` zum Ausprobieren: läuft durch die CI, darf aber nicht nach `main`.
-- Andere Namen lehnt die PR-Pipeline ab.
-- Commits aus diesen Branches werden gesquasht: Pro PR landet genau ein Commit auf `main`, damit die History sauber bleibt.
+- `main` is protected, nobody pushes to it directly.
+- One branch per ticket, from `main`: `feature/<nr>`, `bug/<nr>` or `hotfix/<nr>`, with the ticket number only, e.g. `feature/28`.
+- `doku/<name>` for docs-only changes: needs no ticket and may merge to `main`.
+- `experiment/<name>` for trying things out: runs through CI but must not merge to `main`.
+- The PR pipeline rejects any other name.
+- Commits from these branches are squashed: exactly one commit per PR lands on `main`, to keep the history clean.
 
 ## Commits
 
-Commit-Nachrichten und PR-Titel folgen dem Conventional-Commits-Standard: `<typ>(<bereich>): <beschreibung>`
+Commit messages and PR titles follow the Conventional Commits standard: `<type>(<scope>): <description>`
 
-- Mögliche Typen: `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
-- Bereich ist Pflicht, klein geschrieben, z. B. `frontend`, `backend`, `db`, `repo`
-- Beispiel: `feat(frontend): add login page`
+- Allowed types: `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
+- The scope is required and lowercase, e.g. `frontend`, `backend`, `db`, `repo`
+- Example: `feat(frontend): add login page`
 
-## Vom Ticket zum Merge
+## From ticket to merge
 
-1. Ticket auf dem Board übernehmen.
-2. Branch anlegen: `git switch -c feature/<nr>`
-3. Arbeiten und committen.
-4. Vor dem PR selbst auf einen Commit zusammenfassen:
-   `git fetch && git rebase origin/main`, dann `git reset --soft origin/main` und neu committen.
-   Nach Änderungen aus dem Review wieder squashen und mit `git push --force-with-lease` hochladen.
-5. Ticket auf dem Board nach „In review“ schieben.
-6. PR gegen `main` öffnen, Titel im Commit-Format, mindestens ein Review.
-7. Nach dem Merge verschiebt die Pipeline das Ticket nach „PO Abnahme“.
+1. Take the ticket on the board.
+2. Create a branch: `git switch -c feature/<nr>`
+3. Work and commit.
+4. Before the PR, squash to one commit yourself:
+   `git fetch && git rebase origin/main`, then `git reset --soft origin/main` and commit again.
+   After changes from the review, squash again and upload with `git push --force-with-lease`.
+5. Move the ticket on the board to "In review".
+6. Open a PR against `main`, title in commit format, at least one review.
+7. After the merge, the pipeline moves the ticket to "PO Abnahme".
 
-## Was automatisch geprüft wird
+## What is checked automatically
 
-| Wann                                            | Was                                                                                         |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| vor jedem Commit                                | `vp check --fix` und secretlint auf geänderten Dateien; sind `.ts`/`.tsx` dabei, alle Tests |
-| Commit-Nachricht                                | Format wie oben                                                                             |
-| vor jedem Push                                  | `vp run ready`: Check, secretlint, Tests, Build                                             |
-| Push auf einen der Branchtypen oben             | CI: `vp run ready` und gitleaks über die ganze History                                      |
-| PR gegen `main`                                 | Titel, Branchname, Ticket steht in „In review“, genau ein Commit                            |
-| Merge auf `main`                                | CI, dann Deploy auf die prod-vm (siehe unten)                                               |
-| sonntags 23:00, von Hand unter Actions → Deploy | Deploy von `main`, mit einem Commit-Hash im Feld `rollback` ein Rollback                    |
+| When                                           | What                                                                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| before every commit                            | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests |
+| commit message                                 | format as above                                                                             |
+| before every push                              | `vp run ready`: check, secretlint, tests, build                                             |
+| push to one of the branch types above          | CI: `vp run ready` and gitleaks over the whole history                                      |
+| PR against `main`                              | title, branch name, ticket is in "In review", exactly one commit                            |
+| merge to `main`                                | CI, then deploy to the prod-vm (see below)                                                  |
+| Sundays 23:00, manually under Actions → Deploy | deploy of `main`, a rollback with a commit hash in the `rollback` field                     |
 
-Die lokalen Hooks sind erst aktiv, wenn `vp install` einmal gelaufen ist.
+The local hooks are only active once `vp install` has run.
 
-## Deployment und Datenbank
+## Deployment and database
 
-- Ein Merge geht nicht live, erst ein Release von `main`. Wann, entscheidet das Team. Die Release-Notizen bestehen aus den Titeln der PRs seit dem letzten Release, deshalb PR-Titel so schreiben, dass man sie dort versteht. Kommt die neue Version nicht hoch, startet `deploy.sh` die vorige wieder und der Job wird rot. Release, Rollback und Einrichtung der VMs: [`deployment.md`](deployment.md).
-- Schema ändern: `apps/backend/src/db/schema.ts` anpassen, `vp run backend#db:generate`, die erzeugte Migration in `apps/backend/drizzle/` im selben PR committen. Der Deploy spielt sie ein. Lokal bleibt `db:push`.
-- Eine Migration muss auch mit der vorigen Version funktionieren, denn ein Rollback holt nur den Code zurück: neue Spalten nullable oder mit Default, Spalten erst ein Release später löschen. Eingespielte Migrationen nie ändern, sondern eine neue anlegen.
-- Wer `deploy/compose.yml` oder `deploy/deploy.sh` ändert, muss sie beim nächsten Release von Hand auf der prod-vm installieren. Bis dahin bricht der Deploy mit einem Hinweis ab.
+- A merge does not go live, only a release of `main` does. The team decides when. The release notes consist of the PR titles since the last release, so write PR titles that make sense there. If the new version does not come up, `deploy.sh` starts the previous one again and the job turns red. Release, rollback and VM setup: [`deployment.md`](deployment.md).
+- Changing the schema: edit `apps/backend/src/db/schema.ts`, run `vp run backend#db:generate`, commit the generated migration in `apps/backend/drizzle/` in the same PR. The deploy applies it. Locally, `db:push` stays.
+- A migration must also work with the previous version, because a rollback only restores the code: new columns nullable or with a default, drop columns only one release later. Never change applied migrations, create a new one instead.
+- Whoever changes `deploy/compose.yml` or `deploy/deploy.sh` must install them manually on the prod-vm at the next release. Until then, the deploy aborts with a notice.

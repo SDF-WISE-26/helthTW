@@ -1,43 +1,43 @@
 # Backend
 
-Vertrag der REST-API zwischen Backend und Frontend.
+Contract of the REST API between backend and frontend.
 
-## Pfade und Methoden
+## Paths and methods
 
-- Pfade: `/api/v1/<ressource>`, englisch, Plural, kebab-case, keine Verben, z. B. `GET /api/v1/users/:id`.
-- Ausnahme: `/api/alive_ping` bleibt unversioniert, Deploy und Healthcheck hängen daran.
-- `GET` liest, `POST` legt an, `PATCH` ändert teilweise, `DELETE` löscht. `PUT` nur, wenn eine Ressource wirklich ganz ersetzt wird.
-- Breaking Changes nur mit neuer Version oder gleichzeitig im Frontend.
+- Paths: `/api/v1/<resource>`, English, plural, kebab-case, no verbs, e.g. `GET /api/v1/users/:id`.
+- Exception: `/api/alive_ping` stays unversioned, deploy and health check depend on it.
+- `GET` reads, `POST` creates, `PATCH` partially updates, `DELETE` deletes. `PUT` only when a resource is really replaced as a whole.
+- Breaking changes only with a new version or together with the frontend.
 
-## Antworten
+## Responses
 
-- Felder in camelCase, Zeiten als ISO 8601 in UTC.
-- Einzelobjekt direkt: `{ "id": 1, "name": "User1" }`.
-- Liste immer als `{ "items": [...] }`, damit Paginierung ohne Bruch dazukommen kann.
-- Fehler immer als `{ "error": { "code", "message", "details" } }`. `code` ist stabil und für das Frontend, `message` für Entwickler, `details` optional.
+- Fields in camelCase, times as ISO 8601 in UTC.
+- Single object directly: `{ "id": 1, "name": "User1" }`.
+- Lists always as `{ "items": [...] }`, so pagination can be added without breaking anything.
+- Errors always as `{ "error": { "code", "message", "details" } }`. `code` is stable and meant for the frontend, `message` for developers, `details` is optional.
 
-| Status | Bedeutung                        |
+| Status | Meaning                          |
 | ------ | -------------------------------- |
-| 200    | gelesen oder geändert            |
-| 201    | angelegt                         |
-| 204    | erfolgreich, ohne Inhalt         |
-| 400    | Eingabe ungültig                 |
-| 401    | nicht angemeldet                 |
-| 403    | angemeldet, aber kein Zugriff    |
-| 404    | Ressource oder Route fehlt       |
-| 409    | Konflikt mit dem aktuellen Stand |
-| 500    | Fehler im Backend, ohne Details  |
+| 200    | read or updated                  |
+| 201    | created                          |
+| 204    | success, no content              |
+| 400    | invalid input                    |
+| 401    | not signed in                    |
+| 403    | signed in, but no access         |
+| 404    | resource or route missing        |
+| 409    | conflict with the current state  |
+| 500    | error in the backend, no details |
 
-## Eingaben und Datenschutz
+## Input and privacy
 
-- Jede Eingabe (`param`, `query`, `json`) wird per Zod geprüft, bevor sie den Service erreicht.
-- Keine Gesundheitsdaten, Chat-Inhalte oder Personendaten in Logs und Fehlermeldungen.
-- Die eigene Nutzer-ID kommt aus der Sitzung, nie aus Pfad oder Body.
-- Antworten enthalten nur ausdrücklich ausgewählte Felder.
+- Every input (`param`, `query`, `json`) is validated with Zod before it reaches the service.
+- No health data, chat content or personal data in logs and error messages.
+- The caller's own user ID comes from the session, never from path or body.
+- Responses contain only explicitly selected fields.
 
-## Beispiel
+## Example
 
-Muster für einen Schreib-Endpunkt, im Code noch nicht vorhanden.
+Pattern for a write endpoint, not yet in the code.
 
 ```http
 POST /api/v1/users
