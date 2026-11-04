@@ -1,97 +1,97 @@
 # Deployment
 
-Einrichtung und Betrieb der beiden HTW-VMs. Warum es so gebaut ist, steht in den Entscheidungen 0010 bis 0012 in [`decisions.md`](decisions.md).
+Setup and operation of the two HTW VMs. Why it is built this way is in decisions 0010 to 0012 in [`decisions.md`](decisions.md).
 
-## Überblick
+## Overview
 
 ```
-GitHub: Release veröffentlicht (Rollback von Hand) → .github/workflows/deploy.yml
-  ├─ ci      auf GitHubs Runnern: vp run ready, gitleaks
-  └─ deploy  auf dem Runner der ops-vm (Label htw-ops):
-             docker build → docker save | ssh prod deploy <sha> → Health-Check von außen
+GitHub: release published (rollback manually) → .github/workflows/deploy.yml
+  ├─ ci      on GitHub's runners: vp run ready, gitleaks
+  └─ deploy  on the ops-vm runner (label htw-ops):
+             docker build → docker save | ssh prod deploy <sha> → health check from outside
 
-ops-vm   Nutzer github-runner: Runner-Dienst, Docker zum Bauen, SSH-Schlüssel nur für deploy.sh
-prod-vm  Nutzer deploy, Ordner /srv/helthtw (compose.yml, deploy.sh, .env):
-         web (Caddy, Port 80) → backend (Node) → postgres (Volume), migrate läuft vor jedem Start
+ops-vm   user github-runner: runner service, Docker for building, SSH key only for deploy.sh
+prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env):
+         web (Caddy, port 80) → backend (Node) → postgres (volume), migrate runs before every start
 ```
 
-- Der Runner verbindet sich selbst über den Proxy zu GitHub. Von außerhalb der HTW ist keine VM erreichbar, das ist gewollt.
-- Ein Deploy dauert etwa 1,5 Minuten, davon rund 25 s auf der prod-vm. Die Seite ist dabei wenige Sekunden weg.
-- Getestet mit Debian 13, Docker 29.9 und Compose 5.6 auf VMs mit 2 CPUs, 1,9 GB RAM und 15 GB Platte.
+- The runner connects to GitHub itself through the proxy. No VM is reachable from outside HTW, that is intended.
+- A deploy takes about 1.5 minutes, of which around 25 s on the prod-vm. The site is down for a few seconds during it.
+- Tested with Debian 13, Docker 29.9 and Compose 5.6 on VMs with 2 CPUs, 1.9 GB RAM and 15 GB disk.
 
-## Werte
+## Values
 
-Hostnamen und Netze stehen nicht im Repo, weil es öffentlich ist. In den Befehlen unten stehen dafür Platzhalter:
+Hostnames and networks are not in the repo because it is public. The commands below use placeholders instead:
 
-| Platzhalter                 | Was                                                      | Woher                                          |
-| --------------------------- | -------------------------------------------------------- | ---------------------------------------------- |
-| `<admin>`                   | eigener Nutzer mit sudo auf beiden VMs                   | HTW-IT                                         |
-| `<prod-host>`, `<ops-host>` | Hostnamen der VMs                                        | HTW-IT                                         |
-| `<prod-ip>`, `<ops-ip>`     | IPv4-Adresse der VM                                      | `hostname -I` auf der VM, erste Adresse        |
-| `<proxy>`                   | HTW-Webproxy als `http://<host>:<port>`                  | `/etc/environment` auf der VM                  |
-| `<htw-netze>`               | Netze, aus denen HTW SSH erlaubt, z. B. `{ a/16, b/16 }` | SSH-Regel in der `input`-Chain, siehe unten    |
-| `<proxy-netz>`              | Netz des Proxys                                          | Regel mit `dport 3128` in der `OUTPUT`-Chain   |
-| `<dns-netze>`               | Netze der DNS-Server                                     | Regel mit `udp dport 53` in der `OUTPUT`-Chain |
+| Placeholder                 | What                                                      | Where from                                     |
+| --------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
+| `<admin>`                   | your own user with sudo on both VMs                       | HTW IT                                         |
+| `<prod-host>`, `<ops-host>` | hostnames of the VMs                                      | HTW IT                                         |
+| `<prod-ip>`, `<ops-ip>`     | IPv4 address of the VM                                    | `hostname -I` on the VM, first address         |
+| `<proxy>`                   | HTW web proxy as `http://<host>:<port>`                   | `/etc/environment` on the VM                   |
+| `<htw-nets>`                | networks from which HTW allows SSH, e.g. `{ a/16, b/16 }` | SSH rule in the `input` chain, see below       |
+| `<proxy-net>`               | network of the proxy                                      | rule with `dport 3128` in the `OUTPUT` chain   |
+| `<dns-nets>`                | networks of the DNS servers                               | rule with `udp dport 53` in the `OUTPUT` chain |
 
-Die Chains stehen in HTWs `/etc/nftables.conf` auf jeder VM: `sudo cat /etc/nftables.conf`.
+The chains are in HTW's `/etc/nftables.conf` on each VM: `sudo cat /etc/nftables.conf`.
 
-## Betrieb
+## Operations
 
-### Deploy und Rollback
+### Deploy and rollback
 
-- Deployt wird nur ein Release: Releases → Draft a new release. Unter „Choose a tag“ die nächste Version als neuen Tag eintippen, z. B. `v0.2.0` (Schema in Entscheidung 0012), Target `main`, „Generate release notes“, Publish release. Die Notizen listen die PRs seit dem letzten Release mit ihrem Titel. Im Terminal: `gh release create v0.2.0 --target main --generate-notes`.
-- Ein Pre-Release deployt nicht. Zeigt das Release auf einen Commit, der nicht auf `main` liegt, bricht der Deploy ab.
-- Rollback: Actions → Deploy → Run workflow mit einem Commit-Hash. Der Workflow startet diese Version ohne Build. Sie muss eine der letzten 5 sein, die `status` zeigt.
-- Ohne GitHub, auf der prod-vm: `sudo -u deploy -H /srv/helthtw/deploy.sh rollback <sha>`.
-- Kommt eine neue Version nicht gesund hoch, startet `deploy.sh` die vorige und der Job wird rot.
-- Ein Rollback holt nur den Code zurück, Migrationen bleiben. Was das für Migrationen heißt, steht in [`workflow.md`](workflow.md).
+- Only a release is deployed: Releases → Draft a new release. Under "Choose a tag", type the next version as a new tag, e.g. `v0.2.0` (scheme in decision 0012), target `main`, "Generate release notes", Publish release. The notes list the PRs since the last release with their title. In the terminal: `gh release create v0.2.0 --target main --generate-notes`.
+- A pre-release does not deploy. If the release points to a commit that is not on `main`, the deploy aborts.
+- Rollback: Actions → Deploy → Run workflow with a commit hash. The workflow starts that version without a build. It must be one of the last 5 that `status` shows.
+- Without GitHub, on the prod-vm: `sudo -u deploy -H /srv/helthtw/deploy.sh rollback <sha>`.
+- If a new version does not come up healthy, `deploy.sh` starts the previous one and the job turns red.
+- A rollback only restores the code, migrations stay. What that means for migrations is in [`workflow.md`](workflow.md).
 
-### Nachsehen
+### Inspecting
 
 ```bash
 # ops-vm
-sudo -iu github-runner ssh prod status           # laufende Version, letzte 5, Prüfsummen der installierten Dateien
-systemctl status 'actions.runner.*' --no-pager   # Runner-Dienst
-sudo -iu github-runner docker system df          # Build-Cache, die Pipeline begrenzt ihn auf 5 GB
+sudo -iu github-runner ssh prod status           # running version, last 5, checksums of the installed files
+systemctl status 'actions.runner.*' --no-pager   # runner service
+sudo -iu github-runner docker system df          # build cache, the pipeline limits it to 5 GB
 
 # prod-vm
 sudo docker ps --format '{{.Names}}: {{.Status}}'
 sudo docker logs --tail 100 helthtw-prod-backend-1
 sudo docker exec -it helthtw-prod-postgres-1 psql -U helthtw -d helthtw
-# antwortet die Seite von außen nicht: von innen prüfen, am Netz vorbei
+# if the site does not respond from outside: check from inside, bypassing the network
 sudo docker exec helthtw-prod-web-1 wget -qO- -T 5 http://localhost:8080/api/alive_ping
 ```
 
-### compose.yml oder deploy.sh geändert
+### compose.yml or deploy.sh changed
 
-Beim nächsten Release bricht der Deploy bei „Installed files match the repo“ ab. Neu installieren wie in [prod-vm, Schritt 3](#3-nutzer-deploy-und-srvhelthtw), mit dem Tag des Release als `<commit>`. Danach den Lauf unter Actions erneut starten.
+At the next release, the deploy aborts at "Installed files match the repo". Reinstall as in [prod-vm, step 3](#3-user-deploy-and-srvhelthtw), with the release tag as `<commit>`. Then re-run the job under Actions.
 
-- Vorher die alte Datei sichern: `sudo cp -a /srv/helthtw/compose.yml /srv/helthtw/compose.yml.alt`. Der automatische Rollback nutzt immer die installierte `compose.yml`. Ist die neue kaputt, hilft er nicht, nur die gesicherte.
-- Ein Rollback auf ältere Images läuft mit der neuen `compose.yml`. Die muss also auch zu ihnen passen.
+- Back up the old file first: `sudo cp -a /srv/helthtw/compose.yml /srv/helthtw/compose.yml.alt`. The automatic rollback always uses the installed `compose.yml`. If the new one is broken, it does not help, only the backup does.
+- A rollback to older images runs with the new `compose.yml`. So it must fit them too.
 
-### .env und Passwort
+### .env and password
 
-- `POSTGRES_PASSWORD` wirkt nur beim ersten Anlegen des Volumes. Wer es später ändert, muss es vorher in Postgres ändern (`ALTER USER helthtw PASSWORD '…'`), sonst scheitern migrate und backend mit „password authentication failed“.
-- Nach einer Änderung an `.env` erstellt der nächste Deploy den Postgres-Container neu. Das Backend verbindet sich danach selbst wieder.
+- `POSTGRES_PASSWORD` only takes effect when the volume is first created. Whoever changes it later must first change it in Postgres (`ALTER USER helthtw PASSWORD '…'`), otherwise migrate and backend fail with "password authentication failed".
+- After a change to `.env`, the next deploy recreates the Postgres container. The backend reconnects by itself afterwards.
 
 ### Updates
 
-- `unattended-upgrades` spielt täglich Sicherheitsupdates von Debian ein und startet bei Bedarf um 04:00 neu. Container und Runner kommen von selbst wieder.
-- Docker kommt aus Dockers eigenem Repository und wird nicht automatisch aktualisiert: ab und zu `sudo apt update && sudo apt upgrade`.
-- Der Runner aktualisiert sich selbst.
+- `unattended-upgrades` installs Debian security updates daily and reboots at 04:00 if needed. Containers and runner come back by themselves.
+- Docker comes from Docker's own repository and is not updated automatically: run `sudo apt update && sudo apt upgrade` from time to time.
+- The runner updates itself.
 
-## Einrichtung prod-vm
+## prod-vm setup
 
-Alle Befehle als `<admin>`. Eine zweite SSH-Sitzung offen halten, solange an der Firewall gearbeitet wird.
+All commands as `<admin>`. Keep a second SSH session open while working on the firewall.
 
 ### 1. Updates
 
 ```bash
-apt-config dump | grep -i proxy   # HTW setzt nur Acquire::http::Proxy
+apt-config dump | grep -i proxy   # HTW only sets Acquire::http::Proxy
 echo 'Acquire::https::Proxy "<proxy>";' | sudo tee /etc/apt/apt.conf.d/95https-proxy
 sudo apt update && sudo apt full-upgrade
 sudo tee /etc/apt/apt.conf.d/52unattended-upgrades-local >/dev/null <<'EOF'
-// Neu starten, wenn ein Update es braucht (z. B. neuer Kernel).
+// Reboot when an update requires it (e.g. new kernel).
 Unattended-Upgrade::Automatic-Reboot "true";
 Unattended-Upgrade::Automatic-Reboot-Time "04:00";
 EOF
@@ -99,8 +99,8 @@ apt-config dump | grep -E 'APT::Periodic::(Update-Package-Lists|Unattended-Upgra
 ls /var/run/reboot-required 2>/dev/null && sudo reboot
 ```
 
-- Der https-Proxy ist nötig, weil HTW nur den für http setzt und Dockers Repository https nutzt. Die Variablen aus `/etc/environment` sieht apt bei automatischen Updates nicht.
-- `debconf: unable to initialize frontend: Dialog` heißt nur, dass das Terminal für Dialogfenster zu klein war.
+- The https proxy is needed because HTW only sets the one for http and Docker's repository uses https. apt does not see the variables from `/etc/environment` during automatic updates.
+- `debconf: unable to initialize frontend: Dialog` only means the terminal was too small for dialog windows.
 
 ### 2. Docker
 
@@ -109,7 +109,7 @@ sudo apt install ca-certificates curl gnupg
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo tee /etc/apt/keyrings/docker.asc >/dev/null
 sudo chmod a+r /etc/apt/keyrings/docker.asc
-gpg --show-keys /etc/apt/keyrings/docker.asc   # muss 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 sein
+gpg --show-keys /etc/apt/keyrings/docker.asc   # must be 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/debian
@@ -121,8 +121,8 @@ EOF
 sudo apt update
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Der Docker-Dienst ignoriert die Proxy-Variablen der Shell. Log-Rotation gilt dann für jeden Container.
-[ -e /etc/docker/daemon.json ] && echo "daemon.json gibt es schon, hier aufhören" || sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
+# The Docker daemon ignores the shell's proxy variables. Log rotation then applies to every container.
+[ -e /etc/docker/daemon.json ] && echo "daemon.json already exists, stop here" || sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
 {
   "proxies": {
     "http-proxy": "<proxy>",
@@ -138,33 +138,33 @@ sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin dock
 EOF
 sudo dockerd --validate --config-file /etc/docker/daemon.json   # configuration OK
 sudo systemctl restart docker
-sudo docker pull postgres:17-alpine                             # prüft den Proxy
+sudo docker pull postgres:17-alpine                             # tests the proxy
 ```
 
-- `<admin>` kommt absichtlich nicht in die Gruppe `docker`, die ist praktisch root. Stattdessen `sudo docker`.
-- `toomanyrequests` beim Pull ist das Limit von Docker Hub für anonyme Downloads. Die ganze HTW teilt sich die Adresse des Proxys, später noch einmal versuchen.
+- `<admin>` is deliberately not added to the `docker` group, it is effectively root. Use `sudo docker` instead.
+- `toomanyrequests` on pull is Docker Hub's limit for anonymous downloads. All of HTW shares the proxy's address, try again later.
 
-### 3. Nutzer deploy und /srv/helthtw
+### 3. User deploy and /srv/helthtw
 
 ```bash
-# bash als Shell: sshd startet den erzwungenen Befehl über die Login-Shell, mit nologin scheitert jeder Deploy
+# bash as shell: sshd starts the forced command through the login shell, with nologin every deploy fails
 sudo adduser --disabled-password --comment "helthTW deploys" --shell /bin/bash deploy
 sudo usermod -aG docker deploy
 
-# deploy.sh und compose.yml von einem geprüften Commit holen und gegen Prüfsummen vergleichen.
-# Prüfsummen auf dem eigenen Rechner im Repo: git show <commit>:deploy/deploy.sh | shasum -a 256 (ebenso compose.yml)
+# Fetch deploy.sh and compose.yml from a reviewed commit and compare against checksums.
+# Checksums on your own machine in the repo: git show <commit>:deploy/deploy.sh | shasum -a 256 (same for compose.yml)
 sudo install -d -o root -g root -m 755 /srv/helthtw
 cd /tmp
 c=<commit>
 curl -fsSLO "https://raw.githubusercontent.com/SDF-WISE-26/helthTW/$c/deploy/deploy.sh"
 curl -fsSLO "https://raw.githubusercontent.com/SDF-WISE-26/helthTW/$c/deploy/compose.yml"
-printf '%s  %s\n' <prüfsumme-deploy.sh> deploy.sh <prüfsumme-compose.yml> compose.yml | sha256sum -c \
+printf '%s  %s\n' <checksum-deploy.sh> deploy.sh <checksum-compose.yml> compose.yml | sha256sum -c \
   && sudo install -o root -g root -m 755 deploy.sh /srv/helthtw/deploy.sh \
   && sudo install -o root -g root -m 644 compose.yml /srv/helthtw/compose.yml
 rm -f deploy.sh compose.yml
 cd
 
-# .env erst mit den richtigen Rechten anlegen, dann befüllen. Hex, weil / + = die Datenbank-URL zerbrechen würden.
+# Create .env with the right permissions first, then fill it. Hex, because / + = would break the database URL.
 sudo install -o root -g deploy -m 640 /dev/null /srv/helthtw/.env
 printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" | sudo tee /srv/helthtw/.env >/dev/null
 
@@ -172,103 +172,103 @@ ls -la /srv/helthtw   # deploy.sh root:root 755, compose.yml root:root 644, .env
 sudo -u deploy -H /srv/helthtw/deploy.sh status
 ```
 
-- Alles in `/srv/helthtw` gehört root. `deploy` darf die Dateien lesen und ausführen, aber nicht ändern.
-- `deploy.sh` von Hand immer mit `sudo -u deploy -H` starten, damit die Versionsliste im Home von `deploy` landet.
+- Everything in `/srv/helthtw` belongs to root. `deploy` may read and execute the files, but not change them.
+- Always start `deploy.sh` manually with `sudo -u deploy -H`, so the version list ends up in `deploy`'s home.
 
 ### 4. Firewall
 
-HTWs `/etc/nftables.conf` enthält `table inet firewall`. Darin erlaubt `input` nur SSH, Ping und den Nessus-Scanner aus dem HTW-Netz, `OUTPUT` nur Proxy, 80/443, DNS und NTP. `FORWARD` steht auf `policy drop` ohne Regeln und blockiert damit jeden Container. Außerdem beginnt die Datei mit `flush ruleset`, das bei jedem Neuladen auch die Regeln von Docker löscht.
+HTW's `/etc/nftables.conf` contains `table inet firewall`. In it, `input` only allows SSH, ping and the Nessus scanner from the HTW network, `OUTPUT` only proxy, 80/443, DNS and NTP. `FORWARD` is set to `policy drop` without rules and thus blocks every container. The file also starts with `flush ruleset`, which deletes Docker's rules on every reload too.
 
 ```bash
 sudo cp -a /etc/nftables.conf /etc/nftables.conf.orig
 sudo cat /etc/nftables.conf > /tmp/nft.conf
 sed -i 's/^flush ruleset$/table inet firewall\ndelete table inet firewall/' /tmp/nft.conf
-sed -i 's/^# Flush existing rules$/# Nur diese Tabelle ersetzen, die von Docker bleiben/' /tmp/nft.conf
-# in dieser Reihenfolge: jede Zeile landet direkt unter dem Kopf der Chain
-sed -i '/hook forward/a\        ip saddr <htw-netze> ct status dnat accept' /tmp/nft.conf
+sed -i 's/^# Flush existing rules$/# Only replace this table, Docker'\''s stay/' /tmp/nft.conf
+# in this order: each line lands directly below the chain header
+sed -i '/hook forward/a\        ip saddr <htw-nets> ct status dnat accept' /tmp/nft.conf
 sed -i '/hook forward/a\        iifname "br-*" oifname "br-*" accept' /tmp/nft.conf
 sed -i '/hook forward/a\        ct state established,related accept' /tmp/nft.conf
-sed -i '/hook forward/a\        # Docker: Antworten, Container untereinander, Ports aus dem HTW-Netz' /tmp/nft.conf
-diff /etc/nftables.conf /tmp/nft.conf            # nur der Anfang und die 4 Zeilen unter hook forward
+sed -i '/hook forward/a\        # Docker: replies, containers among each other, ports from the HTW network' /tmp/nft.conf
+diff /etc/nftables.conf /tmp/nft.conf            # only the start and the 4 lines below hook forward
 sudo nft -c -f /tmp/nft.conf && echo "syntax OK"
 
 sudo cp /tmp/nft.conf /etc/nftables.conf
 sudo systemctl reload nftables
-sudo nft list tables                             # inet firewall und Dockers ip/ip6 nat/filter
+sudo nft list tables                             # inet firewall and Docker's ip/ip6 nat/filter
 ```
 
-Danach in einem neuen Terminal ein zweites Mal per SSH anmelden. Klappt das nicht, aus der offenen Sitzung zurück:
+Then log in via SSH a second time in a new terminal. If that does not work, revert from the open session:
 `sudo cp -a /etc/nftables.conf.orig /etc/nftables.conf && sudo systemctl reload nftables && sudo systemctl restart docker`
 
-- Port 80 ist nur aus dem HTW-Netz erreichbar. Welche Ports es überhaupt gibt, legt `compose.yml` fest, das ist nur 80.
-- Ab jetzt nftables nur noch mit `reload` neu laden, nie mit `restart` oder `stop`. Das Stoppen des Dienstes führt `nft flush ruleset` aus, danach braucht Docker ein `systemctl restart docker`.
-- Von der prod-vm selbst geht `localhost:80` nicht, weil HTWs `OUTPUT` den Weg vom Host zum Container sperrt. Stattdessen im Container prüfen, siehe [Nachsehen](#nachsehen).
+- Port 80 is only reachable from the HTW network. Which ports exist at all is defined by `compose.yml`, that is only 80.
+- From now on, only reload nftables with `reload`, never with `restart` or `stop`. Stopping the service runs `nft flush ruleset`, after which Docker needs a `systemctl restart docker`.
+- From the prod-vm itself, `localhost:80` does not work, because HTW's `OUTPUT` blocks the path from host to container. Check inside the container instead, see [Inspecting](#inspecting).
 
-## Einrichtung ops-vm
+## ops-vm setup
 
-Alle Befehle als `<admin>`, außer wo `sudo -iu github-runner` steht.
+All commands as `<admin>`, except where `sudo -iu github-runner` is written.
 
-### 1. Updates und Swap
+### 1. Updates and swap
 
-Erst [Schritt 1 der prod-vm](#1-updates). Dazu 2 GB Swap, weil Builds mit 1,9 GB RAM knapp sind:
+First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap, because builds are tight with 1.9 GB RAM:
 
 ```bash
-findmnt -no FSTYPE /                   # ext4, dann braucht eine Swap-Datei nichts Besonderes
+findmnt -no FSTYPE /                   # ext4, then a swap file needs nothing special
 sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile               # Swap kann alles enthalten, was im Speicher war
+sudo chmod 600 /swapfile               # swap can contain anything that was in memory
 sudo mkswap /swapfile
 sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-sudo swapon --show                     # /swapfile 2G, auch nach einem Neustart
+sudo swapon --show                     # /swapfile 2G, also after a reboot
 ```
 
-`swapon` liegt in `/usr/sbin` und fehlt im Suchpfad normaler Nutzer, deshalb immer mit `sudo`.
+`swapon` is in `/usr/sbin` and missing from normal users' search path, so always use `sudo`.
 
-### 2. Docker und Firewall
+### 2. Docker and firewall
 
-Docker wie in [Schritt 2 der prod-vm](#2-docker), mit derselben `daemon.json`. Zum Testen `sudo docker pull debian:trixie-slim`, den Build braucht es ohnehin.
+Docker as in [step 2 of the prod-vm](#2-docker), with the same `daemon.json`. To test, `sudo docker pull debian:trixie-slim`, the build needs it anyway.
 
-Die ops-vm veröffentlicht keine Ports. Nur die Build-Container (`docker build` lässt jeden Schritt auf `docker0` laufen) brauchen etwas: den Proxy und DNS, aber kein direktes Internet. Dazu kommt SSH nach außen, aber nur zur prod-vm.
+The ops-vm publishes no ports. Only the build containers (`docker build` runs every step on `docker0`) need something: the proxy and DNS, but no direct internet. Plus outgoing SSH, but only to the prod-vm.
 
 ```bash
 sudo cp -a /etc/nftables.conf /etc/nftables.conf.orig
 sudo cat /etc/nftables.conf > /tmp/nft.conf
 sed -i 's/^flush ruleset$/table inet firewall\ndelete table inet firewall/' /tmp/nft.conf
-sed -i 's/^# Flush existing rules$/# Nur diese Tabelle ersetzen, die von Docker bleiben/' /tmp/nft.conf
-# in dieser Reihenfolge: jede Zeile landet direkt unter dem Kopf der Chain
-sed -i '/hook forward/a\        iifname "docker0" ip daddr <dns-netze> udp dport 53 accept' /tmp/nft.conf
-sed -i '/hook forward/a\        iifname "docker0" ip daddr <proxy-netz> tcp dport 3128 accept' /tmp/nft.conf
+sed -i 's/^# Flush existing rules$/# Only replace this table, Docker'\''s stay/' /tmp/nft.conf
+# in this order: each line lands directly below the chain header
+sed -i '/hook forward/a\        iifname "docker0" ip daddr <dns-nets> udp dport 53 accept' /tmp/nft.conf
+sed -i '/hook forward/a\        iifname "docker0" ip daddr <proxy-net> tcp dport 3128 accept' /tmp/nft.conf
 sed -i '/hook forward/a\        ct state established,related accept' /tmp/nft.conf
-sed -i '/hook forward/a\        # Docker-Builds: Antworten, Proxy und DNS im HTW-Netz, sonst nichts' /tmp/nft.conf
+sed -i '/hook forward/a\        # Docker builds: replies, proxy and DNS in the HTW network, nothing else' /tmp/nft.conf
 sed -i '/hook output/a\        ip daddr <prod-ip> tcp dport 22 accept' /tmp/nft.conf
-sed -i '/hook output/a\        # Deploys: SSH nur zur prod-vm' /tmp/nft.conf
-diff /etc/nftables.conf /tmp/nft.conf            # der Anfang, 4 Zeilen unter hook forward, 2 unter hook output
+sed -i '/hook output/a\        # Deploys: SSH only to the prod-vm' /tmp/nft.conf
+diff /etc/nftables.conf /tmp/nft.conf            # the start, 4 lines below hook forward, 2 below hook output
 sudo nft -c -f /tmp/nft.conf && echo "syntax OK"
 
 sudo cp /tmp/nft.conf /etc/nftables.conf
 sudo systemctl reload nftables
 sudo nft list tables
 
-# Tests: DNS, Downloads über den Proxy, kein direkter Weg, SSH zur prod-vm
+# Tests: DNS, downloads through the proxy, no direct route, SSH to the prod-vm
 sudo docker run --rm debian:trixie-slim getent hosts <proxy-host>
-sudo docker run --rm -e http_proxy=<proxy> debian:trixie-slim sh -c 'apt-get update -qq && echo "Proxy erreichbar"'
-sudo docker run --rm debian:trixie-slim timeout 5 bash -c 'echo > /dev/tcp/deb.debian.org/80' && echo "direkt: offen" || echo "direkt: gesperrt"
-timeout 5 bash -c 'echo > /dev/tcp/<prod-host>/22' && echo "SSH: offen" || echo "SSH: gesperrt"
+sudo docker run --rm -e http_proxy=<proxy> debian:trixie-slim sh -c 'apt-get update -qq && echo "proxy reachable"'
+sudo docker run --rm debian:trixie-slim timeout 5 bash -c 'echo > /dev/tcp/deb.debian.org/80' && echo "direct: open" || echo "direct: blocked"
+timeout 5 bash -c 'echo > /dev/tcp/<prod-host>/22' && echo "SSH: open" || echo "SSH: blocked"
 ```
 
-Danach ein zweites Mal anmelden wie bei der prod-vm, die Wiederherstellung geht genauso. Erwartet: die Adresse des Proxys, „Proxy erreichbar“, „direkt: gesperrt“, „SSH: offen“. `<proxy-host>` ist der Host aus `<proxy>`.
+Then log in a second time as with the prod-vm, recovery works the same way. Expected: the proxy's address, "proxy reachable", "direct: blocked", "SSH: open". `<proxy-host>` is the host from `<proxy>`.
 
-### 3. Nutzer github-runner
+### 3. User github-runner
 
-Ohne Passwort und ohne sudo. Die Gruppe `docker` ist praktisch root auf der ops-vm, das ist in Ordnung, weil die VM nichts anderes macht.
+Without password and without sudo. The `docker` group is effectively root on the ops-vm, which is fine because the VM does nothing else.
 
 ```bash
 sudo adduser --disabled-password --comment "GitHub Actions runner" github-runner
 sudo usermod -aG docker github-runner
-sudo apt install git libicu76          # git für actions/checkout, ICU braucht der Runner (.NET)
-ls -ld /home/github-runner             # drwx------, Debian 13 legt Homes so an
+sudo apt install git libicu76          # git for actions/checkout, the runner (.NET) needs ICU
+ls -ld /home/github-runner             # drwx------, Debian 13 creates homes like this
 
-# Proxy für Builds: docker reicht ihn als Build-Argument an RUN-Schritte weiter, ins Image kommt er nicht
+# Proxy for builds: docker passes it as a build argument to RUN steps, it does not end up in the image
 sudo -u github-runner mkdir -p -m 700 /home/github-runner/.docker
 sudo -u github-runner tee /home/github-runner/.docker/config.json >/dev/null <<'EOF'
 {
@@ -281,40 +281,40 @@ sudo -u github-runner tee /home/github-runner/.docker/config.json >/dev/null <<'
   }
 }
 EOF
-sudo -iu github-runner docker run --rm debian:trixie-slim sh -c 'env | grep -i proxy'   # 6 Zeilen, ohne sudo
+sudo -iu github-runner docker run --rm debian:trixie-slim sh -c 'env | grep -i proxy'   # 6 lines, without sudo
 ```
 
-Proxy gibt es damit auf drei Ebenen: apt (Schritt 1), der Docker-Dienst für Pulls (`daemon.json`) und die Builds (`config.json`).
+This gives a proxy on three levels: apt (step 1), the Docker daemon for pulls (`daemon.json`) and the builds (`config.json`).
 
-### 4. SSH zur prod-vm
+### 4. SSH to the prod-vm
 
-Der Schlüssel darf auf der prod-vm nur `deploy.sh` starten und nur von der ops-vm aus.
+On the prod-vm, the key may only start `deploy.sh` and only from the ops-vm.
 
 ```bash
-# ops-vm: Schlüssel ohne Passphrase, beim Job tippt sie niemand. Geschützt durch den Ordner (700) und die Grenzen auf der prod-vm.
+# ops-vm: key without passphrase, nobody types it during the job. Protected by the folder (700) and the limits on the prod-vm.
 sudo -u github-runner mkdir -p -m 700 /home/github-runner/.ssh
 sudo -u github-runner ssh-keygen -t ed25519 -N "" -C "github-runner@<ops-host> deploy" -f /home/github-runner/.ssh/id_ed25519_deploy
-sudo cat /home/github-runner/.ssh/id_ed25519_deploy.pub   # öffentlicher Schlüssel, für die prod-vm kopieren
+sudo cat /home/github-runner/.ssh/id_ed25519_deploy.pub   # public key, copy it for the prod-vm
 ssh-keyscan -t ed25519 <prod-host> 2>/dev/null > /tmp/prod-hostkey
 ssh-keygen -lf /tmp/prod-hostkey
 ```
 
 ```bash
-# prod-vm: der Fingerabdruck muss genau dem von oben entsprechen, sonst aufhören
+# prod-vm: the fingerprint must match the one above exactly, otherwise stop
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
-# authorized_keys gehört root, damit deploy keine eigenen Schlüssel ergänzen kann
+# authorized_keys belongs to root, so deploy cannot add its own keys
 sudo install -d -o root -g root -m 755 /home/deploy/.ssh
-key='<die .pub-Zeile von der ops-vm>'
+key='<the .pub line from the ops-vm>'
 printf 'restrict,from="<ops-ip>",command="/srv/helthtw/deploy.sh" %s\n' "$key" | sudo tee /home/deploy/.ssh/authorized_keys >/dev/null
 sudo chmod 644 /home/deploy/.ssh/authorized_keys
 ```
 
 ```bash
-# ops-vm: Host-Schlüssel festschreiben und Alias "prod", damit der Hostname nicht im Workflow steht
+# ops-vm: pin the host key and alias "prod", so the hostname is not in the workflow
 sudo -u github-runner tee /home/github-runner/.ssh/known_hosts < /tmp/prod-hostkey >/dev/null
 rm /tmp/prod-hostkey
 sudo -u github-runner tee /home/github-runner/.ssh/config >/dev/null <<'EOF'
-# Die prod-vm. Deren authorized_keys lässt diesen Schlüssel nur deploy.sh starten.
+# The prod-vm. Its authorized_keys only lets this key start deploy.sh.
 Host prod
   HostName <prod-host>
   User deploy
@@ -325,32 +325,32 @@ Host prod
   ConnectTimeout 10
 EOF
 
-sudo -iu github-runner ssh prod status         # Version, Liste, Prüfsummen
-sudo -iu github-runner ssh prod bash           # deploy: usage: ... (keine Shell)
-sudo -iu github-runner ssh prod 'status; id'   # deploy: usage: ... (das ; ist nur Text)
+sudo -iu github-runner ssh prod status         # version, list, checksums
+sudo -iu github-runner ssh prod bash           # deploy: usage: ... (no shell)
+sudo -iu github-runner ssh prod 'status; id'   # deploy: usage: ... (the ; is just text)
 ```
 
-- `restrict` verbietet Shell, Terminal und Weiterleitungen. `from=` lässt den Schlüssel nur von der ops-vm zu. `command=` startet immer `deploy.sh`, der Wunsch des Aufrufers kommt nur als Text in `SSH_ORIGINAL_COMMAND` an.
-- `BatchMode yes` lässt SSH nie nachfragen, ein Job wartet sonst ewig. Ändert sich der Host-Schlüssel der prod-vm, verweigert `StrictHostKeyChecking yes` die Verbindung.
+- `restrict` forbids shell, terminal and forwarding. `from=` only allows the key from the ops-vm. `command=` always starts `deploy.sh`, the caller's request only arrives as text in `SSH_ORIGINAL_COMMAND`.
+- `BatchMode yes` makes SSH never prompt, otherwise a job waits forever. If the prod-vm's host key changes, `StrictHostKeyChecking yes` refuses the connection.
 
-### 5. GitHub und Runner
+### 5. GitHub and runner
 
-In GitHub unter Settings des Repos:
+In GitHub under the repo's Settings:
 
-- Actions → General → „Approval for running fork pull request workflows from contributors“: **Require approval for all external contributors**. Sonst könnte ein Fork-PR einen eigenen Workflow auf unserem Runner starten.
-- Environments → New environment **`production`**, „Deployment branches and tags“: Selected, Branch **`main`** (Rollback) und Tag **`v0.*.*`** (Releases, siehe Entscheidung 0012), keine Reviewer.
-- Keine Variable für die URL anlegen: Die Logs öffentlicher Repos sind öffentlich, Variablen erscheinen darin im Klartext. Die URL steht in der `.env` des Runners.
+- Actions → General → "Approval for running fork pull request workflows from contributors": **Require approval for all external contributors**. Otherwise a fork PR could start its own workflow on our runner.
+- Environments → New environment **`production`**, "Deployment branches and tags": Selected, branch **`main`** (rollback) and tag **`v0.*.*`** (releases, see decision 0012), no reviewers.
+- Do not create a variable for the URL: logs of public repos are public, variables appear in them in plain text. The URL is in the runner's `.env`.
 
-Unter Actions → Runners → New self-hosted runner → Linux x64 stehen Download-Link, Prüfsumme und ein Token, das eine Stunde gilt.
+Actions → Runners → New self-hosted runner → Linux x64 shows the download link, checksum and a token valid for one hour.
 
 ```bash
 sudo -iu github-runner
-export https_proxy=<proxy>             # sudo -i lädt /etc/environment nicht
-# die 4 Befehle aus „Download“ auf der GitHub-Seite: mkdir/cd actions-runner, curl, Prüfsumme (muss OK sagen), tar
-read -rsp "Token: " token; echo        # nicht sichtbar, nicht in der History
+export https_proxy=<proxy>             # sudo -i does not load /etc/environment
+# the 4 commands from "Download" on the GitHub page: mkdir/cd actions-runner, curl, checksum (must say OK), tar
+read -rsp "Token: " token; echo        # not visible, not in the history
 ./config.sh --unattended --url https://github.com/SDF-WISE-26/helthTW --token "$token" --name helthtw-ops --labels htw-ops
 unset token
-# config.sh hat .env schon angelegt, deshalb anhängen
+# config.sh already created .env, so append
 cat >> .env <<'EOF'
 http_proxy=<proxy>
 https_proxy=<proxy>
@@ -359,30 +359,30 @@ PROD_URL=http://<prod-host>
 EOF
 exit
 
-# als <admin>: svc.sh muss im Runner-Ordner laufen, in den <admin> nicht hineinkommt
+# as <admin>: svc.sh must run in the runner folder, which <admin> cannot enter
 sudo bash -c 'cd /home/github-runner/actions-runner && ./svc.sh install github-runner && ./svc.sh start'
-ps -o user=,comm= -C Runner.Listener   # github-runner, nicht root
+ps -o user=,comm= -C Runner.Listener   # github-runner, not root
 ```
 
-In GitHub steht der Runner danach auf **Idle**, mit den Labels `self-hosted`, `Linux`, `X64` und `htw-ops`.
+In GitHub, the runner then shows as **Idle**, with the labels `self-hosted`, `Linux`, `X64` and `htw-ops`.
 
-## Erster Deploy und Abschluss
+## First deploy and wrap-up
 
-1. Ein Release anlegen wie unter [Deploy und Rollback](#deploy-und-rollback). Danach zeigt `http://<prod-host>` die Seite, „Ping API“ antwortet.
-2. Beide VMs mit `sudo reboot` neu starten. Danach sind alle Container healthy, der Runner steht wieder auf Idle und `sudo nft list tables` zeigt alle fünf Tabellen.
-3. Testdaten, falls gewünscht. In der Produktion gibt es keinen Seed, `db:seed` braucht die Dev-Werkzeuge und leert vorher die Tabelle.
+1. Create a release as under [Deploy and rollback](#deploy-and-rollback). Afterwards `http://<prod-host>` shows the site, "Ping API" responds.
+2. Reboot both VMs with `sudo reboot`. Afterwards all containers are healthy, the runner is back on Idle and `sudo nft list tables` shows all five tables.
+3. Test data, if wanted. Production has no seed, `db:seed` needs the dev tools and empties the table first.
    ```bash
    sudo docker exec helthtw-prod-postgres-1 psql -U helthtw -d helthtw -c "insert into users (name) values ('User1'), ('User2')"
    ```
 
-Wird nur eine VM ersetzt, ändern sich deren Adresse und Schlüssel:
+If only one VM is replaced, its address and keys change:
 
-- Neue ops-vm: `from=` in `authorized_keys` der prod-vm anpassen. In GitHub den alten Runner unter Actions → Runners entfernen.
-- Neue prod-vm: die `OUTPUT`-Regel der ops-vm, `known_hosts`, `~/.ssh/config` und `PROD_URL` in der `.env` des Runners anpassen. Danach `sudo systemctl restart 'actions.runner.*'`.
+- New ops-vm: adjust `from=` in the prod-vm's `authorized_keys`. In GitHub, remove the old runner under Actions → Runners.
+- New prod-vm: adjust the ops-vm's `OUTPUT` rule, `known_hosts`, `~/.ssh/config` and `PROD_URL` in the runner's `.env`. Then `sudo systemctl restart 'actions.runner.*'`.
 
-## Stolperfallen
+## Pitfalls
 
-- HTWs Netz verwirft Anfragen aus dem VPN an genau `/api/ping`, die Anfrage hängt dann ohne Antwort. Deshalb heißt der Endpunkt `/api/alive_ping`.
-- Die Proxy-Meldung des Runners („Runner is running behind proxy server …“) steht in jedem öffentlichen Log und lässt sich nicht verstecken. Die URL der prod-vm versteckt der Workflow mit `add-mask`.
-- Ein Release, das ein Workflow mit `GITHUB_TOKEN` anlegt, startet keinen Deploy. So verhindert GitHub Schleifen.
-- Ein abgeschnittener Deploy-Log heißt nicht, dass nichts passiert ist. Verlässlich ist `sudo docker ps --format '{{.Names}}: {{.CreatedAt}}'` auf der prod-vm.
+- HTW's network drops requests from the VPN to exactly `/api/ping`, the request then hangs without a response. That is why the endpoint is called `/api/alive_ping`.
+- The runner's proxy message ("Runner is running behind proxy server …") appears in every public log and cannot be hidden. The workflow hides the prod-vm's URL with `add-mask`.
+- A release created by a workflow with `GITHUB_TOKEN` does not trigger a deploy. This is how GitHub prevents loops.
+- A truncated deploy log does not mean nothing happened. The reliable check is `sudo docker ps --format '{{.Names}}: {{.CreatedAt}}'` on the prod-vm.
