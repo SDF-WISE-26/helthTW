@@ -16,7 +16,6 @@ import { Route as OnboardingRouteImport } from "./routes/onboarding"
 import { Route as SettingsRouteImport } from "./routes/settings"
 import { Route as TabsIndexRouteImport } from "./routes/_tabs/index"
 import { Route as TabsChatRouteImport } from "./routes/_tabs/chat"
-import { Route as TabsContactsRouteImport } from "./routes/_tabs/contacts"
 import { Route as TabsWellbeingRouteImport } from "./routes/_tabs/wellbeing"
 import { Route as IncidentsNewRouteImport } from "./routes/incidents/new"
 import { Route as QuestionnairesQuestionnaireIdRouteImport } from "./routes/questionnaires/$questionnaireId"
@@ -58,11 +57,6 @@ const TabsChatRoute = TabsChatRouteImport.update({
   path: "/chat",
   getParentRoute: () => TabsRoute,
 } as any)
-const TabsContactsRoute = TabsContactsRouteImport.update({
-  id: "/contacts",
-  path: "/contacts",
-  getParentRoute: () => TabsRoute,
-} as any)
 const TabsWellbeingRoute = TabsWellbeingRouteImport.update({
   id: "/wellbeing",
   path: "/wellbeing",
@@ -102,7 +96,6 @@ export interface FileRoutesByFullPath {
   "/onboarding": typeof OnboardingRoute
   "/settings": typeof SettingsRoute
   "/chat": typeof TabsChatRoute
-  "/contacts": typeof TabsContactsRoute
   "/wellbeing": typeof TabsWellbeingRoute
   "/incidents/new": typeof IncidentsNewRoute
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
@@ -116,7 +109,6 @@ export interface FileRoutesByTo {
   "/onboarding": typeof OnboardingRoute
   "/settings": typeof SettingsRoute
   "/chat": typeof TabsChatRoute
-  "/contacts": typeof TabsContactsRoute
   "/wellbeing": typeof TabsWellbeingRoute
   "/incidents/new": typeof IncidentsNewRoute
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
@@ -133,7 +125,6 @@ export interface FileRoutesById {
   "/onboarding": typeof OnboardingRoute
   "/settings": typeof SettingsRoute
   "/_tabs/chat": typeof TabsChatRoute
-  "/_tabs/contacts": typeof TabsContactsRoute
   "/_tabs/wellbeing": typeof TabsWellbeingRoute
   "/incidents/new": typeof IncidentsNewRoute
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
@@ -151,7 +142,6 @@ export interface FileRouteTypes {
     | "/onboarding"
     | "/settings"
     | "/chat"
-    | "/contacts"
     | "/wellbeing"
     | "/incidents/new"
     | "/questionnaires/$questionnaireId"
@@ -165,7 +155,6 @@ export interface FileRouteTypes {
     | "/onboarding"
     | "/settings"
     | "/chat"
-    | "/contacts"
     | "/wellbeing"
     | "/incidents/new"
     | "/questionnaires/$questionnaireId"
@@ -181,7 +170,6 @@ export interface FileRouteTypes {
     | "/onboarding"
     | "/settings"
     | "/_tabs/chat"
-    | "/_tabs/contacts"
     | "/_tabs/wellbeing"
     | "/incidents/new"
     | "/questionnaires/$questionnaireId"
@@ -252,13 +240,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof TabsChatRouteImport
       parentRoute: typeof TabsRoute
     }
-    "/_tabs/contacts": {
-      id: "/_tabs/contacts"
-      path: "/contacts"
-      fullPath: "/contacts"
-      preLoaderRoute: typeof TabsContactsRouteImport
-      parentRoute: typeof TabsRoute
-    }
     "/_tabs/wellbeing": {
       id: "/_tabs/wellbeing"
       path: "/wellbeing"
@@ -306,7 +287,6 @@ declare module "@tanstack/react-router" {
 
 interface TabsRouteChildren {
   TabsChatRoute: typeof TabsChatRoute
-  TabsContactsRoute: typeof TabsContactsRoute
   TabsWellbeingRoute: typeof TabsWellbeingRoute
   TabsIndexRoute: typeof TabsIndexRoute
   TabsInfoIndexRoute: typeof TabsInfoIndexRoute
@@ -316,7 +296,6 @@ interface TabsRouteChildren {
 
 const TabsRouteChildren: TabsRouteChildren = {
   TabsChatRoute: TabsChatRoute,
-  TabsContactsRoute: TabsContactsRoute,
   TabsWellbeingRoute: TabsWellbeingRoute,
   TabsIndexRoute: TabsIndexRoute,
   TabsInfoIndexRoute: TabsInfoIndexRoute,

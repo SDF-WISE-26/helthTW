@@ -121,7 +121,23 @@ Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau
 - **Verworfen:** TanStack Form (passt zu Query und Router, aber jünger und weniger Beispiele). `useState` von Hand (Validierung und Fehlerzustände bauen wir nach).
 - **Achtung:** Radix-Felder sind kontrolliert und brauchen `Controller`. Schemas kommen aus dem gemeinsamen Paket aus #31.
 
-## 0017: Service Worker mit injectManifest
+## 0016: Backend-Code nach Modulen
+
+- **Status:** angenommen · **Datum:** 2026-11-01 · **Beteiligt:** @behritt · **Bezug:** #17
+- **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/backend/src/modules/<bereich>/` mit `<bereich>.routes.ts` und `<bereich>.service.ts`. Routes erledigen nur HTTP: prüfen, Service aufrufen, Status setzen. Services enthalten Logik und Drizzle-Abfragen, bekommen einfache Werte und nie den Hono-`Context`. Geteiltes liegt in `lib/` und `middleware/`. Der REST-Vertrag steht in [`specs/backend.md`](specs/backend.md), `users` ist das Referenzmodul.
+- **Warum:** Gleiche Logik wie im Frontend (0013): Mehrere Leute arbeiten parallel, ein Bereich lässt sich als Ganzes finden, prüfen und löschen.
+- **Verworfen:** Klassisches MVC (Ordner nach Typ werden unübersichtlich, Views gibt es nicht). Eigene Repository-Schicht (Drizzle ist schon dünn, das wäre nur Boilerplate).
+- **Achtung:** Routen verkettet schreiben und in `app.ts` per `.route()` einhängen, sonst bricht `AppType` (0003). Geworfene Fehler tauchen nicht in den RPC-Typen auf, das Frontend prüft weiter `res.ok` (0006). Module dürfen nur die Services anderer Module importieren, nicht im Kreis. `lib/` und `middleware/` importieren nie aus `modules/`.
+
+## 0017: Inhalte Git-basiert
+
+- **Status:** vorgeschlagen · **Datum:** 2026-11-03 · **Beteiligt:** @justingebert · **Bezug:** #43, #54
+- **Entscheidung:** Infomaterial und Kontakte liegen als Dateien im Repo, eigene Bilder und PDFs ebenso. Änderungen laufen per PR mit Review, ein Schema prüft die Dateien in CI. Datenformat und ob das Backend die Dateien in die Datenbank synchronisiert oder direkt liest, entscheidet #54.
+- **Warum:** Jede Änderung an Gesundheitsinhalten ist versioniert und geprüft, der PR ist der Nachweis. Kein zusätzlicher Dienst auf den VMs. Inhalte und Code bleiben zusammen.
+- **Verworfen:** Selbst gehostetes Headless-CMS wie Directus, Strapi oder Payload (eigener Dienst mit Logins, Updates und Backups, Änderungen außerhalb von Git). CMS als SaaS wie Contentful oder Sanity (externer Anbieter, Limits, schwer zu begründen vor der DSGVO-Prüfung #91).
+- **Achtung:** Das Repo ist öffentlich: fremde PDFs und Bilder verlinken statt hosten, außer sie sind frei lizenziert. `db:seed` löscht alle Daten und ist kein Weg für Inhalte in Produktion. Ein Git-basiertes CMS wie Keystatic oder Decap lässt sich später ergänzen, falls Nicht-Entwickler Inhalte pflegen.
+
+## 0018: Service Worker mit injectManifest
 
 - **Status:** angenommen · **Datum:** 2026-11-02 · **Beteiligt:** @LilGravyyyy · **Bezug:** #53, #62, #68
 - **Entscheidung:** `vite-plugin-pwa` läuft im Modus `injectManifest` mit eigenem `src/sw.ts`. Der Service Worker cacht beim Build die ganze App-Shell (alle Chunks und Icons) und beantwortet Navigationen außer `/api/*` mit `index.html`. Eine neue Version übernimmt erst beim nächsten Start, ohne `skipWaiting`. API-Daten cacht er nicht. Die Icons sind Platzhalter, erzeugt aus `public/favicon.svg`.

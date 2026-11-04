@@ -12,7 +12,7 @@ function Wellbeing() {
       <p>Score + Empfehlung</p>
       <p>Was eingeflossen ist</p>
       <Button asChild variant="outline" size="lg">
-        <Link to="/contacts">Kontakt anrufen</Link>
+        <Link to="/info">Kontakt anrufen</Link>
       </Button>
     </>
   );
