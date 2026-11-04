@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import AvatarChat from "@/components/avatar/AvatarChat.tsx";
 
 const MODES = { text: "Text", voice: "Stimme", avatar: "Avatar" } as const;
 
@@ -26,6 +27,8 @@ function Chat() {
           </Button>
         ))}
       </div>
+
+      {mode === "avatar" && <AvatarChat />}
     </>
   );
 }
