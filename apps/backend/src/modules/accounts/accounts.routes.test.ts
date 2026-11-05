@@ -1,25 +1,33 @@
 import "dotenv/config";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vite-plus/test";
-import { accountsTable } from "./db/schema";
+import { accountsTable } from "../../db/schema";
 
 // Needs Postgres for the DB tests: `docker compose up -d`, then `vp test` in apps/backend (reads .env).
 // Without it, drizzle() still needs a URL to import; the pool only connects on the first query.
 const hasDb = !!process.env.DATABASE_URL;
 process.env.DATABASE_URL ??= "postgres://unused@localhost/unused";
-const { default: app } = await import("./app");
-const { db } = await import("./db");
+const { default: app } = await import("../../app");
+const { db } = await import("../../db");
 
 const me = (id?: string, method = "GET") =>
-  app.request("/api/me", { method, headers: id ? { "X-Account-Id": id } : {} });
+  app.request("/api/v1/accounts/me", { method, headers: id ? { "X-Account-Id": id } : {} });
 
 describe("requireAccount", () => {
   it("rejects requests without an account ID", async () => {
-    expect((await me()).status).toBe(401);
+    const res = await me();
+    expect(res.status).toBe(401);
+    expect((await res.json()).error.code).toBe("account_required");
   });
 
   it("rejects IDs that are not a UUID", async () => {
     expect((await me("1 or 1=1")).status).toBe(401);
+  });
+
+  it("answers unknown routes in the error format", async () => {
+    const res = await app.request("/api/v1/nope");
+    expect(res.status).toBe(404);
+    expect((await res.json()).error.code).toBe("not_found");
   });
 });
 
@@ -31,7 +39,7 @@ describe.skipIf(!hasDb)("account in the database", () => {
   it("creates the account on the first request", async () => {
     const res = await me(id);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ id });
+    expect(await res.json()).toMatchObject({ id });
     expect(await db.select().from(accountsTable).where(eq(accountsTable.id, id))).toHaveLength(1);
   });
 

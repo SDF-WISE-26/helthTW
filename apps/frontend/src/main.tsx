@@ -7,7 +7,7 @@ import "./index.css";
 import { routeTree } from "./routeTree.gen";
 
 // Creates the account on first open (#92).
-void api.api.me.$get();
+void api.api.v1.accounts.me.$get();
 
 const queryClient = new QueryClient();
 
