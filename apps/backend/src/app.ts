@@ -1,5 +1,8 @@
 import { Hono } from "hono";
+import { eq } from "drizzle-orm";
 import { requireAccount } from "./account";
+import { db } from "./db";
+import { accountsTable } from "./db/schema";
 
 // Routes must be chained so their types accumulate into AppType for the RPC client.
 const app = new Hono()
@@ -8,8 +11,11 @@ const app = new Hono()
   // Not /api/ping: HTW's network drops requests to exactly that path when they come through the VPN.
   .get("/alive_ping", (c) => c.json({ message: "pong" }, 200))
   .get("/me", requireAccount, (c) => c.json({ id: c.get("accountId") }, 200))
-  // shortcut: mock, deletes nothing yet.
-  .delete("/me", requireAccount, (c) => c.body(null, 204));
+  // Account data in other tables goes with it via onDelete: "cascade" (#93).
+  .delete("/me", requireAccount, async (c) => {
+    await db.delete(accountsTable).where(eq(accountsTable.id, c.get("accountId")));
+    return c.body(null, 204);
+  });
 
 export default app;
 export type AppType = typeof app;
