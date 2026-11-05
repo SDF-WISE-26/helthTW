@@ -1,5 +1,5 @@
 # Production stack on the prod-vm, started by deploy.sh.
-# Needs IMAGE_TAG (the commit hash) and a .env next to this file with POSTGRES_PASSWORD.
+# Needs IMAGE_TAG (the commit hash), a .env next to this file with POSTGRES_PASSWORD and tls/ with fullchain.pem and key.pem.
 # Our images are loaded with `docker load`, never pulled, so a same-named image on Docker Hub can't sneak in.
 name: helthtw-prod
 
@@ -89,8 +89,12 @@ services:
     cap_add: [NET_BIND_SERVICE]
     # Caddy keeps its state here, so it has to be writable for nobody.
     tmpfs: ["/data:mode=1777", "/config:mode=1777"]
+    # HTW's certificate with its chain. Caddy runs as nobody (65534), so key.pem is root:65534 and 640.
+    volumes:
+      - ./tls:/certs:ro
     ports:
       - "${WEB_PORT:-80}:8080"
+      - "${WEB_HTTPS_PORT:-443}:8443"
     depends_on:
       backend:
         condition: service_healthy

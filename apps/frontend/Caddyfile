@@ -1,12 +1,33 @@
-# Serves the built frontend and forwards API calls to the backend container.
+# Serves the built frontend over HTTPS and forwards API calls to the backend container.
 {
 	# No admin API and no saved config: the container is replaced on every deploy.
 	admin off
 	persist_config off
+	# The certificate comes from HTW (compose.yml mounts it), Caddy doesn't fetch its own or redirect by itself.
+	auto_https off
+	# The container can't reach the internet, so it can't fetch OCSP answers from the CA.
+	ocsp_stapling off
+	# No HTTP/3: it needs UDP 443, which isn't published.
+	servers {
+		protocols h1 h2
+	}
 }
 
-# Unprivileged port, compose maps it to 80 on the VM.
+# Unprivileged ports, compose maps them to 80 and 443 on the VM.
 :8080 {
+	# The health check in compose.yml comes from inside the container and doesn't know the certificate's name.
+	@inside remote_ip 127.0.0.1 ::1
+	handle @inside {
+		respond 200
+	}
+
+	handle {
+		redir https://{host}{uri} permanent
+	}
+}
+
+https://:8443 {
+	tls /certs/fullchain.pem /certs/key.pem
 	encode zstd gzip
 
 	handle /api/* {
