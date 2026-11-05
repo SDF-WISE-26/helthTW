@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { requireAccount } from "./account";
 import { db } from "./db";
 import { accountsTable } from "./db/schema";
+import { errorHandler, notFoundHandler } from "./lib/errors";
+import { exampleRoutes } from "./modules/example/example.routes";
 
 // Routes must be chained so their types accumulate into AppType for the RPC client.
 const app = new Hono()
@@ -15,7 +17,11 @@ const app = new Hono()
   .delete("/me", requireAccount, async (c) => {
     await db.delete(accountsTable).where(eq(accountsTable.id, c.get("accountId")));
     return c.body(null, 204);
-  });
+  })
+  .route("/v1/example", exampleRoutes);
+
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 export default app;
 export type AppType = typeof app;

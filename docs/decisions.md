@@ -1,122 +1,153 @@
-# Entscheidungen
+# Decisions
 
-Neue Entscheidungen unten anhängen, fortlaufend nummeriert und im selben Aufbau wie die bestehenden: Status (vorgeschlagen, angenommen oder ersetzt durch 00xx), Datum, Beteiligt, Entscheidung, Warum, Verworfen und optional Achtung.
+Append new decisions at the bottom, numbered consecutively and in the same structure as the existing ones: Status (proposed, accepted or superseded by 00xx), Date, Involved, Decision, Why, Rejected and optionally Caution.
 
-## 0001: Vite+ als Werkzeugkette
+## 0001: Vite+ as toolchain
 
-- **Status:** angenommen · **Datum:** 2026-10-19 · **Beteiligt:** @justingebert
-- **Entscheidung:** Dev-Server, Build, Lint, Format, Tests und Monorepo-Tasks laufen über `vp`.
-- **Warum:** Alle haben dieselben Regeln und Befehle, ohne eigene Configs.
-- **Verworfen:** Einzelwerkzeuge wie ESLint und Prettier (mehr Abstimmung). Nx, Turborepo (zu schwer für uns).
-- **Achtung:** Vite+ ist jung (1.3), KI-Agenten kennen es kaum, deshalb `AGENTS.md`.
+- **Status:** accepted · **Date:** 2026-10-19 · **Involved:** @justingebert
+- **Decision:** Dev server, build, lint, format, tests and monorepo tasks run through `vp`.
+- **Why:** Everyone has the same rules and commands, without their own configs.
+- **Rejected:** Individual tools like ESLint and Prettier (more coordination). Nx, Turborepo (too heavy for us).
+- **Caution:** Vite+ is young (1.3), AI agents barely know it, hence `AGENTS.md`.
 
-## 0002: Hono als Backend-Framework
+## 0002: Hono as backend framework
 
-- **Status:** angenommen · **Datum:** 2026-10-19 · **Beteiligt:** @justingebert
-- **Entscheidung:** Das Backend ist eine Hono-App in TypeScript unter Node.
-- **Warum:** Gleiche Sprache wie im Frontend. Schnell gelernt. Streaming und WebSockets für Chat und Sprache eingebaut.
-- **Verworfen:** Express (keine Typen, kein RPC). NestJS (viel Boilerplate). Python (KI-Dienste laufen ohnehin separat hinter HTTP).
-- **Achtung:** Keine vorgegebene Code-Struktur, siehe #17.
+- **Status:** accepted · **Date:** 2026-10-19 · **Involved:** @justingebert
+- **Decision:** The backend is a Hono app in TypeScript on Node.
+- **Why:** Same language as the frontend. Quick to learn. Streaming and WebSockets for chat and voice built in.
+- **Rejected:** Express (no types, no RPC). NestJS (lots of boilerplate). Python (AI services run separately behind HTTP anyway).
+- **Caution:** No prescribed code structure, see #17.
 
-## 0003: Hono RPC zwischen Frontend und Backend
+## 0003: Hono RPC between frontend and backend
 
-- **Status:** angenommen · **Datum:** 2026-10-19 · **Beteiligt:** @justingebert
-- **Entscheidung:** Das Frontend ruft das Backend über `hc<AppType>` mit den Typen der Backend-Routen auf.
-- **Warum:** Ändert sich eine Route, meldet TypeScript sofort jede betroffene Stelle im Frontend.
-- **Verworfen:** tRPC (gleicher Nutzen, eigene Logik statt HTTP-Routen). OpenAPI-Codegen (Zusatzschritt).
-- **Achtung:** Routen verkettet schreiben. Der Client wirft bei HTTP-Fehlern nicht, `res.ok` prüfen.
+- **Status:** accepted · **Date:** 2026-10-19 · **Involved:** @justingebert
+- **Decision:** The frontend calls the backend through `hc<AppType>` with the types of the backend routes.
+- **Why:** If a route changes, TypeScript immediately reports every affected place in the frontend.
+- **Rejected:** tRPC (same benefit, its own logic instead of HTTP routes). OpenAPI codegen (extra step).
+- **Caution:** Write routes chained. The client does not throw on HTTP errors, check `res.ok`.
 
-## 0004: PostgreSQL als Datenbank
+## 0004: PostgreSQL as database
 
-- **Status:** angenommen · **Datum:** 2026-10-19 · **Beteiligt:** @justingebert
-- **Entscheidung:** PostgreSQL 17, lokal per Docker Compose.
-- **Warum:** Relationale Daten (Nutzer, Rollen, Gespräche, Check-ins). JSONB für lose Daten, pgvector später für Embeddings.
-- **Verworfen:** MongoDB (Beziehungen umständlich). MySQL (kein pgvector). SQLite (schwach bei parallelen Schreibzugriffen).
-- **Achtung:** Das Image enthält kein pgvector.
+- **Status:** accepted · **Date:** 2026-10-19 · **Involved:** @justingebert
+- **Decision:** PostgreSQL 17, locally via Docker Compose.
+- **Why:** Relational data (users, roles, conversations, check-ins). JSONB for loose data, pgvector later for embeddings.
+- **Rejected:** MongoDB (relations are cumbersome). MySQL (no pgvector). SQLite (weak with concurrent writes).
+- **Caution:** The image does not include pgvector.
 
-## 0005: Drizzle als ORM
+## 0005: Drizzle as ORM
 
-- **Status:** angenommen · **Datum:** 2026-10-20 · **Beteiligt:** @justingebert
-- **Entscheidung:** Schema in TypeScript (`apps/backend/src/db/schema.ts`), Migrationen mit drizzle-kit.
-- **Warum:** Typen aus dem Schema fließen bis ins Frontend. Abfragen sehen aus wie SQL.
-- **Verworfen:** Prisma (eigene Schemasprache, Codegen). TypeORM (schwächere Typen).
-- **Achtung:** Version 1.0.0-rc.4 ist ein Release Candidate. `db:push` und `db:seed` nur lokal, der Seed löscht alle Daten.
+- **Status:** accepted · **Date:** 2026-10-20 · **Involved:** @justingebert
+- **Decision:** Schema in TypeScript (`apps/backend/src/db/schema.ts`), migrations with drizzle-kit.
+- **Why:** Types from the schema flow all the way into the frontend. Queries look like SQL.
+- **Rejected:** Prisma (its own schema language, codegen). TypeORM (weaker types).
+- **Caution:** Version 1.0.0-rc.4 is a release candidate. `db:push` and `db:seed` only locally, the seed deletes all data.
 
-## 0006: TanStack Query für Serverdaten
+## 0006: TanStack Query for server data
 
-- **Status:** angenommen · **Datum:** 2026-10-20 · **Beteiligt:** @justingebert
-- **Entscheidung:** TanStack Query lädt und cacht Backend-Daten, die Anfragen laufen über den Hono-Client.
-- **Warum:** Cache, Lade- und Fehlerzustände und Invalidierung nach Schreibvorgängen sind eingebaut.
-- **Verworfen:** SWR (weniger Invalidierung). `useEffect` mit `useState` (baut das schlecht nach).
-- **Achtung:** Die `queryFn` muss bei `!res.ok` selbst werfen.
+- **Status:** accepted · **Date:** 2026-10-20 · **Involved:** @justingebert
+- **Decision:** TanStack Query loads and caches backend data, requests go through the Hono client.
+- **Why:** Cache, loading and error states and invalidation after writes are built in.
+- **Rejected:** SWR (less invalidation). `useEffect` with `useState` (a poor rebuild of the same).
+- **Caution:** The `queryFn` must throw itself on `!res.ok`.
 
 ## 0007: TanStack Router
 
-- **Status:** angenommen · **Datum:** 2026-10-20 · **Beteiligt:** @justingebert
-- **Entscheidung:** Dateibasiertes Routing in `apps/frontend/src/routes/`.
-- **Warum:** Typsichere Routen. Loader laden Daten über Query vor. Rollen-Guards per `beforeLoad`.
-- **Verworfen:** React Router (weniger typsicher, lockerer mit Query verbunden).
-- **Achtung:** `routeTree.gen.ts` wird erzeugt, nie von Hand ändern.
+- **Status:** accepted · **Date:** 2026-10-20 · **Involved:** @justingebert
+- **Decision:** File-based routing in `apps/frontend/src/routes/`.
+- **Why:** Type-safe routes. Loaders preload data through Query. Role guards via `beforeLoad`.
+- **Rejected:** React Router (less type-safe, more loosely connected to Query).
+- **Caution:** `routeTree.gen.ts` is generated, never edit it by hand.
 
-## 0008: Tailwind und shadcn/ui
+## 0008: Tailwind and shadcn/ui
 
-- **Status:** angenommen · **Datum:** 2026-10-20 · **Beteiligt:** @justingebert, @LilGravyyyy
-- **Entscheidung:** Styling mit Tailwind 4, Komponenten aus shadcn/ui auf Basis von Radix (Stil `radix-nova`).
-- **Warum:** Tailwind läuft als Vite-Plugin ohne Config. shadcn-Komponenten sind anpassbar, barrierefrei und haben einen dunklen Modus. Radix statt Base UI, weil es dazu mehr Beispiele und Informationen gibt.
-- **Verworfen:** Mantine, MUI (schwer vom Standard-Look wegzubekommen). Base UI (seit Juli 2026 shadcn-Voreinstellung, Vorteile eher langfristig).
-- **Achtung:** `shadcn init` immer mit `-b radix` aufrufen, sonst stellt es auf Base UI um. Eingebaut mit #30.
+- **Status:** accepted · **Date:** 2026-10-20 · **Involved:** @justingebert, @LilGravyyyy
+- **Decision:** Styling with Tailwind 4, components from shadcn/ui based on Radix (style `radix-nova`).
+- **Why:** Tailwind runs as a Vite plugin without config. shadcn components are customizable, accessible and have a dark mode. Radix instead of Base UI because there are more examples and information for it.
+- **Rejected:** Mantine, MUI (hard to move away from the default look). Base UI (shadcn default since July 2026, benefits are rather long-term).
+- **Caution:** Always call `shadcn init` with `-b radix`, otherwise it switches to Base UI. Added with #30.
 
-## 0009: Projektdoku im Repo unter docs/
+## 0009: Project docs in the repo under docs/
 
-- **Status:** angenommen · **Datum:** 2026-10-20 · **Beteiligt:** @LilGravyyyy, @justingebert · **Bezug:** #28
-- **Entscheidung:** Doku liegt als Markdown in `docs/`: Workflow in `workflow.md`, alle Entscheidungen in einer Datei `decisions.md`, Specs pro Bereich in `specs/`. Einstieg und Pflegeregeln stehen in `AGENTS.md`.
-- **Warum:** Versioniert mit dem Code und für Team und KI-Agenten an einer Stelle auffindbar. Wenige, kurze Dateien, damit das Repo nicht zugemüllt wird.
-- **Verworfen:** Eine Datei pro Entscheidung (zu viele Dateien). Wiki oder externe Tools (getrennt vom Code). `README.md` in `docs/` (es soll nur eine README im Repo geben).
+- **Status:** accepted · **Date:** 2026-10-20 · **Involved:** @LilGravyyyy, @justingebert · **Ref:** #28
+- **Decision:** Docs live as Markdown in `docs/`: workflow in `workflow.md`, all decisions in one file `decisions.md`, specs per area in `specs/`. Entry point and maintenance rules are in `AGENTS.md`.
+- **Why:** Versioned with the code and findable in one place for the team and AI agents. Few, short files, so the repo does not get cluttered.
+- **Rejected:** One file per decision (too many files). Wiki or external tools (separate from the code). `README.md` in `docs/` (there should be only one README in the repo).
 
-## 0010: Deployment auf HTW-VMs
+## 0010: Deployment on HTW VMs
 
-- **Status:** angenommen, Auslöser ersetzt durch 0011 · **Datum:** 2026-10-27 · **Beteiligt:** @Lezhor · **Bezug:** #18, #24, #34, #102
-- **Entscheidung:** Zwei VMs im HTW-Netz. Auf der ops-vm baut ein selbst gehosteter GitHub-Runner beide Images und schickt sie per `docker save | ssh` an die prod-vm, dort startet `deploy/deploy.sh` sie mit Docker Compose. Deploy bei jedem Merge auf `main`, sonntags um 23:00 und von Hand. Vorerst nur HTTP und nur aus dem HTW-Netz erreichbar. Einrichtung und Betrieb in [`deployment.md`](deployment.md).
-- **Warum:** Der Runner baut die Verbindung zu GitHub selbst auf, ins HTW-Netz muss kein Port geöffnet werden. Ohne Registry braucht es keine Zugangsdaten in GitHub. Der Deploy-Schlüssel darf auf der prod-vm nur `deploy.sh` starten, `compose.yml` und `deploy.sh` liegen dort root-eigen und kommen nie über SSH: Eine übernommene ops-vm könnte eigene Images starten, aber nicht mit mehr Rechten, als `compose.yml` erlaubt.
-- **Verworfen:** Builds auf GitHubs Runnern (die erreichen das HTW-Netz nicht). Eine Registry wie GHCR (Token auf der prod-vm, mehr Teile). Vorschau-Deploys pro PR (verschoben auf #103).
-- **Achtung:** Der Runner hängt am Repo, weil GitHub Free keine Runner-Gruppen hat. Wer Schreibrechte hat, kann ihn mit einem Workflow auf dem eigenen Branch nutzen. Nie `pull_request` als Auslöser in `deploy.yml`. Ein Rollback holt nur den Code zurück, Migrationen bleiben. HTTPS und Backups fehlen noch.
+- **Status:** accepted, trigger superseded by 0011 · **Date:** 2026-10-27 · **Involved:** @Lezhor · **Ref:** #18, #24, #34, #102
+- **Decision:** Two VMs in the HTW network. On the ops-vm, a self-hosted GitHub runner builds both images and sends them via `docker save | ssh` to the prod-vm, where `deploy/deploy.sh` starts them with Docker Compose. Deploy on every merge to `main`, Sundays at 23:00 and manually. For now HTTP only and reachable only from the HTW network. Setup and operations in [`deployment.md`](deployment.md).
+- **Why:** The runner opens the connection to GitHub itself, no port has to be opened into the HTW network. Without a registry, no credentials are needed in GitHub. On the prod-vm, the deploy key may only start `deploy.sh`; `compose.yml` and `deploy.sh` are root-owned there and never arrive via SSH: a compromised ops-vm could start its own images, but not with more privileges than `compose.yml` allows.
+- **Rejected:** Builds on GitHub's runners (they cannot reach the HTW network). A registry like GHCR (token on the prod-vm, more parts). Preview deploys per PR (postponed to #103).
+- **Caution:** The runner is attached to the repo because GitHub Free has no runner groups. Anyone with write access can use it with a workflow on their own branch. Never use `pull_request` as a trigger in `deploy.yml`. A rollback only restores the code, migrations stay. HTTPS and backups are still missing.
 
-## 0011: Deploy nur über Releases
+## 0011: Deploy only via releases
 
-- **Status:** angenommen · **Datum:** 2026-10-30 · **Beteiligt:** @Lezhor, @behritt · **Bezug:** #110
-- **Entscheidung:** Auf die prod-vm kommt nur ein veröffentlichtes GitHub-Release, dessen Commit auf `main` liegt. Releases legt das Team von Hand an. Die Release-Notizen erzeugt GitHub aus den Titeln der PRs seit dem letzten Release. Von Hand gibt es sonst nur den Rollback.
-- **Warum:** Frontend und Backend entwickeln verschiedene Leute in eigenem Tempo, nicht jeder Stand von `main` passt zusammen. Das Team entscheidet jedes Mal, wann ein Stand live geht, z. B. direkt nach einem Merge, nach einem bestimmten Feature oder zur Sonntagsfrist.
-- **Verworfen:** Deploy bei jedem Merge und automatische Releases am Sonntag (s. o.). Gruppierte Notizen per `.github/release.yml` (die Liste der PR-Titel reicht). Vorschau von `main` auf eigener Instanz (verschoben auf #107).
-- **Achtung:** PR-Titel landen in den Release-Notizen und müssen dort verständlich sein.
+- **Status:** accepted · **Date:** 2026-10-30 · **Involved:** @Lezhor, @behritt · **Ref:** #110
+- **Decision:** Only a published GitHub release whose commit is on `main` goes to the prod-vm. The team creates releases manually. GitHub generates the release notes from the PR titles since the last release. Apart from that, only the rollback is manual.
+- **Why:** Different people develop frontend and backend at their own pace, not every state of `main` fits together. The team decides each time when a state goes live, e.g. right after a merge, after a specific feature or at the Sunday deadline.
+- **Rejected:** Deploy on every merge and automatic releases on Sunday (see above). Grouped notes via `.github/release.yml` (the list of PR titles is enough). Preview of `main` on its own instance (postponed to #107).
+- **Caution:** PR titles end up in the release notes and must be understandable there.
 
-## 0012: Versionsnummern
+## 0012: Version numbers
 
-- **Status:** angenommen · **Datum:** 2026-10-30 · **Beteiligt:** @Lezhor, @behritt · **Bezug:** #110
-- **Entscheidung:** Release-Tags heißen `v0.MINOR.PATCH`, das erste Release ist `v0.1.0`. Die Major-Version bleibt für den ganzen Prototyp 0. Minor steigt, wenn neue Funktionen dabei sind, Patch, wenn nur Fehler behoben sind.
-- **Warum:** Auf ein endgültiges Schema hat sich das Team noch nicht geeinigt. Major, Minor und Patch kennt jeder, die 0 zeigt, dass es ein Prototyp ist.
-- **Verworfen:** Ein Datum als Tag, z. B. `v2026.11.01` (noch nicht entschieden). Start bei `v1.0.0` (es bleibt ein Prototyp).
-- **Achtung:** Das Environment `production` lässt nur Tags `v0.*.*` deployen. Für eine `v1.0.0` dort die Tag-Regel ändern.
+- **Status:** accepted · **Date:** 2026-10-30 · **Involved:** @Lezhor, @behritt · **Ref:** #110
+- **Decision:** Release tags are named `v0.MINOR.PATCH`, the first release is `v0.1.0`. The major version stays 0 for the whole prototype. Minor goes up when new features are included, patch when only bugs are fixed.
+- **Why:** The team has not yet agreed on a final scheme. Everyone knows major, minor and patch, the 0 shows that it is a prototype.
+- **Rejected:** A date as tag, e.g. `v2026.11.01` (not decided yet). Starting at `v1.0.0` (it remains a prototype).
+- **Caution:** The `production` environment only allows tags `v0.*.*` to deploy. For a `v1.0.0`, change the tag rule there.
 
-## 0013: Frontend-Code nach Bereichen
+## 0013: Frontend code by area
 
-- **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25
-- **Entscheidung:** Jeder Fachbereich hat einen Ordner `apps/frontend/src/features/<bereich>/` mit seinen Komponenten, Queries und Hooks. Ein Bereich besitzt eigene Daten und Logik, er ist weder ein Epic noch ein Bildschirm. Ordnernamen sind englisch, ein Ordner entsteht erst, wenn jemand daran arbeitet. Ein Bildschirm ist eine dünne Route in `routes/` und setzt Teile aus einem oder mehreren Bereichen zusammen, z. B. Startseite und Einstellungen. Geteiltes liegt in `components/ui/` (shadcn), `components/layout/` (App-Shell, Hilfe-Button) und `lib/`. Feste, geprüfte Texte wie der Krisenbildschirm liegen in `content/`.
-- **Warum:** Mehrere Leute arbeiten parallel, ohne sich in die Quere zu kommen. Ein Bereich lässt sich als Ganzes finden, prüfen und löschen. Bildschirme ändern sich oft, Fachbereiche selten.
-- **Verworfen:** Ordner nach Typ (`components/`, `queries/`, `hooks/` für alles), wird mit zehn Bereichen unübersichtlich. Ein Ordner pro Epic (Audit hat keine Oberfläche, Kontakte nutzen viele Bereiche). Ein Ordner pro Bildschirm (Startseite und Einstellungen greifen auf viele Bereiche zu).
-- **Achtung:** Bereiche dürfen sich gegenseitig importieren, aber nicht im Kreis, z. B. `incidents` → `questionnaires`, nie umgekehrt. `components/` und `lib/` importieren nie aus `features/`. Schwere Teile wie der Avatar werden nur auf ihrer Route geladen.
+- **Status:** accepted · **Date:** 2026-10-29 · **Involved:** @LilGravyyyy · **Ref:** #25
+- **Decision:** Each domain area has a folder `apps/frontend/src/features/<area>/` with its components, queries and hooks. An area owns its own data and logic, it is neither an epic nor a screen. Folder names are English, a folder is only created once someone works on it. A screen is a thin route in `routes/` and composes parts from one or more areas, e.g. home and settings. Shared code lives in `components/ui/` (shadcn), `components/layout/` (app shell, help button) and `lib/`. Fixed, reviewed texts such as the crisis screen live in `content/`.
+- **Why:** Several people work in parallel without getting in each other's way. An area can be found, reviewed and deleted as a whole. Screens change often, domain areas rarely.
+- **Rejected:** Folders by type (`components/`, `queries/`, `hooks/` for everything), becomes confusing with ten areas. One folder per epic (audit has no UI, contacts are used by many areas). One folder per screen (home and settings access many areas).
+- **Caution:** Areas may import each other, but not in a cycle, e.g. `incidents` → `questionnaires`, never the other way around. `components/` and `lib/` never import from `features/`. Heavy parts like the avatar are only loaded on their route.
 
-## 0014: PWA mit vite-plugin-pwa
+## 0014: PWA with vite-plugin-pwa
 
-- **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25, #53
-- **Entscheidung:** Das Frontend ist eine PWA. Manifest und Service Worker erzeugt `vite-plugin-pwa` beim Build. Der Krisenbildschirm steckt fest im Code und damit in der gecachten App-Shell.
-- **Warum:** Offline-Hilfe, Installation und Web Push setzen einen Service Worker voraus. Das Plugin ist der Standard für Vite und erzeugt beides ohne eigenen Caching-Code.
-- **Verworfen:** Service Worker von Hand (Caching ist fehleranfällig). Native App (zweite Codebasis).
-- **Achtung:** Offen ist, wie Infomaterial und Kontakte offline kommen (Service Worker cacht API-Antworten, Query-Cache in IndexedDB oder Inhalte im Build), das entscheidet #53 mit #62. Für Push braucht es den Modus `injectManifest`. Zusammenspiel mit Vite+ noch ungeprüft.
+- **Status:** accepted · **Date:** 2026-10-29 · **Involved:** @LilGravyyyy · **Ref:** #25, #53
+- **Decision:** The frontend is a PWA. `vite-plugin-pwa` generates the manifest and service worker at build time. The crisis screen is hard-coded and thus part of the cached app shell.
+- **Why:** Offline help, installation and web push require a service worker. The plugin is the standard for Vite and generates both without custom caching code.
+- **Rejected:** Hand-written service worker (caching is error-prone). Native app (second codebase).
+- **Caution:** Still open is how info material and contacts get offline (service worker caches API responses, Query cache in IndexedDB or content in the build), #53 decides this together with #62. Push requires the `injectManifest` mode. Interaction with Vite+ not yet verified.
 
-## 0015: React Hook Form mit Zod
+## 0015: React Hook Form with Zod
 
-- **Status:** angenommen · **Datum:** 2026-10-29 · **Beteiligt:** @LilGravyyyy · **Bezug:** #25, #31
-- **Entscheidung:** Formulare laufen über React Hook Form, validiert mit Zod-Schemas über `@hookform/resolvers`.
-- **Warum:** Am weitesten verbreitet, viele Beispiele mit shadcn, gleiche Abwägung wie bei Radix in 0008. Unsere Formulare sind klein, mehr Typsicherheit bringt dort wenig.
-- **Verworfen:** TanStack Form (passt zu Query und Router, aber jünger und weniger Beispiele). `useState` von Hand (Validierung und Fehlerzustände bauen wir nach).
-- **Achtung:** Radix-Felder sind kontrolliert und brauchen `Controller`. Schemas kommen aus dem gemeinsamen Paket aus #31.
+- **Status:** accepted · **Date:** 2026-10-29 · **Involved:** @LilGravyyyy · **Ref:** #25, #31
+- **Decision:** Forms use React Hook Form, validated with Zod schemas via `@hookform/resolvers`.
+- **Why:** Most widely used, many examples with shadcn, same trade-off as for Radix in 0008. Our forms are small, more type safety brings little there.
+- **Rejected:** TanStack Form (fits Query and Router, but younger and fewer examples). `useState` by hand (we would rebuild validation and error states).
+- **Caution:** Radix fields are controlled and need `Controller`. Schemas come from the shared package from #31.
+
+## 0016: Backend code by module
+
+- **Status:** accepted · **Date:** 2026-11-01 · **Involved:** @behritt · **Ref:** #17
+- **Decision:** Each domain area has a folder `apps/backend/src/modules/<area>/` with `<area>.routes.ts` and `<area>.service.ts`. Routes only handle HTTP: validate, call the service, set the status. Services contain logic and Drizzle queries, receive plain values and never the Hono `Context`. Shared code lives in `lib/` and `middleware/`. The REST contract is in [`specs/backend.md`](specs/backend.md), `users` is the reference module.
+- **Why:** Same reasoning as in the frontend (0013): several people work in parallel, an area can be found, reviewed and deleted as a whole.
+- **Rejected:** Classic MVC (folders by type become confusing, there are no views). A separate repository layer (Drizzle is already thin, it would just be boilerplate).
+- **Caution:** Write routes chained and mount them in `app.ts` via `.route()`, otherwise `AppType` breaks (0003). Thrown errors do not show up in the RPC types, the frontend still checks `res.ok` (0006). Modules may only import the services of other modules, not in a cycle. `lib/` and `middleware/` never import from `modules/`.
+
+## 0017: Git-based content
+
+- **Status:** proposed · **Date:** 2026-11-03 · **Involved:** @justingebert · **Ref:** #43, #54
+- **Decision:** Info material and contacts live as files in the repo, as do our own images and PDFs. Changes go through PRs with review, a schema checks the files in CI. The data format and whether the backend syncs the files into the database or reads them directly is decided by #54.
+- **Why:** Every change to health content is versioned and reviewed, the PR is the record. No extra service on the VMs. Content and code stay together.
+- **Rejected:** Self-hosted headless CMS like Directus, Strapi or Payload (its own service with logins, updates and backups, changes outside Git). CMS as SaaS like Contentful or Sanity (external provider, limits, hard to justify before the GDPR review #91).
+- **Caution:** The repo is public: link third-party PDFs and images instead of hosting them, unless they are freely licensed. `db:seed` deletes all data and is not a path for content in production. A Git-based CMS like Keystatic or Decap can be added later if non-developers maintain content.
+
+## 0018: Service worker with injectManifest
+
+- **Status:** accepted · **Date:** 2026-11-02 · **Involved:** @LilGravyyyy · **Ref:** #53, #62, #68
+- **Decision:** `vite-plugin-pwa` runs in `injectManifest` mode with its own `src/sw.ts`. At build time, the service worker caches the whole app shell (all chunks and icons) and answers navigations except `/api/*` with `index.html`. A new version only takes over on the next start, without `skipWaiting`. It does not cache API data. The icons are placeholders, generated from `public/favicon.svg`.
+- **Why:** Push (#68) needs its own service worker. A reload in the middle of a check-in or the hard-incident flow would lose input. How info material and contacts get offline depends on the data model and belongs to #62.
+- **Rejected:** `generateSW` (would need restructuring for push later). `autoUpdate` (reloads all open tabs). A "New version, reload" notice (its own UI, can be added later).
+- **Caution:** Service workers only run over HTTPS or on `localhost`, on the prod-vm only with #109. The dev server has none, test with `vp run frontend#build` and `vp preview`. After changes to `favicon.svg`, regenerate the icons with `vp run frontend#generate-pwa-assets`.
+
+## 0019: Shared package as source
+
+- **Status:** accepted · **Date:** 2026-11-04 · **Involved:** @justingebert · **Ref:** #31
+- **Decision:** `packages/shared` holds code used by both frontend and backend, mostly Zod schemas. Rules for what belongs there are in its `README.md`. It has no build step: `exports` point at `src/<folder>/index.ts`, imported as `@helthtw/shared/<folder>`. Packages in `packages/` get the `@helthtw/` scope so imports are clearly ours, apps keep their short names for `vp run backend#…`. Vite bundles it into the frontend, the backend bundles it into `dist` via `deps.alwaysBundle`. Real schemas come with the tickets that need them (#54, #136), until then `@helthtw/shared/example` is a placeholder.
+- **Why:** Only used inside this repo, so a build would just add a watcher in `dev` and stale `dist/` folders. One folder per area like 0013 and 0016, so parallel PRs do not collide on one index file.
+- **Caution:** Without `alwaysBundle` the backend bundle keeps `@helthtw/shared` external and Node fails on the `.ts` files in production. Both Dockerfiles copy `packages/shared`, a new package under `packages/` needs the same.
