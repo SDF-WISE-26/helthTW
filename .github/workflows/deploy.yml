@@ -70,14 +70,6 @@ jobs:
         run: docker save "helthtw-backend:$SHA" "helthtw-web:$SHA" | ssh prod deploy "$SHA"
       - name: App answers
         run: curl --noproxy '*' -fsS --retry 10 --retry-delay 3 --retry-all-errors --max-time 5 "$PROD_URL/api/alive_ping"
-      # Nobody renews HTW's certificate automatically, a new one has to be copied in by hand in time.
-      - name: Certificate valid for 30 more days
-        run: |
-          host=${PROD_URL#*://}
-          host=${host%%[:/]*}
-          if ! timeout 10 openssl s_client -connect "$host:443" -servername "$host" </dev/null 2>/dev/null | openssl x509 -noout -checkend 2592000; then
-            echo "::warning::Das HTTPS-Zertifikat der prod-vm läuft in weniger als 30 Tagen ab oder ist nicht lesbar, siehe docs/deployment.md"
-          fi
       # The prod-vm keeps its own copy. The build cache makes the next build fast, but the disk has 15 GB.
       - name: Clean up
         if: always()

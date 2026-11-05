@@ -81,7 +81,7 @@ At the next release, the deploy aborts at "Installed files match the repo". Rein
 ### HTTPS certificate
 
 - Caddy in the `web` container serves the site over HTTPS with HTW's certificate, port 80 only redirects. Certificate and key are in `/srv/helthtw/tls`, never in the repo.
-- The certificate does not renew itself. From 30 days before it expires, every deploy warns. Install a new one as in [prod-vm, step 5](#5-https-certificate), then `sudo docker restart helthtw-prod-web-1`, because Caddy only reads the files at startup.
+- The certificate does not renew itself and nothing warns before it expires. Its expiry date is shown by the last command under [Inspecting](#inspecting). Install a new one as in [prod-vm, step 5](#5-https-certificate), then `sudo docker restart helthtw-prod-web-1`, because Caddy only reads the files at startup.
 - If Caddy cannot read the files, `web` does not start and the site is down. `sudo docker logs helthtw-prod-web-1` shows why.
 
 ### Updates
