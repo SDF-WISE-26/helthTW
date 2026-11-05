@@ -8,18 +8,23 @@ WORKDIR /app
 COPY --chown=vp:vp package.json pnpm-lock.yaml pnpm-workspace.yaml .node-version ./
 COPY --chown=vp:vp apps/backend/package.json apps/backend/
 COPY --chown=vp:vp apps/frontend/package.json apps/frontend/
-RUN vp install --frozen-lockfile --filter backend
+COPY --chown=vp:vp packages/shared/package.json packages/shared/
+# "backend..." also installs the dependencies of workspace packages like @helthtw/shared.
+RUN vp install --frozen-lockfile --filter "backend..."
+COPY --chown=vp:vp packages/shared packages/shared
 COPY --chown=vp:vp apps/backend apps/backend
 RUN vp run backend#build
 # The exact Node.js that vp resolved from .node-version.
 RUN cp "$(vp env which node | head -1)" /tmp/node
 
 # --- deps: production dependencies of the backend only, without the toolchain
+# @helthtw/shared is already inlined into dist by vp pack, its link here stays unused.
 FROM ghcr.io/voidzero-dev/vite-plus:1.3.0 AS deps
 WORKDIR /app
 COPY --chown=vp:vp package.json pnpm-lock.yaml pnpm-workspace.yaml .node-version ./
 COPY --chown=vp:vp apps/backend/package.json apps/backend/
 COPY --chown=vp:vp apps/frontend/package.json apps/frontend/
+COPY --chown=vp:vp packages/shared/package.json packages/shared/
 RUN vp install --frozen-lockfile --prod --filter backend
 
 # --- runtime: Node.js and the built backend, nothing else

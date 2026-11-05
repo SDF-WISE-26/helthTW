@@ -304,6 +304,9 @@ importers:
 
   apps/backend:
     dependencies:
+      '@helthtw/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.4(hono@4.13.13)
@@ -347,6 +350,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@helthtw/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@hookform/resolvers':
         specifier: 'catalog:'
         version: 6.0.0(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.90.0(@types/react@19.3.0)(react@19.3.0))(zod@4.6.7)
@@ -441,6 +447,19 @@ importers:
       workbox-routing:
         specifier: 'catalog:'
         version: 7.4.1
+
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite-plus:
+        specifier: 'catalog:'
+        version: 1.3.0(@types/node@24.19.2)(@vitest/ui@5.0.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1)
 
 packages:
 

@@ -19,6 +19,7 @@
     "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
+    "@helthtw/shared": "workspace:*",
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "catalog:",
     "dotenv": "catalog:",
