@@ -1,10 +1,15 @@
 import { sql } from "drizzle-orm";
 import { db } from "./index";
-import { usersTable } from "./schema";
+import { accountsTable } from "./schema";
 
-await db.execute(sql`truncate table ${usersTable} restart identity cascade`);
+await db.execute(sql`truncate table ${accountsTable} cascade`);
 
-await db.insert(usersTable).values([{ name: "User1" }, { name: "User2" }, { name: "User3" }]);
+await db
+  .insert(accountsTable)
+  .values([
+    { id: "00000000-0000-4000-8000-000000000001" },
+    { id: "00000000-0000-4000-8000-000000000002" },
+  ]);
 
 console.log("Seeded database");
 await db.$client.end();
