@@ -33,15 +33,15 @@ Commit messages and PR titles follow the Conventional Commits standard: `<type>(
 
 ## What is checked automatically
 
-| When                                           | What                                                                                        |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| before every commit                            | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests |
-| commit message                                 | format as above                                                                             |
-| before every push                              | `vp run ready`: check, secretlint, tests, build                                             |
-| push to one of the branch types above          | CI: `vp run ready` and gitleaks over the whole history                                      |
-| PR against `main`                              | title, branch name, ticket is in "In review", exactly one commit                            |
-| merge to `main`                                | CI, then deploy to the prod-vm (see below)                                                  |
-| Sundays 23:00, manually under Actions → Deploy | deploy of `main`, a rollback with a commit hash in the `rollback` field                     |
+| When                                  | What                                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------------------- |
+| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests |
+| commit message                        | format as above                                                                             |
+| before every push                     | `vp run ready`: check, secretlint, tests, build                                             |
+| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                      |
+| PR against `main`                     | title, branch name, ticket is in "In review", exactly one commit                            |
+| release published                     | CI, then deploy to the prod-vm (see below)                                                  |
+| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                         |
 
 The local hooks are only active once `vp install` has run.
 

@@ -11,8 +11,8 @@ GitHub: release published (rollback manually) → .github/workflows/deploy.yml
              docker build → docker save | ssh prod deploy <sha> → health check from outside
 
 ops-vm   user github-runner: runner service, Docker for building, SSH key only for deploy.sh
-prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env):
-         web (Caddy, port 80) → backend (Node) → postgres (volume), migrate runs before every start
+prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, tls/):
+         web (Caddy, HTTPS on 443, 80 redirects) → backend (Node) → postgres (volume), migrate runs before every start
 ```
 
 - The runner connects to GitHub itself through the proxy. No VM is reachable from outside HTW, that is intended.
@@ -32,6 +32,7 @@ Hostnames and networks are not in the repo because it is public. The commands be
 | `<htw-nets>`                | networks from which HTW allows SSH, e.g. `{ a/16, b/16 }` | SSH rule in the `input` chain, see below       |
 | `<proxy-net>`               | network of the proxy                                      | rule with `dport 3128` in the `OUTPUT` chain   |
 | `<dns-nets>`                | networks of the DNS servers                               | rule with `udp dport 53` in the `OUTPUT` chain |
+| `<cert>`, `<key>`           | files of the HTTPS certificate, `.pem` and `.key`         | from HTW in `/home/local` on the VM            |
 
 The chains are in HTW's `/etc/nftables.conf` on each VM: `sudo cat /etc/nftables.conf`.
 
@@ -58,8 +59,11 @@ sudo -iu github-runner docker system df          # build cache, the pipeline lim
 sudo docker ps --format '{{.Names}}: {{.Status}}'
 sudo docker logs --tail 100 helthtw-prod-backend-1
 sudo docker exec -it helthtw-prod-postgres-1 psql -U helthtw -d helthtw
-# if the site does not respond from outside: check from inside, bypassing the network
-sudo docker exec helthtw-prod-web-1 wget -qO- -T 5 http://localhost:8080/api/alive_ping
+# if the site does not respond from outside: ask the backend from the web container, bypassing the network
+sudo docker exec helthtw-prod-web-1 wget -qO- -T 5 http://backend:3000/api/alive_ping
+
+# own machine in the VPN: the certificate the site serves
+echo | openssl s_client -connect <prod-host>:443 -servername <prod-host> 2>/dev/null | openssl x509 -noout -issuer -dates
 ```
 
 ### compose.yml or deploy.sh changed
@@ -73,6 +77,12 @@ At the next release, the deploy aborts at "Installed files match the repo". Rein
 
 - `POSTGRES_PASSWORD` only takes effect when the volume is first created. Whoever changes it later must first change it in Postgres (`ALTER USER helthtw PASSWORD '…'`), otherwise migrate and backend fail with "password authentication failed".
 - After a change to `.env`, the next deploy recreates the Postgres container. The backend reconnects by itself afterwards.
+
+### HTTPS certificate
+
+- Caddy in the `web` container serves the site over HTTPS with HTW's certificate, port 80 only redirects. Certificate and key are in `/srv/helthtw/tls`, never in the repo.
+- The certificate does not renew itself and nothing warns before it expires. Its expiry date is shown by the last command under [Inspecting](#inspecting). Install a new one as in [prod-vm, step 5](#5-https-certificate), then `sudo docker restart helthtw-prod-web-1`, because Caddy only reads the files at startup.
+- If Caddy cannot read the files, `web` does not start and the site is down. `sudo docker logs helthtw-prod-web-1` shows why.
 
 ### Updates
 
@@ -200,9 +210,33 @@ sudo nft list tables                             # inet firewall and Docker's ip
 Then log in via SSH a second time in a new terminal. If that does not work, revert from the open session:
 `sudo cp -a /etc/nftables.conf.orig /etc/nftables.conf && sudo systemctl reload nftables && sudo systemctl restart docker`
 
-- Port 80 is only reachable from the HTW network. Which ports exist at all is defined by `compose.yml`, that is only 80.
+- Ports 80 and 443 are only reachable from the HTW network. Which ports exist at all is defined by `compose.yml`.
 - From now on, only reload nftables with `reload`, never with `restart` or `stop`. Stopping the service runs `nft flush ruleset`, after which Docker needs a `systemctl restart docker`.
-- From the prod-vm itself, `localhost:80` does not work, because HTW's `OUTPUT` blocks the path from host to container. Check inside the container instead, see [Inspecting](#inspecting).
+- From the prod-vm itself, `localhost:80` and `:443` do not work, because HTW's `OUTPUT` blocks the path from host to container. Check inside the container instead, see [Inspecting](#inspecting).
+
+### 5. HTTPS certificate
+
+HTW puts two files in `/home/local`: `<cert>` (`.pem`, the VM's certificate followed by the chain) and `<key>` (`.key`). It is valid for 200 days.
+
+```bash
+# All certificates in the file, the VM's first. Never look at more than the first line of the key.
+sudo openssl crl2pkcs7 -nocrl -certfile /home/local/<cert> | openssl pkcs7 -print_certs -noout
+sudo openssl x509 -in /home/local/<cert> -noout -subject -dates -ext subjectAltName   # name: <prod-host>
+# does the key match the certificate: both lines equal
+sudo openssl x509 -in /home/local/<cert> -noout -pubkey | sha256sum
+sudo openssl pkey -in /home/local/<key> -pubout | sha256sum
+# HTW leaves the key readable for everyone
+sudo chmod 600 /home/local/<key>
+
+# Only root and nobody (65534), the user Caddy runs as in the container, can read the key.
+sudo install -d -o root -g root -m 755 /srv/helthtw/tls
+sudo install -o root -g root -m 644 /home/local/<cert> /srv/helthtw/tls/fullchain.pem
+sudo install -o root -g 65534 -m 640 /home/local/<key> /srv/helthtw/tls/key.pem
+openssl verify -untrusted /srv/helthtw/tls/fullchain.pem /srv/helthtw/tls/fullchain.pem   # OK: Debian and browsers trust it
+ls -la /srv/helthtw/tls   # fullchain.pem root:root 644, key.pem root:nogroup 640
+```
+
+If the chain ever comes as a separate file, it goes after the certificate: `sudo cat <cert> <chain> | sudo install -o root -g root -m 644 /dev/stdin /srv/helthtw/tls/fullchain.pem`.
 
 ## ops-vm setup
 
@@ -355,7 +389,7 @@ cat >> .env <<'EOF'
 http_proxy=<proxy>
 https_proxy=<proxy>
 no_proxy=localhost,127.0.0.1,.htw-berlin.de
-PROD_URL=http://<prod-host>
+PROD_URL=https://<prod-host>
 EOF
 exit
 
@@ -368,7 +402,7 @@ In GitHub, the runner then shows as **Idle**, with the labels `self-hosted`, `Li
 
 ## First deploy and wrap-up
 
-1. Create a release as under [Deploy and rollback](#deploy-and-rollback). Afterwards `http://<prod-host>` shows the site, "Ping API" responds.
+1. Create a release as under [Deploy and rollback](#deploy-and-rollback). Afterwards `https://<prod-host>` shows the site with a padlock, `http://` redirects there and `/api/alive_ping` responds.
 2. Reboot both VMs with `sudo reboot`. Afterwards all containers are healthy, the runner is back on Idle and `sudo nft list tables` shows all five tables.
 3. Test data, if wanted. Production has no seed, `db:seed` needs the dev tools and empties the table first.
    ```bash
@@ -385,4 +419,6 @@ If only one VM is replaced, its address and keys change:
 - HTW's network drops requests from the VPN to exactly `/api/ping`, the request then hangs without a response. That is why the endpoint is called `/api/alive_ping`.
 - The runner's proxy message ("Runner is running behind proxy server …") appears in every public log and cannot be hidden. The workflow hides the prod-vm's URL with `add-mask`.
 - A release created by a workflow with `GITHUB_TOKEN` does not trigger a deploy. This is how GitHub prevents loops.
+- Without the chain in `fullchain.pem`, some browsers still show the site, but `curl` in the deploy and many phones do not.
+- A rollback to a version from before HTTPS turns red at "App answers", because it only speaks HTTP. The site then runs under `http://`.
 - A truncated deploy log does not mean nothing happened. The reliable check is `sudo docker ps --format '{{.Names}}: {{.CreatedAt}}'` on the prod-vm.

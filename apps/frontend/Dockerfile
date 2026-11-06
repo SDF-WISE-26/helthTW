@@ -20,4 +20,4 @@ FROM caddy:2.11.7-alpine AS runtime
 COPY apps/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/apps/frontend/dist /srv
 USER nobody
-EXPOSE 8080
+EXPOSE 8080 8443
