@@ -28,12 +28,12 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Project Docs
 
-| Path                                       | Content                                                                  |
-| ------------------------------------------ | ------------------------------------------------------------------------ |
-| [`docs/workflow.md`](docs/workflow.md)     | Branches, commits, PRs, automated checks                                 |
-| [`docs/decisions.md`](docs/decisions.md)   | Decisions with reasons, numbered. Read before changing the architecture. |
-| [`docs/specs/`](docs/specs/)               | What each area must do, one file per area (e.g. `frontend.md`)           |
-| [`docs/deployment.md`](docs/deployment.md) | The HTW VMs: operations, rollback, setup from scratch                    |
+| Path                                       | Content                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------- |
+| [`docs/workflow.md`](docs/workflow.md)     | Branches, commits, PRs, automated checks                                        |
+| [`docs/decisions/`](docs/decisions/)       | Decisions with reasons, one file each. Only read them when a human asks you to. |
+| [`docs/specs/`](docs/specs/)               | What each area must do, one file per area (e.g. `frontend.md`)                  |
+| [`docs/deployment.md`](docs/deployment.md) | The HTW VMs: operations, rollback, setup from scratch                           |
 
 ## Project Rules
 
@@ -46,7 +46,7 @@ release. Add a tool name to select part of the graph. For example, run
 
 - Keep everything as short as possible. New files only if the content fits nowhere else.
 - Changes to `docs/` go through PRs like code.
-- `decisions.md`: append at the bottom in the same structure. Only decisions that are expensive to reverse or were discussed. Accepted on merge. Never overwrite: add a new number and mark the old one "superseded by 00xx".
+- `decisions/`: when a discussion ends in a decision that is expensive to reverse, suggest recording it. One file per decision, `<YYYY-MM-DD>-<topic>.md` with an English topic. Structure: `# Title`, then bullets **Status** (proposed, accepted or superseded by `<file name>`) · **Date** · **Involved** · **Ref**, then **Decision**, **Why**, **Rejected**, optionally **Caution**. Accepted on merge. Never rewrite one: add a new file and set the old one's status to "superseded by `<file name>`".
 - `specs/`: describe _what_ an area must do, not how it looks or is built.
 - `workflow.md`: update in the same PR when hooks or pipelines change.
 - The repo is public: no names, emails, credentials, interview or health data.

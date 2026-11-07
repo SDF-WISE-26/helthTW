@@ -1,0 +1,7 @@
+# 0010: Deployment on HTW VMs
+
+- **Status:** accepted, trigger superseded by 0011 · **Date:** 2026-10-27 · **Involved:** @Lezhor · **Ref:** #18, #24, #34, #102
+- **Decision:** Two VMs in the HTW network. On the ops-vm, a self-hosted GitHub runner builds both images and sends them via `docker save | ssh` to the prod-vm, where `deploy/deploy.sh` starts them with Docker Compose. Deploy on every merge to `main`, Sundays at 23:00 and manually. For now HTTP only and reachable only from the HTW network. Setup and operations in [`deployment.md`](../deployment.md).
+- **Why:** The runner opens the connection to GitHub itself, no port has to be opened into the HTW network. Without a registry, no credentials are needed in GitHub. On the prod-vm, the deploy key may only start `deploy.sh`; `compose.yml` and `deploy.sh` are root-owned there and never arrive via SSH: a compromised ops-vm could start its own images, but not with more privileges than `compose.yml` allows.
+- **Rejected:** Builds on GitHub's runners (they cannot reach the HTW network). A registry like GHCR (token on the prod-vm, more parts). Preview deploys per PR (postponed to #103).
+- **Caution:** The runner is attached to the repo because GitHub Free has no runner groups. Anyone with write access can use it with a workflow on their own branch. Never use `pull_request` as a trigger in `deploy.yml`. A rollback only restores the code, migrations stay. HTTPS and backups are still missing.
