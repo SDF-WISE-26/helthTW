@@ -1,0 +1,7 @@
+# One file per decision
+
+- **Status:** accepted · **Date:** 2026-11-07 · **Involved:** @LilGravyyyy · **Ref:** #170
+- **Decision:** Supersedes 0009. Docs stay Markdown in `docs/`: workflow in `workflow.md`, specs per area in `specs/`, entry point and maintenance rules in `AGENTS.md`. Each decision is its own file in `docs/decisions/`. New ones are named `<YYYY-MM-DD>-<slug>.md` and referred to by that name. 0001 to 0019 keep their number as prefix, code and docs refer to them by it. A superseded decision moves to `docs/decisions/superseded/`, its status line names the successor. There is no index, the file names are the index.
+- **Why:** In one file, everyone appended the next number at the bottom, so two PRs with a decision always conflicted. Agents were pointed at the whole file and got superseded and rejected content in every prompt. Now an agent reads only the decisions whose names match its task, and superseded ones are out of the way.
+- **Rejected:** Keeping one file (conflicts stay). An index file listing all decisions (every PR appends to it again). A generated index (a script for what `ls` already shows). Numbers for new decisions (two PRs pick the same one). A folder per status (proposed ones wait in their PR, the merge accepts them).
+- **Caution:** Two decisions on the same day need different slugs. Moving a file to `superseded/` breaks links to its path, so refer to decisions by number or name instead of linking them.
