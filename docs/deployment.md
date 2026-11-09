@@ -17,7 +17,7 @@ prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, tls/):
 
 - The runner connects to GitHub itself through the proxy. No VM is reachable from outside HTW, that is intended.
 - A deploy takes about 1.5 minutes, of which around 25 s on the prod-vm. The site is down for a few seconds during it.
-- Tested with Debian 13, Docker 29.9 and Compose 5.6 on VMs with 2 CPUs, 1.9 GB RAM and 15 GB disk.
+- Tested with Debian 13, Docker 29.9 and Compose 5.6. Both VMs have 4 CPUs, 7.8 GB RAM and 15 GB disk (until November 2026: 2 CPUs, 1.9 GB RAM).
 
 ## Values
 
@@ -244,7 +244,7 @@ All commands as `<admin>`, except where `sudo -iu github-runner` is written.
 
 ### 1. Updates and swap
 
-First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap, because builds are tight with 1.9 GB RAM:
+First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap. It dates from when the VM had 1.9 GB RAM and is now only a reserve for builds:
 
 ```bash
 findmnt -no FSTYPE /                   # ext4, then a swap file needs nothing special
