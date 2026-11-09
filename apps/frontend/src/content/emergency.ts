@@ -2,7 +2,7 @@ export const emergencyContent = {
   title: "Du bist nicht allein",
 
   instructions:
-    "Biite suche dir einen ruhigen, sicheren Ort. Wenn möglich, hole eine vertraute Person dazu. Trink etwas, iss eine Kleinigkeit und halte dich warm. Es ist völlig in Ordnung, sich so viel Zeit zu nehmen, wie man braucht.",
+    "Bitte suche dir einen ruhigen, sicheren Ort. Wenn möglich, hole eine vertraute Person dazu. Trink etwas, iss eine Kleinigkeit und halte dich warm. Es ist völlig in Ordnung, sich so viel Zeit zu nehmen, wie man braucht.",
 
   contactsTitle: "Wichtige Kontakte",
 
