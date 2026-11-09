@@ -9,7 +9,7 @@ export const emergencyContent = {
   contacts: [
     {
       name: "Notruf",
-      description: "Bei akuter Gefahr oder medizinischen Notfällen",
+      description: "Bei akuten Notfällen",
       number: "112",
       href: "tel:112",
     },

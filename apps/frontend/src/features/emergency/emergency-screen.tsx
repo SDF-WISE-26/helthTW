@@ -27,7 +27,10 @@ export function EmergencyScreen() {
           <Card key={contact.name} size="sm">
             <CardHeader className="grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
               <div className="min-w-0">
-                <CardTitle>{contact.name}</CardTitle>
+                <CardTitle>
+                  {contact.name}
+                  <span className="block">{contact.number}</span>
+                </CardTitle>
                 <CardDescription>{contact.description}</CardDescription>
               </div>
 
