@@ -13,6 +13,7 @@ GitHub: release published (rollback manually) → .github/workflows/deploy.yml
 ops-vm   user github-runner: runner service, Docker for building, SSH key only for deploy.sh
 prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, tls/):
          web (Caddy, HTTPS on 443, 80 redirects) → backend (Node) → postgres (volume), migrate runs before every start
+         folder /srv/monitoring: Dozzle for container logs, only through an SSH tunnel (see Monitoring)
 ```
 
 - The runner connects to GitHub itself through the proxy. No VM is reachable from outside HTW, that is intended.
@@ -413,6 +414,55 @@ If only one VM is replaced, its address and keys change:
 
 - New ops-vm: adjust `from=` in the prod-vm's `authorized_keys`. In GitHub, remove the old runner under Actions → Runners.
 - New prod-vm: adjust the ops-vm's `OUTPUT` rule, `known_hosts`, `~/.ssh/config` and `PROD_URL` in the runner's `.env`. Then `sudo systemctl restart 'actions.runner.*'`.
+
+## Monitoring
+
+Runs on the prod-vm apart from the app, in `/srv/monitoring` with [`deploy/monitoring/compose.yml`](../deploy/monitoring/compose.yml) as the project `helthtw-monitoring`. Why it is built this way is in decision 0020.
+
+- `dozzle` shows logs and resource use of all containers in the browser. It only streams what Docker keeps (3 × 10 MB per container, `daemon.json`) and stores nothing.
+- `socket-proxy` is the only container with the Docker socket. It only passes on reading requests, Dozzle gets them through `/srv/monitoring/socket`.
+- `deploy.sh` and releases never touch it. Changes to the file are installed by hand as below.
+
+### Opening Dozzle
+
+Dozzle only listens on `127.0.0.1:8888` of the prod-vm and has no login. From your own machine in the VPN:
+
+```bash
+ssh -N -L 8888:127.0.0.1:8888 <admin>@<prod-host>   # prints nothing and stays open, Ctrl+C closes it
+```
+
+Then open http://localhost:8888. Whoever can SSH into the prod-vm can read all logs, nobody else.
+
+- `connect failed` in the SSH window: Dozzle is not running. `administratively prohibited`: SSH forwarding is off on the VM.
+- Requests to the site do not show up: Caddy has no access log and the backend only logs its start.
+
+### Install and update
+
+```bash
+# own machine: checksum of the reviewed commit
+git show <commit>:deploy/monitoring/compose.yml | shasum -a 256
+```
+
+```bash
+# prod-vm
+cd /tmp
+curl -fsSL -o monitoring-compose.yml "https://raw.githubusercontent.com/SDF-WISE-26/helthTW/<commit>/deploy/monitoring/compose.yml"
+echo '<checksum>  monitoring-compose.yml' | sha256sum -c
+sudo install -d -o root -g root -m 755 /srv/monitoring
+sudo install -d -o 65534 -g 65534 -m 700 /srv/monitoring/socket   # nobody, the user of both containers
+sudo install -o root -g root -m 644 monitoring-compose.yml /srv/monitoring/compose.yml
+rm monitoring-compose.yml
+cd
+# group of the Docker socket, so socket-proxy can read it
+[ -e /srv/monitoring/.env ] || printf 'DOCKER_GID=%s\n' "$(getent group docker | cut -d: -f3)" | sudo tee /srv/monitoring/.env
+sudo docker compose -f /srv/monitoring/compose.yml up -d --wait
+sudo docker compose -f /srv/monitoring/compose.yml ps             # both healthy
+```
+
+- Images are pinned by digest. A newer version only comes with a change to the file.
+- After a change, click through logs, stats and the host page in Dozzle, then check whether the proxy refused anything Dozzle needs. No output means nothing was blocked:
+  `sudo docker logs helthtw-monitoring-socket-proxy-1 2>&1 | grep 'blocked request'`
+- Remove: `sudo docker compose -f /srv/monitoring/compose.yml down`. The app keeps running.
 
 ## Pitfalls
 
