@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SplashScreen } from "@/features/onboarding/splash-screen";
+import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
 
 export const Route = createFileRoute("/onboarding")({
-  component: SplashScreen,
+  component: OnboardingFlow,
 });
