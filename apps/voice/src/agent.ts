@@ -1,4 +1,3 @@
-import { ThinkingLevel } from "@google/genai";
 import {
   metrics,
   type JobContext,
@@ -8,11 +7,12 @@ import {
   defineAgent,
   voice,
 } from "@livekit/agents";
-import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
-import * as google from "@livekit/agents-plugin-google";
 import * as silero from "@livekit/agents-plugin-silero";
 import dotenv from "dotenv";
 import { fileURLToPath } from "node:url";
+import { createLlm } from "./providers/llm.ts";
+import { createStt } from "./providers/stt.ts";
+import { createTts } from "./providers/tts.ts";
 
 dotenv.config({ path: ".env" });
 
@@ -24,19 +24,10 @@ export default defineAgent({
   entry: async (ctx: JobContext) => {
     const session = new voice.AgentSession({
       vad: ctx.proc.userData.vad as silero.VAD,
-      stt: new elevenlabs.STT({
-        model: "scribe_v2_realtime",
-        languageCode: "de",
-        // Let Scribe close the sentence itself after a short silence.
-        serverVad: { vadSilenceThresholdSecs: 0.5 },
-      }),
-      llm: new google.LLM({
-        model: "gemini-3.5-flash-lite",
-        maxOutputTokens: 80,
-        thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
-      }),
+      stt: createStt(),
+      llm: createLlm(),
       turnHandling: { endpointing: { minDelay: 200, maxDelay: 1000 } },
-      tts: new elevenlabs.TTS({ voiceId: "ZYxkHelwVfZIJ3DA24gN", model: "eleven_flash_v2_5" }),
+      tts: createTts(),
     });
 
     // Log per-stage latency (STT, LLM, TTS, end of utterance) to the terminal.
