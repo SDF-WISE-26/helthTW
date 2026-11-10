@@ -33,8 +33,12 @@ export function EmergencyScreen() {
                 </CardTitle>
                 <CardDescription>{contact.description}</CardDescription>
               </div>
-
-              <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
+              {/* TODO (#127): Enable calls once contact details are verified. */}
+              <Button disabled variant="outline" size="sm" className="min-h-11 shrink-0">
+                <Phone aria-hidden="true" />
+                Anrufen
+              </Button>
+              {/* <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
                 <a
                   href={contact.href}
                   aria-label={`${contact.name} unter ${contact.number} anrufen`}
@@ -43,7 +47,7 @@ export function EmergencyScreen() {
                   <span className="sr-only">{contact.number}</span>
                   Anrufen
                 </a>
-              </Button>
+              </Button> */}
             </CardHeader>
           </Card>
         ))}
