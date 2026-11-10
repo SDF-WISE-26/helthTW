@@ -1,4 +1,3 @@
-// import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { EmergencyScreen } from "@/features/emergency/emergency-screen";
