@@ -10,9 +10,14 @@ catalog:
   "@fontsource-variable/inter": ^5.3.0
   "@ai-sdk/google": ^4.0.114
   "@ai-sdk/openai-compatible": ^3.0.87
+  "@google/genai": ^2.32.0
   "@hono/node-server": ^2.1.3
   "@hono/zod-validator": ^0.9.1
   "@hookform/resolvers": ^6.0.0
+  "@livekit/agents": ^1.9.5
+  "@livekit/agents-plugin-elevenlabs": ^1.9.5
+  "@livekit/agents-plugin-google": ^1.9.5
+  "@livekit/agents-plugin-silero": ^1.9.5
   "@secretlint/secretlint-rule-preset-recommend": ^13.0.7
   "@tailwindcss/vite": ^4.3.3
   "@tanstack/react-query": ^5.104.2
@@ -60,7 +65,12 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
 allowBuilds:
+  "@google/genai": false
+  "@livekit/blingfire": true
+  "@livekit/local-inference": true
   esbuild: true
+  onnxruntime-node: true
+  protobufjs: false
 minimumReleaseAgeExclude:
   - "@oxc-project/runtime@0.154.0"
   - "@oxc-project/types@0.154.0"

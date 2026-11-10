@@ -1,0 +1,23 @@
+{
+  "name": "voice",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "mkdir -p logs && node src/agent.ts dev 2>&1 | tee logs/agent.log",
+    "start": "node src/agent.ts start",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@google/genai": "catalog:",
+    "@livekit/agents": "catalog:",
+    "@livekit/agents-plugin-elevenlabs": "catalog:",
+    "@livekit/agents-plugin-google": "catalog:",
+    "@livekit/agents-plugin-silero": "catalog:",
+    "dotenv": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

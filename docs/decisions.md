@@ -159,3 +159,19 @@ Append new decisions at the bottom, numbered consecutively and in the same struc
 - **Why:** Use without registration (#49). Deliberately simple, so that check-ins and questionnaires (#44, #45) can save.
 - **Rejected:** Token hash in an httpOnly cookie (moved to #145). Creating the account only on the first write (#92 asks for first open).
 - **Caution:** Insecure, test data only: the ID is also the password and readable via XSS, Safari deletes `localStorage` after 7 days without use. Hardening in #145.
+
+## 0021: Voice assistant as separate service with LiveKit
+
+- **Status:** proposed · **Date:** 2026-11-09 · **Involved:** @xavierwelscher · **Ref:** #
+- **Decision:** The voice assistant is its own app `apps/voice` in TypeScript, built on LiveKit Agents for Node (`agents-js`). Audio runs browser ↔ LiveKit server ↔ agent. The agent chains speech to text, LLM and text to speech, with voice activity detection (Silero). Every stage sits behind a replaceable interface, so cloud services can be swapped for self-hosted models later. For the proof of concept it uses cloud services: ElevenLabs for speech to text and text to speech, Gemini as LLM.
+- **Why:** A voice session is a long-lived process with heavy dependencies, so it should not run inside the backend (0002 already expects AI services to run separately). `agents-js` lets us hook into the stream between the stages, which is where every sentence must be checked before it is spoken. Cloud first gets a working prototype quickly.
+- **Rejected:** A module inside the backend (different load and restarts, native dependencies in the API image). Pipecat (Python only, only worth it if the `agents-js` hooks turn out too limited). A fully automatic pipeline without hooks (no place for the guard).
+- **Caution:** The guard (check before and after the LLM) is not built yet, until then no real health data may go through the agent. All cloud services receive the audio and text, so the GDPR review (#91) comes before real users. API keys live in `apps/voice/.env` (git-ignored), never in the repo. Three install scripts are allowed in `pnpm-workspace.yaml` (`onnxruntime-node`, `@livekit/blingfire`, `@livekit/local-inference`). The LiveKit turn detector model may only be used with LiveKit Agents (LiveKit Model License). A new package needs a Dockerfile and a deploy step before it can run on the VMs, neither exists yet.
+
+## 0022: No speech-to-speech models for the voice assistant
+
+- **Status:** proposed · **Date:** 2026-11-10 · **Involved:** @xavierwelscher · **Ref:** #
+- **Decision:** The voice assistant keeps the chain speech to text, LLM, text to speech (0021). Speech-to-speech models (OpenAI Realtime, Gemini Live and similar), which take audio in and give audio out directly, are not used as the main path.
+- **Why:** Every sentence must be checked before it is spoken. A speech-to-speech model has no text stage between hearing and speaking. The transcript of the answer arrives with or after the audio, so cancelling a response comes too late, part of it is already spoken. The transcript of the user comes from a separate model afterwards and can differ from what the model heard, so the input is not checked before the answer either. A sentence spoken in a crisis situation cannot be taken back.
+- **Rejected:** Speech-to-speech with cancel on a bad transcript (too late, see above). Speech-to-speech with text output and our own text to speech (works, but then it is the same chain with a combined speech to text and LLM, little gained and the input check stays weak). Fixed texts spoken on demand (fine for the crisis screen, but not a check of free answers).
+- **Caution:** Revisit if a provider offers a hook that holds the audio back until a check has passed. Latency is the main thing we give up, measure it in the prototype before judging the chain too slow.
