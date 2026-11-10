@@ -425,16 +425,67 @@ Runs on the prod-vm apart from the app, in `/srv/monitoring` with [`deploy/monit
 
 ### Opening Dozzle
 
-Dozzle only listens on `127.0.0.1:8888` of the prod-vm and has no login. From your own machine in the VPN:
+Dozzle only listens on `127.0.0.1:8888` of the prod-vm and has no login. Devs reach it through an SSH tunnel as the user `monitoring`, which can do nothing else ([Access for devs](#access-for-devs)). Send your public key to an admin, then add this to `~/.ssh/config` on your own machine:
 
-```bash
-ssh -N -L 8888:127.0.0.1:8888 <admin>@<prod-host>   # prints nothing and stays open, Ctrl+C closes it
+```
+Host helthtw-logs
+  HostName <prod-host>
+  User monitoring
+  IdentityFile ~/.ssh/<your-key>
+  LocalForward 8888 127.0.0.1:8888
+  SessionType none
+  ExitOnForwardFailure yes
 ```
 
-Then open http://localhost:8888. Whoever can SSH into the prod-vm can read all logs, nobody else.
+In the VPN, run `ssh helthtw-logs` and open http://localhost:8888. The command prints nothing and keeps the tunnel open until Ctrl+C.
 
-- `connect failed` in the SSH window: Dozzle is not running. `administratively prohibited`: SSH forwarding is off on the VM.
+- `SessionType none` does what `-N` does: only the tunnel, no shell. With `ExitOnForwardFailure`, SSH stops with an error if port 8888 is taken on your machine. Then use e.g. `LocalForward 18888 127.0.0.1:8888` and `localhost:18888`.
+- `Permission denied (publickey)`: your key is not on the VM yet. `connect failed` in the SSH window: Dozzle is not running.
+- Admins can also use their own login: `ssh -N -L 8888:127.0.0.1:8888 <admin>@<prod-host>`.
 - Requests to the site do not show up: Caddy has no access log and the backend only logs its start.
+
+### Access for devs
+
+The user `monitoring` has no password, no shell and no groups. Both the options on each key in its `authorized_keys` and `/etc/ssh/sshd_config.d/monitoring.conf` only allow local tunnels to `127.0.0.1:8888`. Every key on the list can read all container logs, so only add team members and remove them when they leave.
+
+Set up once, as `<admin>`, with a second SSH session open in case sshd no longer lets you in:
+
+```bash
+sudo adduser --disabled-password --comment "Tunnel to monitoring" --shell /usr/sbin/nologin monitoring
+# authorized_keys belongs to root, so monitoring cannot add keys itself
+sudo install -d -o root -g root -m 755 /home/monitoring/.ssh
+sudo install -o root -g root -m 644 /dev/null /home/monitoring/.ssh/authorized_keys
+sudo tee /etc/ssh/sshd_config.d/monitoring.conf >/dev/null <<'EOF'
+# helthTW: this user may only forward to the monitoring tools on 127.0.0.1 (docs/deployment.md, "Monitoring").
+Match User monitoring
+	AuthenticationMethods publickey
+	AllowTcpForwarding local
+	PermitOpen 127.0.0.1:8888
+	AllowStreamLocalForwarding no
+	AllowAgentForwarding no
+	X11Forwarding no
+	PermitTTY no
+	PermitTunnel no
+	ForceCommand /usr/sbin/nologin
+EOF
+sudo sshd -t
+sudo sshd -T -C user=monitoring,host=test,addr=127.0.0.1 | grep -iE '^(allowtcpforwarding|permitopen|forcecommand)'   # local, 127.0.0.1:8888, /usr/sbin/nologin
+sudo sshd -T -C user=$USER,host=test,addr=127.0.0.1 | grep -iE '^(allowtcpforwarding|permitopen|forcecommand)'       # yes, any, none: your login is unchanged
+sudo systemctl reload ssh
+```
+
+Undo: `sudo rm /etc/ssh/sshd_config.d/monitoring.conf && sudo systemctl reload ssh`. The rules are in their own file, so updates never ask about a changed `sshd_config`.
+
+Add a dev with the `.pub` line they sent (never the private key). Replace the comment at the end of the line with their name, so the line can be found later. Names stay on the VM.
+
+```bash
+key='<the .pub line>'
+printf 'restrict,port-forwarding,permitopen="127.0.0.1:8888" %s\n' "$key" | sudo tee -a /home/monitoring/.ssh/authorized_keys >/dev/null
+```
+
+- Remove a dev: delete their line with `sudo nano /home/monitoring/.ssh/authorized_keys`. Open tunnels stay until they close, `sudo pkill -u monitoring` ends all of them.
+- Test from your own machine: `ssh monitoring@<prod-host>` answers "This account is currently not available", `ssh -W 127.0.0.1:22 monitoring@<prod-host>` "administratively prohibited".
+- Another port, e.g. for Beszel, needs a second `permitopen="127.0.0.1:<port>"` on every key line and the port in `PermitOpen` (separated by a space), then `sudo systemctl reload ssh`.
 
 ### Install and update
 
