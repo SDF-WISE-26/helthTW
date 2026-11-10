@@ -26,8 +26,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-help: var(--help);
-  --color-help-foreground: var(--help-foreground);
   --color-status-ok: var(--status-ok);
   --color-status-ok-surface: var(--status-ok-surface);
   --color-status-watch: var(--status-watch);
@@ -150,8 +148,6 @@
   --input: #7d887e;
   --ring: var(--moss-700);
 
-  --help: #b0452c;
-  --help-foreground: #ffffff;
   --status-ok: #2f6b62;
   --status-ok-surface: #e1ede9;
   --status-watch: #8a5a12;
@@ -203,8 +199,6 @@
   --input: #76827a;
   --ring: #cfe3d0;
 
-  --help: #f0957c;
-  --help-foreground: #2b0e07;
   --status-ok: #8fcfc2;
   --status-ok-surface: #1c2d29;
   --status-watch: #e6b765;
