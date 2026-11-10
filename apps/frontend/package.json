@@ -27,6 +27,7 @@
     "react-hook-form": "catalog:",
     "shadcn": "catalog:",
     "tw-animate-css": "catalog:",
+    "vaul": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
