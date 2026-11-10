@@ -1,9 +1,10 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { env } from "./env";
 
 const provider = createOpenAICompatible({
   name: "llm",
-  baseURL: process.env.LLM_BASE_URL!,
-  apiKey: process.env.LLM_API_KEY!,
+  baseURL: env.LLM_BASE_URL,
+  apiKey: env.LLM_API_KEY,
 });
 
-export const chatModel = provider.chatModel(process.env.LLM_MODEL!);
+export const chatModel = provider.chatModel(env.LLM_MODEL);
