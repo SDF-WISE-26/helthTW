@@ -11,7 +11,7 @@
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
-    "@fontsource-variable/lexend": "catalog:",
+    "@fontsource-variable/inter": "catalog:",
     "@helthtw/shared": "workspace:*",
     "@hookform/resolvers": "catalog:",
     "@tanstack/react-query": "catalog:",

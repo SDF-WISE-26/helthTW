@@ -62,8 +62,8 @@
   --shadow-sm: var(--elevation-sm);
   --shadow-lg: var(--elevation-lg);
 
-  /* Fonts: Lexend for everything */
-  --font-sans: "Lexend Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Fonts: Inter for everything */
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: var(--font-sans);
   --font-heading: var(--font-sans);
 }
