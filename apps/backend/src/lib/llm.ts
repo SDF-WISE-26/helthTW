@@ -1,3 +1,9 @@
-import { google } from "@ai-sdk/google";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-export const chatModel = google("gemini-3.1-flash-lite");
+const provider = createOpenAICompatible({
+  name: "llm",
+  baseURL: process.env.LLM_BASE_URL!,
+  apiKey: process.env.LLM_API_KEY!,
+});
+
+export const chatModel = provider.chatModel(process.env.LLM_MODEL!);
