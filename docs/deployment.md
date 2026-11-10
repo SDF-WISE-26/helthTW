@@ -13,11 +13,12 @@ GitHub: release published (rollback manually) → .github/workflows/deploy.yml
 ops-vm   user github-runner: runner service, Docker for building, SSH key only for deploy.sh
 prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, tls/):
          web (Caddy, HTTPS on 443, 80 redirects) → backend (Node) → postgres (volume), migrate runs before every start
+         folder /srv/monitoring: Dozzle for container logs, only through an SSH tunnel (see Monitoring)
 ```
 
 - The runner connects to GitHub itself through the proxy. No VM is reachable from outside HTW, that is intended.
 - A deploy takes about 1.5 minutes, of which around 25 s on the prod-vm. The site is down for a few seconds during it.
-- Tested with Debian 13, Docker 29.9 and Compose 5.6 on VMs with 2 CPUs, 1.9 GB RAM and 15 GB disk.
+- Tested with Debian 13, Docker 29.9 and Compose 5.6. Both VMs have 4 CPUs, 7.8 GB RAM and 15 GB disk (until November 2026: 2 CPUs, 1.9 GB RAM).
 
 ## Values
 
@@ -244,7 +245,7 @@ All commands as `<admin>`, except where `sudo -iu github-runner` is written.
 
 ### 1. Updates and swap
 
-First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap, because builds are tight with 1.9 GB RAM:
+First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap. It dates from when the VM had 1.9 GB RAM and is now only a reserve for builds:
 
 ```bash
 findmnt -no FSTYPE /                   # ext4, then a swap file needs nothing special
@@ -413,6 +414,106 @@ If only one VM is replaced, its address and keys change:
 
 - New ops-vm: adjust `from=` in the prod-vm's `authorized_keys`. In GitHub, remove the old runner under Actions → Runners.
 - New prod-vm: adjust the ops-vm's `OUTPUT` rule, `known_hosts`, `~/.ssh/config` and `PROD_URL` in the runner's `.env`. Then `sudo systemctl restart 'actions.runner.*'`.
+
+## Monitoring
+
+Runs on the prod-vm apart from the app, in `/srv/monitoring` with [`deploy/monitoring/compose.yml`](../deploy/monitoring/compose.yml) as the project `helthtw-monitoring`. Why it is built this way is in decision 0020.
+
+- `dozzle` shows logs and resource use of all containers in the browser. It only streams what Docker keeps (3 × 10 MB per container, `daemon.json`) and stores nothing.
+- `socket-proxy` is the only container with the Docker socket. It only passes on reading requests, Dozzle gets them through `/srv/monitoring/socket`.
+- `deploy.sh` and releases never touch it. Changes to the file are installed by hand as below.
+
+### Opening Dozzle
+
+Dozzle only listens on `127.0.0.1:8888` of the prod-vm and has no login. Devs reach it through an SSH tunnel as the user `monitoring`, which can do nothing else ([Access for devs](#access-for-devs)). Send your public key to an admin, then add this to `~/.ssh/config` on your own machine:
+
+```
+Host helthtw-logs
+  HostName <prod-host>
+  User monitoring
+  IdentityFile ~/.ssh/<your-key>
+  LocalForward 8888 127.0.0.1:8888
+  SessionType none
+  ExitOnForwardFailure yes
+```
+
+In the VPN, run `ssh helthtw-logs` and open http://localhost:8888. The command prints nothing and keeps the tunnel open until Ctrl+C.
+
+- `SessionType none` does what `-N` does: only the tunnel, no shell. With `ExitOnForwardFailure`, SSH stops with an error if port 8888 is taken on your machine. Then use e.g. `LocalForward 18888 127.0.0.1:8888` and `localhost:18888`.
+- `Permission denied (publickey)`: your key is not on the VM yet. `connect failed` in the SSH window: Dozzle is not running.
+- Admins can also use their own login: `ssh -N -L 8888:127.0.0.1:8888 <admin>@<prod-host>`.
+- Requests to the site do not show up: Caddy has no access log and the backend only logs its start.
+
+### Access for devs
+
+The user `monitoring` has no password, no shell and no groups. Both the options on each key in its `authorized_keys` and `/etc/ssh/sshd_config.d/monitoring.conf` only allow local tunnels to `127.0.0.1:8888`. Every key on the list can read all container logs, so only add team members and remove them when they leave.
+
+Set up once, as `<admin>`, with a second SSH session open in case sshd no longer lets you in:
+
+```bash
+sudo adduser --disabled-password --comment "Tunnel to monitoring" --shell /usr/sbin/nologin monitoring
+# authorized_keys belongs to root, so monitoring cannot add keys itself
+sudo install -d -o root -g root -m 755 /home/monitoring/.ssh
+sudo install -o root -g root -m 644 /dev/null /home/monitoring/.ssh/authorized_keys
+sudo tee /etc/ssh/sshd_config.d/monitoring.conf >/dev/null <<'EOF'
+# helthTW: this user may only forward to the monitoring tools on 127.0.0.1 (docs/deployment.md, "Monitoring").
+Match User monitoring
+	AuthenticationMethods publickey
+	AllowTcpForwarding local
+	PermitOpen 127.0.0.1:8888
+	AllowStreamLocalForwarding no
+	AllowAgentForwarding no
+	X11Forwarding no
+	PermitTTY no
+	PermitTunnel no
+	ForceCommand /usr/sbin/nologin
+EOF
+sudo sshd -t
+sudo sshd -T -C user=monitoring,host=test,addr=127.0.0.1 | grep -iE '^(allowtcpforwarding|permitopen|forcecommand)'   # local, 127.0.0.1:8888, /usr/sbin/nologin
+sudo sshd -T -C user=$USER,host=test,addr=127.0.0.1 | grep -iE '^(allowtcpforwarding|permitopen|forcecommand)'       # yes, any, none: your login is unchanged
+sudo systemctl reload ssh
+```
+
+Undo: `sudo rm /etc/ssh/sshd_config.d/monitoring.conf && sudo systemctl reload ssh`. The rules are in their own file, so updates never ask about a changed `sshd_config`.
+
+Add a dev with the `.pub` line they sent (never the private key). Replace the comment at the end of the line with their name, so the line can be found later. Names stay on the VM.
+
+```bash
+key='<the .pub line>'
+printf 'restrict,port-forwarding,permitopen="127.0.0.1:8888" %s\n' "$key" | sudo tee -a /home/monitoring/.ssh/authorized_keys >/dev/null
+```
+
+- Remove a dev: delete their line with `sudo nano /home/monitoring/.ssh/authorized_keys`. Open tunnels stay until they close, `sudo pkill -u monitoring` ends all of them.
+- Test from your own machine: `ssh monitoring@<prod-host>` answers "This account is currently not available", `ssh -W 127.0.0.1:22 monitoring@<prod-host>` "administratively prohibited".
+- Another port, e.g. for Beszel, needs a second `permitopen="127.0.0.1:<port>"` on every key line and the port in `PermitOpen` (separated by a space), then `sudo systemctl reload ssh`.
+
+### Install and update
+
+```bash
+# own machine: checksum of the reviewed commit
+git show <commit>:deploy/monitoring/compose.yml | shasum -a 256
+```
+
+```bash
+# prod-vm
+cd /tmp
+curl -fsSL -o monitoring-compose.yml "https://raw.githubusercontent.com/SDF-WISE-26/helthTW/<commit>/deploy/monitoring/compose.yml"
+echo '<checksum>  monitoring-compose.yml' | sha256sum -c
+sudo install -d -o root -g root -m 755 /srv/monitoring
+sudo install -d -o 65534 -g 65534 -m 700 /srv/monitoring/socket   # nobody, the user of both containers
+sudo install -o root -g root -m 644 monitoring-compose.yml /srv/monitoring/compose.yml
+rm monitoring-compose.yml
+cd
+# group of the Docker socket, so socket-proxy can read it
+[ -e /srv/monitoring/.env ] || printf 'DOCKER_GID=%s\n' "$(getent group docker | cut -d: -f3)" | sudo tee /srv/monitoring/.env
+sudo docker compose -f /srv/monitoring/compose.yml up -d --wait
+sudo docker compose -f /srv/monitoring/compose.yml ps             # both healthy
+```
+
+- Images are pinned by digest. A newer version only comes with a change to the file.
+- After a change, click through logs, stats and the host page in Dozzle, then check whether the proxy refused anything Dozzle needs. No output means nothing was blocked:
+  `sudo docker logs helthtw-monitoring-socket-proxy-1 2>&1 | grep 'blocked request'`
+- Remove: `sudo docker compose -f /srv/monitoring/compose.yml down`. The app keeps running.
 
 ## Pitfalls
 

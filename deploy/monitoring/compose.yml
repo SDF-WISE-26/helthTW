@@ -1,0 +1,90 @@
+# Monitoring on the prod-vm, apart from the app: deploy.sh never touches it and a change here doesn't block deploys.
+# Installed by hand to /srv/monitoring (docs/deployment.md, "Monitoring"). Needs a .env next to this file with DOCKER_GID
+# and the folder socket/ owned by 65534.
+# Reachable only through an SSH tunnel: everything listens on 127.0.0.1 of the VM, HTW's firewall stays as it is.
+name: helthtw-monitoring
+
+x-defaults: &defaults
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  read_only: true
+  cap_drop: [ALL]
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  # The only container with the real Docker socket. It passes on read-only requests and offers them as a new
+  # socket in ./socket. Mounting docker.sock :ro would only protect the file, not the API behind it.
+  socket-proxy:
+    <<: *defaults
+    # Pinned by digest: deploy.sh runs `docker load` before it checks the image names, so a tampered upload
+    # could replace a tag. A digest can't be faked.
+    image: wollomatic/socket-proxy:1.13.2@sha256:ff95d6ff6c27853005ef85eb8f4ab5923dc3d2f1e055f98fb6aeeaceec3fe848
+    user: "65534:${DOCKER_GID:?set DOCKER_GID in .env}"
+    network_mode: none
+    command:
+      - -loglevel=info
+      - -proxysocketendpoint=/run/proxy/docker.sock
+      - -proxysocketendpointfilemode=0600
+      # What Dozzle needs to list containers and read logs, stats and events. Nothing that starts, stops or execs.
+      # socket-proxy adds ^ and $ itself. Blocked requests show up in its log.
+      - -allowHEAD=(/v1\.[0-9]+)?/_ping
+      - -allowGET=(/v1\.[0-9]+)?/(_ping|version|info|events|system/df|containers/json|containers/[a-zA-Z0-9_.-]+/(json|logs|stats))
+      - -allowhealthcheck
+      # After a Docker update the socket can break; then it stops and compose restarts it.
+      - -watchdoginterval=3600
+      - -stoponwatchdog
+      - -shutdowngracetime=5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./socket:/run/proxy
+    healthcheck:
+      test: ["CMD", "./healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 2
+    mem_limit: 32m
+
+  # Container logs in the browser. Streams what Docker keeps (10 MB x 3 per container, daemon.json), stores nothing.
+  dozzle:
+    <<: *defaults
+    image: amir20/dozzle:v11.4.2@sha256:08cd5230e21e364241f3dcf26191f293166f7835654eb7e41168b9c685f0947b
+    user: "65534:65534"
+    # HTW's OUTPUT chain blocks the host from reaching containers on a bridge, so the SSH tunnel couldn't get in.
+    # On the host network Dozzle listens on 127.0.0.1 only.
+    network_mode: host
+    environment:
+      DOZZLE_ADDR: 127.0.0.1:8888
+      DOZZLE_HOSTNAME: prod-vm
+      DOCKER_HOST: unix:///run/proxy/docker.sock
+      # The logs may contain health data. Nothing leaves the VM: no analytics, no update checks.
+      # Never connect Dozzle Cloud.
+      DOZZLE_NO_ANALYTICS: "true"
+      DOZZLE_RELEASE_CHECK_MODE: manual
+      DOZZLE_IMAGE_CHECK_MODE: "off"
+      # Set here, so the UI can't turn them on. The socket proxy would refuse them anyway.
+      DOZZLE_ENABLE_ACTIONS: "false"
+      DOZZLE_ENABLE_SHELL: "false"
+      # Without login, a fresh install would open its settings to anyone for 15 minutes.
+      # No login: only admins reach it, through SSH.
+      DOZZLE_DISABLE_SETUP_WIZARD: "true"
+      DOZZLE_AUTH_PROVIDER: none
+    volumes:
+      - ./socket:/run/proxy:ro
+      # The VM's uptime and load on the host card.
+      - /proc:/host/proc:ro
+    # Everything is set above, nothing needs to survive a restart.
+    tmpfs: ["/data:mode=1777", "/tmp:mode=1777"]
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    mem_limit: 128m
