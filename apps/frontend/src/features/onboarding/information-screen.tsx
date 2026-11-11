@@ -10,11 +10,11 @@ type Props = {
 export function InformationScreen({ onContinue, onSkip }: Props) {
   return (
     <div className="fixed inset-0 z-50 bg-background">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-between gap-6 px-6 py-10">
-        <div className="flex flex-1 flex-col justify-center gap-6">
+      <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-8 px-6 py-10">
+        <div className="flex min-h-0 flex-1 flex-col justify-center gap-6 overflow-y-auto">
           <h1 className="text-3xl font-bold">{content.information.title}</h1>
 
-          <Card>
+          <Card className="border">
             <CardContent className="space-y-4 p-5 text-base">
               <p>{content.information.description}</p>
               <p>{content.information.purpose}</p>

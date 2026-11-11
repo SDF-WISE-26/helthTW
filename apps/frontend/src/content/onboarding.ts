@@ -19,6 +19,7 @@ export const onboardingContent = {
     title: "Willkommen bei helthTW",
     description: "Dein Begleiter nach belastenden Einsätzen.",
   },
+
   actions: {
     continue: "Weiter",
     skip: "Überspringen",
@@ -34,5 +35,14 @@ export const onboardingContent = {
     emergency: "Wenn du sofort Hilfe benötigst oder in akuter Gefahr bist, wähle die 112.",
     research: "Link Quellen",
     continue: "Weiter",
+  },
+
+  tutorial: {
+    title: "Entdecke helthTW",
+    description: "Hier erfährst du, wie dich die App unterstützen kann.",
+    chatTitle: "Chat",
+    chatDescription: "Sprich in deinem eigenen Tempo über das, was dich beschäftigt.",
+    questionnaireTitle: "Fragebögen",
+    questionnaireDescription: "Nimm dir einen Moment, um über dein Befinden nachzudenken.",
   },
 } as const;

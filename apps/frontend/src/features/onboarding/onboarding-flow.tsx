@@ -4,8 +4,9 @@ import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
 import { UsageSelectionScreen } from "./usage-selection-screen";
 import { InformationScreen } from "./information-screen";
+import { TutorialScreen } from "./tutorial-screen";
 
-type OnboardingStep = "splash" | "welcome" | "usage-selection" | "information";
+type OnboardingStep = "splash" | "welcome" | "usage-selection" | "information" | "tutorial";
 // TODO (#95): Replace the fixed splash duration with actual app initialization logic.
 const SPLASH_DURATION_MS = 1500;
 // TODO (#95): Check this key on first launch to skip onboarding for returning users.
@@ -48,7 +49,10 @@ export function OnboardingFlow() {
       />
     );
   }
+  if (step === "information") {
+    return <InformationScreen onContinue={() => setStep("tutorial")} onSkip={finishOnboarding} />;
+  }
 
-  // TODO (#95): Continue tutorial.
-  return <InformationScreen onContinue={finishOnboarding} onSkip={finishOnboarding} />;
+  // TODO (#95): Connect the tutorial to the final onboarding screen.
+  return <TutorialScreen onContinue={finishOnboarding} onSkip={finishOnboarding} />;
 }
