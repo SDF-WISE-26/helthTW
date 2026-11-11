@@ -23,6 +23,7 @@ export const onboardingContent = {
   actions: {
     continue: "Weiter",
     skip: "Überspringen",
+    start: "App starten",
   },
 
   information: {
@@ -44,5 +45,10 @@ export const onboardingContent = {
     chatDescription: "Sprich in deinem eigenen Tempo über das, was dich beschäftigt.",
     questionnaireTitle: "Fragebögen",
     questionnaireDescription: "Nimm dir einen Moment, um über dein Befinden nachzudenken.",
+  },
+
+  thankYou: {
+    title: "Danke, dass du dir Zeit genommen hast!",
+    description: "Du kannst helthTW jetzt in deinem eigenen Tempo entdecken.",
   },
 } as const;
