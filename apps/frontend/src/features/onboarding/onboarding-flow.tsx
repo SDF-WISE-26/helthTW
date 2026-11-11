@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
 import { UsageSelectionScreen } from "./usage-selection-screen";
+import { InformationScreen } from "./information-screen";
 
-type OnboardingStep = "splash" | "welcome" | "usage-selection";
+type OnboardingStep = "splash" | "welcome" | "usage-selection" | "information";
 // TODO (#95): Replace the fixed splash duration with actual app initialization logic.
 const SPLASH_DURATION_MS = 1500;
 // TODO (#95): Check this key on first launch to skip onboarding for returning users.
@@ -39,6 +40,15 @@ export function OnboardingFlow() {
     );
   }
 
-  // TODO (#95): Connect choices to the remaining onboarding steps.
-  return <UsageSelectionScreen onExplore={finishOnboarding} onContinue={finishOnboarding} />;
+  if (step === "usage-selection") {
+    return (
+      <UsageSelectionScreen
+        onExplore={() => setStep("information")}
+        onContinue={finishOnboarding}
+      />
+    );
+  }
+
+  // TODO (#95): Continue tutorial.
+  return <InformationScreen onContinue={finishOnboarding} onSkip={finishOnboarding} />;
 }

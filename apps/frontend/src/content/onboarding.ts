@@ -14,4 +14,25 @@ export const onboardingContent = {
     "Bundeswehr",
     "Sonstige",
   ],
+
+  welcome: {
+    title: "Willkommen bei helthTW",
+    description: "Dein Begleiter nach belastenden Einsätzen.",
+  },
+  actions: {
+    continue: "Weiter",
+    skip: "Überspringen",
+  },
+
+  information: {
+    title: "Warum gibt es helthTW?",
+    description:
+      "Jeden Tag geben Einsatzkräfte ihr Bestes. Dabei erleben sie manchmal Situationen, die sie auch nach dem Einsatz noch beschäftigen.",
+    purpose:
+      "helthTW möchte dir einen geschützten Raum bieten, in dem du dich mit dem Erlebten auseinandersetzen und Unterstützung finden kannst.",
+    disclaimer: "Die App ersetzt keine professionelle Therapie oder medizinische Behandlung.",
+    emergency: "Wenn du sofort Hilfe benötigst oder in akuter Gefahr bist, wähle die 112.",
+    research: "Link Quellen",
+    continue: "Weiter",
+  },
 } as const;

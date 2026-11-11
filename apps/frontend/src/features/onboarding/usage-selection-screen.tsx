@@ -43,7 +43,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
             {content.explore}
           </Button>
         </Card>
-
+        {/* TODO (#95): Clarify whether age and gender should be collected in the onboarding, as shown in the mockup. */}
         <Card className="relative p-0 hover:bg-accent/40">
           <CardContent className="space-y-4 p-5">
             <p className="text-base font-normal">{content.professional}</p>

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { onboardingContent as content } from "@/content/onboarding";
 
 type WelcomeScreenProps = {
   onContinue: () => void;
@@ -13,18 +14,17 @@ export function WelcomeScreen({ onContinue, onSkip }: WelcomeScreenProps) {
           {/* TODO (#171): Replace placeholder with the final app logo. */}
           <img src="/favicon.svg" alt="" className="size-20" />
 
-          <h1 className="text-3xl font-bold">Willkommen bei helthTW</h1>
-
-          <p className="text-muted-foreground">Dein Begleiter nach belastenden Einsätzen.</p>
+          <h1 className="text-3xl font-bold">{content.welcome.title}</h1>
+          <p className="text-muted-foreground">{content.welcome.description}</p>
         </div>
 
         <div className="flex flex-col gap-3">
           <Button size="lg" onClick={onContinue}>
-            Weiter
+            {content.actions.continue}
           </Button>
 
           <Button variant="ghost" size="lg" onClick={onSkip}>
-            Überspringen
+            {content.actions.skip}
           </Button>
         </div>
       </div>
