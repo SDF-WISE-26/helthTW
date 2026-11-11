@@ -38,7 +38,6 @@ export default defineConfig({
       LLM_BASE_URL: "http://localhost:9999/v1",
       LLM_API_KEY: "test-key",
       LLM_MODEL: "test-model",
-      DATABASE_URL: "postgres://test:test@localhost:5432/test",
     },
   },
 });
