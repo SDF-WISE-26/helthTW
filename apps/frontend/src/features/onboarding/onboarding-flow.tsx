@@ -8,7 +8,7 @@ import { UsageSelectionScreen } from "./usage-selection-screen";
 import { InformationScreen } from "./information-screen";
 import { TutorialScreen } from "./tutorial-screen";
 import { ThankYouScreen } from "./thank-you-screen";
-import { Progress } from "@/components/ui/progress";
+import { OnboardingLayout } from "./onboarding-layout";
 
 // TODO (#95): Replace the fixed splash duration with actual app initialization logic.
 const SPLASH_DURATION_MS = 1500;
@@ -58,7 +58,7 @@ export function OnboardingFlow() {
   const progress = progressSteps[step];
 
   return (
-    <>
+    <OnboardingLayout progress={progress}>
       {step === "welcome" && (
         <WelcomeScreen onContinue={() => goToStep("usage-selection")} onSkip={finishOnboarding} />
       )}
@@ -79,11 +79,6 @@ export function OnboardingFlow() {
       )}
 
       {step === "thank-you" && <ThankYouScreen onFinish={finishOnboarding} />}
-
-      <div className="pointer-events-none fixed inset-x-0 top-4 z-[60] mx-auto w-full max-w-md px-6">
-        <p className="mb-2 text-right text-sm text-muted-foreground">Schritt {progress} von 5</p>
-        <Progress value={progress * 20} />
-      </div>
-    </>
+    </OnboardingLayout>
   );
 }
