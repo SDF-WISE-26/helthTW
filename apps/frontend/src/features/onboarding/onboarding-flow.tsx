@@ -2,9 +2,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
+import { UsageSelectionScreen } from "./usage-selection-screen";
 
-type OnboardingStep = "splash" | "welcome" | "information";
-
+type OnboardingStep = "splash" | "welcome" | "usage-selection";
 // TODO (#95): Replace the fixed splash duration with actual app initialization logic.
 const SPLASH_DURATION_MS = 1500;
 // TODO (#95): Check this key on first launch to skip onboarding for returning users.
@@ -34,6 +34,11 @@ export function OnboardingFlow() {
   }
 
   if (step === "welcome") {
-    return <WelcomeScreen onContinue={() => setStep("information")} onSkip={finishOnboarding} />;
+    return (
+      <WelcomeScreen onContinue={() => setStep("usage-selection")} onSkip={finishOnboarding} />
+    );
   }
+
+  // TODO (#95): Connect choices to the remaining onboarding steps.
+  return <UsageSelectionScreen onExplore={finishOnboarding} onContinue={finishOnboarding} />;
 }
