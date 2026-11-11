@@ -37,7 +37,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
       <div className="flex w-full max-w-md flex-col gap-6">
         <h1 className="text-3xl font-bold">{content.title}</h1>
 
-        <Card className="overflow-hidden p-0">
+        <Card className="border p-0">
           <Button
             variant="ghost"
             className="h-auto w-full justify-start whitespace-normal p-5 text-left text-base font-normal"
@@ -47,7 +47,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
           </Button>
         </Card>
         {/* TODO (#95): Define the purpose and required/optional status of profile fields before adding age or gender from the mockup. */}
-        <Card className="relative p-0 hover:bg-accent/40">
+        <Card className="relative border p-0 hover:bg-accent/40">
           <CardContent className="space-y-4 p-5">
             <p className="text-base font-normal">{content.professional}</p>
 

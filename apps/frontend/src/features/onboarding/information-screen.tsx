@@ -10,19 +10,19 @@ type Props = {
 export function InformationScreen({ onContinue, onSkip }: Props) {
   return (
     <div className="fixed inset-0 z-50 bg-background">
-      <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-8 px-6 py-10">
-        <div className="flex min-h-0 flex-1 flex-col justify-center gap-6 overflow-y-auto">
+      <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-8 px-6 pb-10 pt-24">
+        <div className="flex min-h-0 flex-1 flex-col justify-start gap-6 overflow-y-auto">
           <h1 className="text-3xl font-bold">{content.information.title}</h1>
 
-          <Card className="border">
-            <CardContent className="space-y-4 p-5 text-base">
+          <Card className="border p-0">
+            <CardContent className="space-y-4 p-5">
               <p>{content.information.description}</p>
               <p>{content.information.purpose}</p>
               <p>{content.information.disclaimer}</p>
               <p>{content.information.emergency}</p>
 
               {/* TODO (#95): Link to research material. */}
-              <Button variant="outline" className="text-base" disabled>
+              <Button variant="outline" disabled>
                 {content.information.research}
               </Button>
             </CardContent>

@@ -8,9 +8,18 @@ import { UsageSelectionScreen } from "./usage-selection-screen";
 import { InformationScreen } from "./information-screen";
 import { TutorialScreen } from "./tutorial-screen";
 import { ThankYouScreen } from "./thank-you-screen";
+import { Progress } from "@/components/ui/progress";
 
 // TODO (#95): Replace the fixed splash duration with actual app initialization logic.
 const SPLASH_DURATION_MS = 1500;
+
+const progressSteps = {
+  welcome: 1,
+  "usage-selection": 2,
+  information: 3,
+  tutorial: 4,
+  "thank-you": 5,
+} as const;
 
 export function OnboardingFlow() {
   const navigate = useNavigate({ from: "/onboarding" });
@@ -46,27 +55,35 @@ export function OnboardingFlow() {
     return <SplashScreen />;
   }
 
-  if (step === "welcome") {
-    return (
-      <WelcomeScreen onContinue={() => goToStep("usage-selection")} onSkip={finishOnboarding} />
-    );
-  }
+  const progress = progressSteps[step];
 
-  if (step === "usage-selection") {
-    return (
-      <UsageSelectionScreen
-        onExplore={() => goToStep("information")}
-        onContinue={() => goToStep("tutorial")}
-      />
-    );
-  }
-  if (step === "information") {
-    return <InformationScreen onContinue={() => goToStep("tutorial")} onSkip={finishOnboarding} />;
-  }
+  return (
+    <>
+      {step === "welcome" && (
+        <WelcomeScreen onContinue={() => goToStep("usage-selection")} onSkip={finishOnboarding} />
+      )}
 
-  if (step === "tutorial") {
-    return <TutorialScreen onContinue={() => goToStep("thank-you")} onSkip={finishOnboarding} />;
-  }
+      {step === "usage-selection" && (
+        <UsageSelectionScreen
+          onExplore={() => goToStep("information")}
+          onContinue={() => goToStep("tutorial")}
+        />
+      )}
 
-  return <ThankYouScreen onFinish={finishOnboarding} />;
+      {step === "information" && (
+        <InformationScreen onContinue={() => goToStep("tutorial")} onSkip={finishOnboarding} />
+      )}
+
+      {step === "tutorial" && (
+        <TutorialScreen onContinue={() => goToStep("thank-you")} onSkip={finishOnboarding} />
+      )}
+
+      {step === "thank-you" && <ThankYouScreen onFinish={finishOnboarding} />}
+
+      <div className="pointer-events-none fixed inset-x-0 top-4 z-[60] mx-auto w-full max-w-md px-6">
+        <p className="mb-2 text-right text-sm text-muted-foreground">Schritt {progress} von 5</p>
+        <Progress value={progress * 20} />
+      </div>
+    </>
+  );
 }
