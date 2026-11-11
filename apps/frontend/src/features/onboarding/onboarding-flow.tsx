@@ -1,5 +1,7 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { completeOnboarding } from "./onboarding-navigation";
+import type { OnboardingStep } from "./onboarding-navigation";
 import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
 import { UsageSelectionScreen } from "./usage-selection-screen";
@@ -7,34 +9,36 @@ import { InformationScreen } from "./information-screen";
 import { TutorialScreen } from "./tutorial-screen";
 import { ThankYouScreen } from "./thank-you-screen";
 
-type OnboardingStep =
-  | "splash"
-  | "welcome"
-  | "usage-selection"
-  | "information"
-  | "tutorial"
-  | "thank-you";
 // TODO (#95): Replace the fixed splash duration with actual app initialization logic.
 const SPLASH_DURATION_MS = 1500;
-// TODO (#95): Check this key on first launch to skip onboarding for returning users.
-const STORAGE_KEY = "helthtw:onboarding-complete";
 
 export function OnboardingFlow() {
-  const navigate = useNavigate();
-  const [step, setStep] = useState<OnboardingStep>("splash");
+  const navigate = useNavigate({ from: "/onboarding" });
+  const { step } = useSearch({ from: "/onboarding" });
+
+  useBlocker({
+    enableBeforeUnload: false,
+    shouldBlockFn: ({ action, next }) =>
+      (action === "BACK" || action === "GO") &&
+      (step === "splash" || step === "welcome" || next.pathname !== "/onboarding"),
+  });
 
   useEffect(() => {
     if (step !== "splash") return;
 
     const timer = window.setTimeout(() => {
-      setStep("welcome");
+      void navigate({ to: "/onboarding", search: { step: "welcome" }, replace: true });
     }, SPLASH_DURATION_MS);
 
     return () => window.clearTimeout(timer);
-  }, [step]);
+  }, [navigate, step]);
+
+  function goToStep(nextStep: OnboardingStep) {
+    void navigate({ to: "/onboarding", search: { step: nextStep } });
+  }
 
   function finishOnboarding() {
-    localStorage.setItem(STORAGE_KEY, "true");
+    completeOnboarding();
     void navigate({ to: "/", replace: true });
   }
 
@@ -44,24 +48,24 @@ export function OnboardingFlow() {
 
   if (step === "welcome") {
     return (
-      <WelcomeScreen onContinue={() => setStep("usage-selection")} onSkip={finishOnboarding} />
+      <WelcomeScreen onContinue={() => goToStep("usage-selection")} onSkip={finishOnboarding} />
     );
   }
 
   if (step === "usage-selection") {
     return (
       <UsageSelectionScreen
-        onExplore={() => setStep("information")}
-        onContinue={finishOnboarding}
+        onExplore={() => goToStep("information")}
+        onContinue={() => goToStep("tutorial")}
       />
     );
   }
   if (step === "information") {
-    return <InformationScreen onContinue={() => setStep("tutorial")} onSkip={finishOnboarding} />;
+    return <InformationScreen onContinue={() => goToStep("tutorial")} onSkip={finishOnboarding} />;
   }
 
   if (step === "tutorial") {
-    return <TutorialScreen onContinue={() => setStep("thank-you")} onSkip={finishOnboarding} />;
+    return <TutorialScreen onContinue={() => goToStep("thank-you")} onSkip={finishOnboarding} />;
   }
 
   return <ThankYouScreen onFinish={finishOnboarding} />;
