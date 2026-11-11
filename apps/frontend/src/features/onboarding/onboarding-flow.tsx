@@ -63,6 +63,7 @@ export function OnboardingFlow() {
         <WelcomeScreen onContinue={() => goToStep("usage-selection")} onSkip={finishOnboarding} />
       )}
 
+      {/* TODO (#95): Route the profession path through where??? */}
       {step === "usage-selection" && (
         <UsageSelectionScreen
           onExplore={() => goToStep("information")}
