@@ -17,6 +17,7 @@ type Props = {
 };
 
 export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
+  // TODO (#95): Use React Hook Form and a shared Zod schema once the profile fields are defined.
   const [profession, setProfession] = useState("");
   const [hasError, setHasError] = useState(false);
 
@@ -26,6 +27,8 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
       return;
     }
 
+    // TODO (#95): Pass profession and usage mode to the flow and retain the draft on Back.
+    // TODO (#95): Define profile API and offline persistence before saving these values.
     onContinue();
   }
 
@@ -43,7 +46,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
             {content.explore}
           </Button>
         </Card>
-        {/* TODO (#95): Clarify whether age and gender should be collected in the onboarding, as shown in the mockup. */}
+        {/* TODO (#95): Define the purpose and required/optional status of profile fields before adding age or gender from the mockup. */}
         <Card className="relative p-0 hover:bg-accent/40">
           <CardContent className="space-y-4 p-5">
             <p className="text-base font-normal">{content.professional}</p>
