@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { beforeHomeLoad } from "@/features/onboarding/onboarding-navigation";
 
 export const Route = createFileRoute("/_tabs/")({
-  // TODO (#95): Open onboarding on first launch when no completion has been stored.
+  beforeLoad: beforeHomeLoad,
   component: Start,
 });
 

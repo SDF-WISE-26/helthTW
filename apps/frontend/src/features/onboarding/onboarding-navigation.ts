@@ -18,16 +18,24 @@ export function validateOnboardingSearch(search: Record<string, unknown>) {
 const STORAGE_KEY = "helthtw:onboarding-complete";
 let completedInSession = false;
 
-export function beforeOnboardingLoad() {
-  let completed = completedInSession;
+function hasCompletedOnboarding() {
+  if (completedInSession) return true;
 
   try {
-    completed ||= localStorage.getItem(STORAGE_KEY) === "true";
+    return localStorage.getItem(STORAGE_KEY) === "true";
   } catch {
-    // Browser storage may be unavailable; session completion still applies.
+    return false;
   }
+}
 
-  if (completed) {
+export function beforeHomeLoad() {
+  if (!hasCompletedOnboarding()) {
+    throw redirect({ to: "/onboarding", search: { step: "splash" }, replace: true });
+  }
+}
+
+export function beforeOnboardingLoad() {
+  if (hasCompletedOnboarding()) {
     throw redirect({ to: "/", replace: true });
   }
 }
