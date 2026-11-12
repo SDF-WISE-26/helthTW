@@ -8,7 +8,7 @@ const registry: Record<string, () => llm.LLM> = {
   gemini: () =>
     new google.LLM({
       model: "gemini-3.5-flash-lite",
-      maxOutputTokens: 80,
+      maxOutputTokens: 150,
       thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
     }),
 };

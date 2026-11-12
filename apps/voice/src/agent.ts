@@ -12,6 +12,7 @@ import * as silero from "@livekit/agents-plugin-silero";
 import dotenv from "dotenv";
 import { fileURLToPath } from "node:url";
 import { parseHistory } from "./history.ts";
+import { GREETING, VOICE_INSTRUCTIONS } from "./prompt.ts";
 import { createLlm } from "./providers/llm.ts";
 import { createStt } from "./providers/stt.ts";
 import { createTts } from "./providers/tts.ts";
@@ -44,14 +45,14 @@ export default defineAgent({
 
     await session.start({
       agent: new voice.Agent({
-        instructions: "Antworte auf Deutsch in höchstens einem kurzen Satz.",
+        instructions: VOICE_INSTRUCTIONS,
         chatCtx,
       }),
       room: ctx.room,
     });
     await ctx.connect();
     // Fixed greeting (no LLM call), only at the start of a conversation.
-    if (history.length === 0) session.say("Hallo.");
+    if (history.length === 0) session.say(GREETING);
   },
 });
 
