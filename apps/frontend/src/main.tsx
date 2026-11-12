@@ -3,8 +3,12 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource-variable/inter";
+import { api } from "./api";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
+
+// Creates the account on first open. Not awaited: any later request creates it too.
+void api.api.v1.accounts.me.$get();
 
 const queryClient = new QueryClient();
 

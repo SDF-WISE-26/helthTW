@@ -123,7 +123,7 @@ Append new decisions at the bottom, numbered consecutively and in the same struc
 
 ## 0016: Backend code by module
 
-- **Status:** accepted · **Date:** 2026-11-01 · **Involved:** @behritt · **Ref:** #17
+- **Status:** accepted, reference module replaced by 0020 · **Date:** 2026-11-01 · **Involved:** @behritt · **Ref:** #17
 - **Decision:** Each domain area has a folder `apps/backend/src/modules/<area>/` with `<area>.routes.ts` and `<area>.service.ts`. Routes only handle HTTP: validate, call the service, set the status. Services contain logic and Drizzle queries, receive plain values and never the Hono `Context`. Shared code lives in `lib/` and `middleware/`. The REST contract is in [`specs/backend.md`](specs/backend.md), `users` is the reference module.
 - **Why:** Same reasoning as in the frontend (0013): several people work in parallel, an area can be found, reviewed and deleted as a whole.
 - **Rejected:** Classic MVC (folders by type become confusing, there are no views). A separate repository layer (Drizzle is already thin, it would just be boilerplate).
@@ -151,3 +151,11 @@ Append new decisions at the bottom, numbered consecutively and in the same struc
 - **Decision:** `packages/shared` holds code used by both frontend and backend, mostly Zod schemas. Rules for what belongs there are in its `README.md`. It has no build step: `exports` point at `src/<folder>/index.ts`, imported as `@helthtw/shared/<folder>`. Packages in `packages/` get the `@helthtw/` scope so imports are clearly ours, apps keep their short names for `vp run backend#…`. Vite bundles it into the frontend, the backend bundles it into `dist` via `deps.alwaysBundle`. Real schemas come with the tickets that need them (#54, #136), until then `@helthtw/shared/example` is a placeholder.
 - **Why:** Only used inside this repo, so a build would just add a watcher in `dev` and stale `dist/` folders. One folder per area like 0013 and 0016, so parallel PRs do not collide on one index file.
 - **Caution:** Without `alwaysBundle` the backend bundle keeps `@helthtw/shared` external and Node fails on the `.ts` files in production. Both Dockerfiles copy `packages/shared`, a new package under `packages/` needs the same.
+
+## 0020: Anonymous account by device ID
+
+- **Status:** accepted · **Date:** 2026-11-05 · **Involved:** @behritt · **Ref:** #92, #93, #145
+- **Decision:** The `accounts` table (`id` uuid, `createdAt`) replaces `users`, there are no fields for name, email or phone. The device creates the ID with `crypto.randomUUID()`, stores it in `localStorage` and sends it as `X-Account-Id` with every request. `middleware/require-account.ts` rejects a missing or invalid ID with 401 and creates the account on its first request. `DELETE /api/v1/accounts/me` deletes it, other tables with account data reference `accounts.id` as `account_id` with `onDelete: "cascade"`. `accounts` replaces `users` as the reference module from 0016, requirements in [`specs/accounts.md`](specs/accounts.md).
+- **Why:** Use without registration (#49). Deliberately simple, so that check-ins and questionnaires (#44, #45) can save.
+- **Rejected:** Token hash in an httpOnly cookie (moved to #145). Creating the account only on the first write (#92 asks for first open).
+- **Caution:** Insecure, test data only: the ID is also the password and readable via XSS, Safari deletes `localStorage` after 7 days without use. Hardening in #145.
