@@ -1,0 +1,17 @@
+name: Johanniter Regionalverband Berlin – PSNV
+category: psnv-e
+audience: Einsatzkräfte der Johanniter Berlin
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: PSNV
+    person: Andrea Ferber
+    value: "+49308169012250"
+  - type: email
+    label: PSNV
+    value: PSNV.Berlin@johanniter.de
+  - type: phone
+    label: Zentrale
+    value: "+49308169010"
+website: https://www.johanniter.de/johanniter-unfall-hilfe/einrichtung/regionalverband-berlin-163/
+source: https://www.johanniter.de/johanniter-unfall-hilfe/einrichtung/regionalverband-berlin-163/

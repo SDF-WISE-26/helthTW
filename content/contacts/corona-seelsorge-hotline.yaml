@@ -1,0 +1,11 @@
+name: Corona-Seelsorge-Hotline
+category: krisen-hotlines
+audience: alle Menschen
+tags: [seelsorge, krise]
+channels:
+  - type: phone
+    value: "+4930403665885"
+availability: täglich 8–24 Uhr
+website: https://www.berliner-notruf.de/
+source: berlin.de – Landesbeauftragte für psychische Gesundheit
+lastReviewed: 2026-03-23

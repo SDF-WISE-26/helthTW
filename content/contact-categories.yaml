@@ -1,0 +1,6 @@
+# Order here is the order of the contact groups on /info.
+- id: psnv-e
+  label: Hilfenummern für Einsatzkräfte (PSNV-E)
+
+- id: krisen-hotlines
+  label: Allgemeine Hotlines in Krisen

@@ -1,0 +1,11 @@
+name: Telefon Doweria
+category: krisen-hotlines
+audience: russischsprachige Menschen
+tags: [seelsorge, krise]
+channels:
+  - type: phone
+    value: "+4930440308454"
+availability: rund um die Uhr
+website: https://www.berliner-notruf.de/
+source: berlin.de – Landesbeauftragte für psychische Gesundheit
+lastReviewed: 2026-03-23

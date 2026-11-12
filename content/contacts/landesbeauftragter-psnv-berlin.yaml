@@ -1,0 +1,13 @@
+name: Landesbeauftragter PSNV Berlin (länderübergreifende PSNV)
+category: psnv-e
+audience: organisationsübergreifend
+tags: [psnv, einsatznachsorge]
+channels:
+  - type: phone
+    person: Justus Münster
+    value: "+493038760600"
+  - type: email
+    person: Justus Münster
+    value: lb-psnv@berliner-feuerwehr.de
+website: https://lfag-psnv.de/?page_id=37
+source: https://lfag-psnv.de/?page_id=37

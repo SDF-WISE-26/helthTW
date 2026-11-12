@@ -1,0 +1,17 @@
+name: THW Landesverband Berlin, Brandenburg, Sachsen-Anhalt – Einsatznachsorgeteam (ENT)
+category: psnv-e
+audience: Einsatzkräfte des THW im Landesverband Berlin, Brandenburg, Sachsen-Anhalt
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: ENT
+    value: "+4915168814046"
+    availability: rund um die Uhr
+  - type: phone
+    label: Landesverband
+    value: "+4930306820"
+  - type: email
+    label: Landesverband
+    value: Poststelle.LVBEBBST@thw.de
+website: https://www.thw.de/DE/THW/Organisation/Bundesanstalt/Landesverbaende/BEBBST/ENT/ENT.html
+source: https://www.thw.de/DE/THW/Organisation/Bundesanstalt/Landesverbaende/BEBBST/ENT/ENT.html

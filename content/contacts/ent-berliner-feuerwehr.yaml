@@ -1,0 +1,13 @@
+name: Einsatznachsorgeteam (ENT) der Berliner Feuerwehr
+category: psnv-e
+audience: Einsatzkräfte der Berliner Feuerwehr oder angegliederter Hilfsorganisationen
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: Mobil
+    value: "+491723848219"
+  - type: phone
+    label: Festnetz
+    value: "+4930387707000"
+website: https://www.berliner-feuerwehr.de/ueber-uns/spezialisten/einsatznachsorgeteam-ent/
+source: https://www.berliner-feuerwehr.de/ueber-uns/spezialisten/einsatznachsorgeteam-ent/
