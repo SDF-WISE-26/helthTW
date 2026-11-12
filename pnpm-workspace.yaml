@@ -38,6 +38,7 @@ catalog:
   drizzle-kit: 1.0.0-rc.4
   drizzle-orm: 1.0.0-rc.4
   hono: ^4.13.13
+  livekit-client: ^2.23.0
   livekit-server-sdk: ^2.19.3
   lucide-react: ^1.59.0
   pg: ^8.23.1

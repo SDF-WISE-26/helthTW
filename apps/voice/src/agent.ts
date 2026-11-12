@@ -55,9 +55,10 @@ export default defineAgent({
   },
 });
 
-// Without AGENT_NAME the agent joins every room (handy for testing in the LiveKit Agents Playground,
-// but then it gets no chat history). With AGENT_NAME=helthtw-voice it is only started for rooms whose
-// token asks for it, which is what the backend's voice module does. Use that in production.
+// Without AGENT_NAME the agent joins every room that has no explicit dispatch (handy for the LiveKit
+// Agents Playground, but it gets no chat history). With AGENT_NAME=helthtw-voice it is only started
+// for rooms whose token asks for it by name, which is what the backend's voice module does. A token
+// with such a request is NOT picked up by an agent without a name. Use the name in production.
 cli.runApp(
   new ServerOptions({
     agent: fileURLToPath(import.meta.url),
