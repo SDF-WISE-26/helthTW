@@ -24,7 +24,7 @@ Info material and contacts for `/info`.
 
 ## Rules
 
-- **The file name is the ID.** Lowercase letters, digits, hyphens. Never rename a file, other parts of the app link to it. IDs used in code are in `packages/shared/src/content/ids.ts`.
+- **The file name is the ID.** Lowercase letters, digits, hyphens. Never rename a file, other parts of the app link to it.
 - **Tags** only from `tags.yaml`. A new tag means one new entry there, in the same PR.
 - Every item has exactly **one topic**.
 - **PDFs and pages are linked** (`url: https://…`), never copied here (copyright, the repo is public). There are no own files yet.

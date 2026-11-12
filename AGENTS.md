@@ -49,4 +49,3 @@ release. Add a tool name to select part of the graph. For example, run
 - `decisions.md`: append at the bottom in the same structure. Only decisions that are expensive to reverse or were discussed. Accepted on merge. Never overwrite: add a new number and mark the old one "superseded by 00xx".
 - `specs/`: describe _what_ an area must do, not how it looks or is built.
 - `workflow.md`: update in the same PR when hooks or pipelines change.
-- The repo is public: no names, emails, credentials, interview or health data.

@@ -7,6 +7,7 @@ export default defineConfig({
   staged: {
     "*": ["vp check --fix", "secretlint"],
     "*.{ts,tsx}": () => "vp test --passWithNoTests",
+    "content/**": () => "vp test apps/frontend/src/features/info",
   },
   lint: {
     ignorePatterns: ["**/routeTree.gen.ts"],
