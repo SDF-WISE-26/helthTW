@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import contentCollections from "@content-collections/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -12,6 +13,8 @@ export default defineConfig({
     tanstackRouter({ target: "react", autoCodeSplitting: true, quoteStyle: "double" }),
     react(),
     tailwindcss(),
+    // content/ as typed data, see content-collections.ts (decision 0020).
+    contentCollections(),
     // Manifest and service worker, only in the build (decision 0014).
     // Our own src/sw.ts instead of a generated one, so push can be added there later.
     VitePWA({

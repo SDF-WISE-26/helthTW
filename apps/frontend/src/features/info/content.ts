@@ -1,21 +1,16 @@
-import { buildContent } from "@helthtw/shared/content";
+import { allContacts, allItems, categoryList, tagList, topicList } from "content-collections";
 
-// content/ is bundled into the app at build time (decision 0020), so it works offline and
-// changes go live with the next release. Vite picks up new and changed files in dev.
-// With `base`, the keys are the paths inside content/, e.g. "./items/nach-dem-einsatz.md".
-const raw = import.meta.glob<string>(["./*.yaml", "./{items,contacts}/*"], {
-  base: "../../../../../content",
-  query: "?raw",
-  import: "default",
-  eager: true,
-});
-const files = Object.fromEntries(
-  Object.entries(raw).map(([path, text]) => [path.slice("./".length), text]),
-);
+export type { Contact, ContentItem } from "content-collections";
 
-export const { content, problems } = buildContent(files);
+const categoryOrder = new Map(categoryList.entries.map((c, i) => [c.id, i]));
 
-// The content test fails on these, in dev they only show up in the console.
-if (import.meta.env.DEV) {
-  for (const p of problems) console.warn(`content/${p.file}: ${p.message}`);
-}
+export const content = {
+  topics: topicList.entries,
+  categories: categoryList.entries,
+  tags: tagList.entries,
+  items: allItems,
+  // In the order of contact-categories.yaml.
+  contacts: allContacts.toSorted(
+    (a, b) => categoryOrder.get(a.category)! - categoryOrder.get(b.category)!,
+  ),
+};

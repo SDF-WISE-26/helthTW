@@ -7,7 +7,6 @@
     "./*": "./src/*/index.ts"
   },
   "dependencies": {
-    "yaml": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
