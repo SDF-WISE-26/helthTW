@@ -1,8 +1,11 @@
 import { defineConfig } from "vite-plus";
 
+// Local agent, editor and MCP settings, each person keeps their own.
+const localTools = [".claude/**", ".ai/**", ".idea/**", ".mcp.json"];
+
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["**/routeTree.gen.ts", "apps/backend/drizzle/**"],
+    ignorePatterns: ["**/routeTree.gen.ts", "apps/backend/drizzle/**", ...localTools],
   },
   staged: {
     "*": ["vp check --fix", "secretlint"],
@@ -10,7 +13,7 @@ export default defineConfig({
     "content/**": () => "vp test apps/frontend/src/features/info",
   },
   lint: {
-    ignorePatterns: ["**/routeTree.gen.ts"],
+    ignorePatterns: ["**/routeTree.gen.ts", ...localTools],
     plugins: ["typescript", "oxc"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: {
