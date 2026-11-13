@@ -13,7 +13,6 @@ export default defineConfig({
     tanstackRouter({ target: "react", autoCodeSplitting: true, quoteStyle: "double" }),
     react(),
     tailwindcss(),
-    // content/ as typed data, see content-collections.ts (decision 0020).
     contentCollections(),
     // Manifest and service worker, only in the build (decision 0014).
     // Our own src/sw.ts instead of a generated one, so push can be added there later.

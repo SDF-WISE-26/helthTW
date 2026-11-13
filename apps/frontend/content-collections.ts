@@ -6,17 +6,17 @@ import {
 } from "@content-collections/core";
 import { parse } from "yaml";
 import { z } from "zod";
-// Bundled into the config via the path in tsconfig.json, Node cannot load our .ts on its own.
-import {
-  categoryFile,
-  contactFile,
-  itemFrontmatter,
-  slug,
-  tagFile,
-  topicFile,
-} from "@helthtw/shared/content";
+
+// Schemas for the files in content/. Unknown fields are stripped instead of
+// rejected and most fields are optional, so the format can grow additively.
+// Types come from the generated "content-collections" module, not from these schemas.
 
 const root = "../../content";
+
+const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "lowercase letters, digits, hyphens");
+const text = z.string().trim().min(1);
+const date = z.iso.date();
+const web = z.url({ protocol: /^https?$/ });
 
 // Our lists are YAML arrays, Content Collections wants an object per file.
 const list = defineParser((text) => ({ entries: parse(text) }));
@@ -26,21 +26,23 @@ const topics = defineSingleton({
   typeName: "TopicList",
   filePath: `${root}/topics.yaml`,
   parser: list,
-  schema: z.object({ entries: topicFile }),
+  schema: z.object({
+    entries: z.array(z.object({ id: slug, title: text, description: text.optional() })),
+  }),
 });
 const categories = defineSingleton({
   name: "categories",
   typeName: "CategoryList",
   filePath: `${root}/contact-categories.yaml`,
   parser: list,
-  schema: z.object({ entries: categoryFile }),
+  schema: z.object({ entries: z.array(z.object({ id: slug, label: text })) }),
 });
 const tags = defineSingleton({
   name: "tags",
   typeName: "TagList",
   filePath: `${root}/tags.yaml`,
   parser: list,
-  schema: z.object({ entries: tagFile }),
+  schema: z.object({ entries: z.array(z.object({ id: slug, label: text })) }),
 });
 
 // The file name is the id, links to it must survive a new title.
@@ -56,13 +58,28 @@ const checkTags = (file: string, ids: string[], known: { id: string }[]) => {
   if (unknown.length) throw new Error(`${file}: unknown tag ${unknown.join(", ")}`);
 };
 
+const itemBase = {
+  title: text,
+  summary: text,
+  topic: slug,
+  tags: z.array(slug).default([]),
+  source: text.optional(),
+  lastReviewed: date.optional(),
+  // The Markdown below the frontmatter.
+  content: z.string(),
+};
+
 const items = defineCollection({
   name: "items",
   typeName: "ContentItem",
   directory: `${root}/items`,
   include: "*.md",
   parser: "frontmatter",
-  schema: itemFrontmatter.and(z.object({ content: z.string() })),
+  // `kind` is the only list code branches on, so it is an enum. Topics, categories and tags are content.
+  schema: z.discriminatedUnion("kind", [
+    z.object({ kind: z.literal("article"), ...itemBase }),
+    z.object({ kind: z.enum(["pdf", "link"]), url: web, ...itemBase }),
+  ]),
   transform: (item, context) => {
     const { content, _meta, ...data } = item;
     const id = fileId(_meta);
@@ -75,13 +92,42 @@ const items = defineCollection({
   },
 });
 
+const channelBase = {
+  label: text.optional(),
+  person: text.optional(),
+  availability: text.optional(),
+};
+
 const contacts = defineCollection({
   name: "contacts",
   typeName: "Contact",
   directory: `${root}/contacts`,
   include: "*.yaml",
   parser: "yaml",
-  schema: contactFile,
+  schema: z.object({
+    name: text,
+    category: slug,
+    audience: text.optional(),
+    description: text.optional(),
+    tags: z.array(slug).default([]),
+    channels: z
+      .array(
+        z.discriminatedUnion("type", [
+          // E.164 without spaces, so it works as a tel: link.
+          z.object({
+            type: z.literal("phone"),
+            value: z.string().regex(/^\+[1-9]\d{4,14}$/, "+49…"),
+            ...channelBase,
+          }),
+          z.object({ type: z.literal("email"), value: z.email(), ...channelBase }),
+        ]),
+      )
+      .default([]),
+    availability: text.optional(),
+    website: web.optional(),
+    source: text.optional(),
+    lastReviewed: date.optional(),
+  }),
   transform: (contact, context) => {
     const { _meta, ...data } = contact;
     const id = fileId(_meta);

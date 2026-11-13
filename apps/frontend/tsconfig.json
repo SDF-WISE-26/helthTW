@@ -8,9 +8,7 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "content-collections": ["./.content-collections/generated"],
-      // Content Collections bundles imports listed here into its config, other packages are left to Node.
-      "@helthtw/shared/*": ["../../packages/shared/src/*"]
+      "content-collections": ["./.content-collections/generated"]
     }
   }
 }
