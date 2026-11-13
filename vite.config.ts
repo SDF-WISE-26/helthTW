@@ -34,4 +34,11 @@ export default defineConfig({
   run: {
     cache: true,
   },
+  test: {
+    env: {
+      LLM_BASE_URL: "http://localhost:9999/v1",
+      LLM_API_KEY: "test-key",
+      LLM_MODEL: "test-model",
+    },
+  },
 });

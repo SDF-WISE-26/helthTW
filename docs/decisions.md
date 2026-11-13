@@ -123,7 +123,7 @@ Append new decisions at the bottom, numbered consecutively and in the same struc
 
 ## 0016: Backend code by module
 
-- **Status:** accepted · **Date:** 2026-11-01 · **Involved:** @behritt · **Ref:** #17
+- **Status:** accepted, reference module replaced by 0020 · **Date:** 2026-11-01 · **Involved:** @behritt · **Ref:** #17
 - **Decision:** Each domain area has a folder `apps/backend/src/modules/<area>/` with `<area>.routes.ts` and `<area>.service.ts`. Routes only handle HTTP: validate, call the service, set the status. Services contain logic and Drizzle queries, receive plain values and never the Hono `Context`. Shared code lives in `lib/` and `middleware/`. The REST contract is in [`specs/backend.md`](specs/backend.md), `users` is the reference module.
 - **Why:** Same reasoning as in the frontend (0013): several people work in parallel, an area can be found, reviewed and deleted as a whole.
 - **Rejected:** Classic MVC (folders by type become confusing, there are no views). A separate repository layer (Drizzle is already thin, it would just be boilerplate).
@@ -152,9 +152,10 @@ Append new decisions at the bottom, numbered consecutively and in the same struc
 - **Why:** Only used inside this repo, so a build would just add a watcher in `dev` and stale `dist/` folders. One folder per area like 0013 and 0016, so parallel PRs do not collide on one index file.
 - **Caution:** Without `alwaysBundle` the backend bundle keeps `@helthtw/shared` external and Node fails on the `.ts` files in production. Both Dockerfiles copy `packages/shared`, a new package under `packages/` needs the same.
 
-## 0020: Content format and pipeline
+## 0020: Anonymous account by device ID
 
-- **Status:** proposed · **Date:** 2026-11-10 · **Involved:** @justingebert · **Ref:** #54, builds on 0017
-- **Decision:** Items are Markdown with YAML frontmatter, contacts and the lists (topics, contact categories, tags) are YAML, one file each, the file name is the ID. Content Collections (`apps/frontend/content-collections.ts`) turns them into typed data at build time and checks them with the Zod schemas from `@helthtw/shared/content`. The data is bundled into the frontend, there is no endpoint. A test fails on any problem, in dev broken files are logged and left out. Article text stays Markdown, how anything is shown is decided in the frontend.
-- **Why:** Content only changes with a release (0011), so a database or endpoint adds nothing. Bundled, it works offline (#62) and search runs in the browser (#61). Markdown keeps prose reviewable, separate files avoid merge conflicts. Content Collections is planned to also handle MDX and image processing later.
-- **Rejected:** Syncing into Postgres or `GET /api/v1/content` (migrations, asset serving, runtime caching). An own loader with `import.meta.glob` (MDX and image processing would have to be built by hand). Velite (its own schema API, brings `sharp` and MDX up front). Tags as `z.enum` (every tag would be a code change). Contacts as an item `kind` (different fields, tags already connect both).
+- **Status:** accepted · **Date:** 2026-11-05 · **Involved:** @behritt · **Ref:** #92, #93, #145
+- **Decision:** The `accounts` table (`id` uuid, `createdAt`) replaces `users`, there are no fields for name, email or phone. The device creates the ID with `crypto.randomUUID()`, stores it in `localStorage` and sends it as `X-Account-Id` with every request. `middleware/require-account.ts` rejects a missing or invalid ID with 401 and creates the account on its first request. `DELETE /api/v1/accounts/me` deletes it, other tables with account data reference `accounts.id` as `account_id` with `onDelete: "cascade"`. `accounts` replaces `users` as the reference module from 0016, requirements in [`specs/accounts.md`](specs/accounts.md).
+- **Why:** Use without registration (#49). Deliberately simple, so that check-ins and questionnaires (#44, #45) can save.
+- **Rejected:** Token hash in an httpOnly cookie (moved to #145). Creating the account only on the first write (#92 asks for first open).
+- **Caution:** Insecure, test data only: the ID is also the password and readable via XSS, Safari deletes `localStorage` after 7 days without use. Hardening in #145.
