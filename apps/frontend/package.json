@@ -11,13 +11,16 @@
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
+    "@ai-sdk/react": "catalog:",
     "@fontsource-variable/inter": "catalog:",
     "@helthtw/shared": "workspace:*",
     "@hookform/resolvers": "catalog:",
+    "@shadcn/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
+    "ai": "catalog:",
     "class-variance-authority": "catalog:",
     "cn": "catalog:",
     "hono": "catalog:",
@@ -26,12 +29,15 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
+    "react-markdown": "catalog:",
+    "remark-gfm": "catalog:",
     "shadcn": "catalog:",
     "tw-animate-css": "catalog:",
     "vaul": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/router-plugin": "catalog:",
     "@types/node": "catalog:",
