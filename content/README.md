@@ -29,5 +29,6 @@ Info material and contacts for `/info`.
 - Every item has exactly **one topic**.
 - **PDFs and pages are linked** (`url: https://…`), never copied here (copyright, the repo is public). There are no own files yet.
 - **Contacts** are public services. Contact persons may be named only if the organisation lists them publicly, with that page as `source`.
+- IDs in `topics.yaml`, `contact-categories.yaml` and `tags.yaml` must be unique.
 - Phone numbers as `+49…` without spaces, so they can be called directly.
 - Unknown fields are ignored, so a new field can be added before the app uses it.

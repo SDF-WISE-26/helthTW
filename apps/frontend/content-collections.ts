@@ -21,13 +21,23 @@ const web = z.url({ protocol: /^https?$/ });
 // Our lists are YAML arrays, Content Collections wants an object per file.
 const list = defineParser((text) => ({ entries: parse(text) }));
 
+// Other files reference list entries by id, so a duplicate would be ambiguous.
+const idList = <T extends z.ZodType<{ id: string }>>(entry: T) =>
+  z.array(entry).superRefine((entries, ctx) => {
+    const ids = entries.map((e) => e.id);
+    const duplicates = new Set(ids.filter((id, i) => ids.indexOf(id) !== i));
+    if (duplicates.size) {
+      ctx.addIssue({ code: "custom", message: `duplicate id ${[...duplicates].join(", ")}` });
+    }
+  });
+
 const topics = defineSingleton({
   name: "topics",
   typeName: "TopicList",
   filePath: `${root}/topics.yaml`,
   parser: list,
   schema: z.object({
-    entries: z.array(z.object({ id: slug, title: text, description: text.optional() })),
+    entries: idList(z.object({ id: slug, title: text, description: text.optional() })),
   }),
 });
 const categories = defineSingleton({
@@ -35,14 +45,14 @@ const categories = defineSingleton({
   typeName: "CategoryList",
   filePath: `${root}/contact-categories.yaml`,
   parser: list,
-  schema: z.object({ entries: z.array(z.object({ id: slug, label: text })) }),
+  schema: z.object({ entries: idList(z.object({ id: slug, label: text })) }),
 });
 const tags = defineSingleton({
   name: "tags",
   typeName: "TagList",
   filePath: `${root}/tags.yaml`,
   parser: list,
-  schema: z.object({ entries: z.array(z.object({ id: slug, label: text })) }),
+  schema: z.object({ entries: idList(z.object({ id: slug, label: text })) }),
 });
 
 // The file name is the id, links to it must survive a new title.
@@ -95,7 +105,6 @@ const items = defineCollection({
 const channelBase = {
   label: text.optional(),
   person: text.optional(),
-  availability: text.optional(),
 };
 
 const contacts = defineCollection({

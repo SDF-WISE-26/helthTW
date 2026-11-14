@@ -1,6 +1,10 @@
 import { allContacts, allItems, categoryList, tagList, topicList } from "content-collections";
+import type { CategoryList, TagList, TopicList } from "content-collections";
 
 export type { Contact, ContentItem } from "content-collections";
+export type Topic = TopicList["entries"][number];
+export type Category = CategoryList["entries"][number];
+export type Tag = TagList["entries"][number];
 
 const categoryOrder = new Map(categoryList.entries.map((c, i) => [c.id, i]));
 
