@@ -1,0 +1,11 @@
+name: Muslimisches SeelsorgeTelefon
+category: krisen-hotlines
+audience: muslimische Menschen
+tags: [seelsorge, krise]
+channels:
+  - type: phone
+    value: "+4930443509821"
+    availability: rund um die Uhr
+website: https://www.berliner-notruf.de/
+source: berlin.de – Landesbeauftragte für psychische Gesundheit
+lastReviewed: 2026-03-23

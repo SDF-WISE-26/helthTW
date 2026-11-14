@@ -49,4 +49,3 @@ release. Add a tool name to select part of the graph. For example, run
 - `decisions/`: when a discussion ends in a decision that is expensive to reverse, suggest recording it. One file per decision, `<YYYY-MM-DD>-<topic>.md` with an English topic. Structure: `# Title`, then bullets **Status** (proposed, accepted or superseded by `<file name>`) · **Date** · **Involved** · **Ref**, then **Decision**, **Why**, **Rejected**, optionally **Caution**. Accepted on merge. Never rewrite one: add a new file and set the old one's status to "superseded by `<file name>`".
 - `specs/`: describe _what_ an area must do, not how it looks or is built.
 - `workflow.md`: update in the same PR when hooks or pipelines change.
-- The repo is public: no names, emails, credentials, interview or health data.

@@ -1,0 +1,21 @@
+name: Malteser Berlin – PSNV
+category: psnv-e
+audience: Einsatzkräfte der Malteser
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: Bundesweite Nachsorge-Hotline
+    value: "+4922198229557"
+  - type: phone
+    label: Leitung PSNV Berlin
+    person: Stefan Bernart
+    value: "+4930348003210"
+  - type: email
+    label: Leitung PSNV Berlin
+    person: Stefan Bernart
+    value: stefan.bernart@malteser.org
+  - type: phone
+    label: Geschäftsstelle
+    value: "+49303480030"
+website: https://www.malteser.de/standorte/berlin/einsatzdienste-und-katastrophenschutz/psnv.html
+source: https://www.malteser.de/standorte/berlin/einsatzdienste-und-katastrophenschutz/psnv.html

@@ -1,0 +1,14 @@
+name: ASB Berlin – PSNV im Katastrophenschutz
+category: psnv-e
+audience: Einsatzkräfte des ASB Berlin
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: Zentrale
+    value: "+4930213070"
+  - type: email
+    label: Ansprechperson
+    person: Silvia Zesch
+    value: s.zesch@asb-berlin.de
+website: https://www.asb-berlin.de/unsere-angebote/katastrophenschutz/psychosoziale-notfallversorgung
+source: https://www.asb-berlin.de/unsere-angebote/katastrophenschutz/psychosoziale-notfallversorgung

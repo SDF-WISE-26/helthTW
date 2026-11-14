@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "tsc -b && vp build",
+    "build": "content-collections build && tsc -b && vp build",
+    "content": "content-collections build",
     "lint": "vp lint",
     "preview": "vp preview",
     "generate-pwa-assets": "pwa-assets-generator"
@@ -32,6 +33,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@content-collections/cli": "catalog:",
+    "@content-collections/core": "catalog:",
+    "@content-collections/vite": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/router-plugin": "catalog:",
     "@types/node": "catalog:",
@@ -46,6 +50,7 @@
     "vite-plugin-pwa": "catalog:",
     "vite-plus": "catalog:",
     "workbox-precaching": "catalog:",
-    "workbox-routing": "catalog:"
+    "workbox-routing": "catalog:",
+    "yaml": "catalog:"
   }
 }
