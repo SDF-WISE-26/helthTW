@@ -5,6 +5,6 @@ tags: [psnv, einsatznachsorge]
 channels:
   - type: phone
     value: "+498005892272"
-availability: rund um die Uhr
+    availability: rund um die Uhr
 website: https://www.netzwerk-psnv.de/
 source: https://www.netzwerk-psnv.de/

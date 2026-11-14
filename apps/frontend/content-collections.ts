@@ -105,6 +105,7 @@ const items = defineCollection({
 const channelBase = {
   label: text.optional(),
   person: text.optional(),
+  availability: text.optional(),
 };
 
 const contacts = defineCollection({
@@ -132,7 +133,6 @@ const contacts = defineCollection({
         ]),
       )
       .default([]),
-    availability: text.optional(),
     website: web.optional(),
     source: text.optional(),
     lastReviewed: date.optional(),

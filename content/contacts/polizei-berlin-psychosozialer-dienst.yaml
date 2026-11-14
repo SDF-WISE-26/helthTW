@@ -7,6 +7,6 @@ channels:
   - type: phone
     label: Allgemeine Vermittlung (Servicetelefon)
     value: "+493046644664"
-availability: Vermittlung Mo–Fr 8–18 Uhr
+    availability: Mo–Fr 8–18 Uhr
 website: https://www.berlin.de/polizei/dienststellen/direktion-zentraler-service/personal/artikel.856959.php
 source: https://www.berlin.de/polizei/dienststellen/direktion-zentraler-service/personal/artikel.856959.php

@@ -5,9 +5,10 @@ tags: [seelsorge, krise]
 channels:
   - type: phone
     value: "+498001110111"
+    availability: rund um die Uhr, kostenfrei
   - type: phone
     value: "+498001110222"
-availability: rund um die Uhr, kostenfrei
+    availability: rund um die Uhr, kostenfrei
 website: https://www.berliner-notruf.de/
 source: berlin.de – Landesbeauftragte für psychische Gesundheit
 lastReviewed: 2026-03-23

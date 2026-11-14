@@ -6,12 +6,12 @@ channels:
   - type: phone
     label: ENT
     value: "+4915168814046"
+    availability: rund um die Uhr
   - type: phone
     label: Landesverband
     value: "+4930306820"
   - type: email
     label: Landesverband
     value: Poststelle.LVBEBBST@thw.de
-availability: ENT rund um die Uhr
 website: https://www.thw.de/DE/THW/Organisation/Bundesanstalt/Landesverbaende/BEBBST/ENT/ENT.html
 source: https://www.thw.de/DE/THW/Organisation/Bundesanstalt/Landesverbaende/BEBBST/ENT/ENT.html
