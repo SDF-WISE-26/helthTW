@@ -4,6 +4,7 @@ import { ChatEmpty } from "./chat-empty";
 import { ChatThread } from "./chat-thread";
 import { ChatInput } from "./chat-input";
 import { ChatError } from "@/features/chat/chat-error.tsx";
+import { ChatAiNotice } from "@/features/chat/chat-ai-notice.tsx";
 
 const transport = new DefaultChatTransport({
   api: "/api/v1/chat",
@@ -17,6 +18,8 @@ export function ChatMain() {
 
   return (
     <div className="-m-4 flex min-h-0 flex-1 flex-col">
+      <ChatAiNotice />
+
       {messages.length === 0 ? <ChatEmpty /> : <ChatThread messages={messages} status={status} />}
 
       <div className="p-4">
