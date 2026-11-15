@@ -1,0 +1,12 @@
+name: Polizei Berlin – Psychosozialer Dienst mit Einsatznachsorgeteam (ENT)
+category: psnv-e
+audience: Dienstkräfte der Polizei Berlin
+description: Das ENT ist rund um die Uhr über eine interne zentrale Rufnummer erreichbar, die im Intranet oder bei der Dienststelle steht. Die allgemeine Vermittlung verbindet weiter.
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: Allgemeine Vermittlung (Servicetelefon)
+    value: "+493046644664"
+    availability: Mo–Fr 8–18 Uhr
+website: https://www.berlin.de/polizei/dienststellen/direktion-zentraler-service/personal/artikel.856959.php
+source: https://www.berlin.de/polizei/dienststellen/direktion-zentraler-service/personal/artikel.856959.php
