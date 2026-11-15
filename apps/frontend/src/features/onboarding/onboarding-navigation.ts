@@ -1,18 +1,11 @@
 import { redirect } from "@tanstack/react-router";
 
-const steps = [
-  "splash",
-  "welcome",
-  "usage-selection",
-  "information",
-  "tutorial",
-  "thank-you",
-] as const;
+const steps = ["welcome", "usage-selection", "information", "tutorial", "thank-you"] as const;
 
 export type OnboardingStep = (typeof steps)[number];
 
 export function validateOnboardingSearch(search: Record<string, unknown>) {
-  return { step: steps.find((step) => step === search.step) ?? "splash" };
+  return { step: steps.find((step) => step === search.step) ?? "welcome" };
 }
 
 const STORAGE_KEY = "helthtw:onboarding-complete";
@@ -30,7 +23,7 @@ function hasCompletedOnboarding() {
 
 export function beforeHomeLoad() {
   if (!hasCompletedOnboarding()) {
-    throw redirect({ to: "/onboarding", search: { step: "splash" }, replace: true });
+    throw redirect({ to: "/onboarding", search: { step: "welcome" }, replace: true });
   }
 }
 

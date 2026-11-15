@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { SplashScreen } from "./components/layout/splash-screen";
 import "@fontsource-variable/inter";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
@@ -11,6 +12,9 @@ const queryClient = new QueryClient();
 const router = createRouter({
   routeTree,
   context: { queryClient },
+  defaultPendingComponent: SplashScreen,
+  defaultPendingMs: 0,
+  defaultPendingMinMs: 0,
   defaultPreload: "intent",
   // Query owns caching, so the router should always call loaders on preload/visit.
   defaultPreloadStaleTime: 0,

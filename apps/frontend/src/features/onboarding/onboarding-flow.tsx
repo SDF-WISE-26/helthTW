@@ -2,20 +2,15 @@ import { usageSelectionSchema } from "@helthtw/shared/accounts";
 import type { UsageSelection } from "@helthtw/shared/accounts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { completeOnboarding } from "./onboarding-navigation";
 import type { OnboardingStep } from "./onboarding-navigation";
-import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
 import { UsageSelectionScreen } from "./usage-selection-screen";
 import { InformationScreen } from "./information-screen";
 import { TutorialScreen } from "./tutorial-screen";
 import { ThankYouScreen } from "./thank-you-screen";
 import { OnboardingLayout } from "./onboarding-layout";
-
-// TODO (#95): Replace the fixed splash duration with actual app initialization logic.
-const SPLASH_DURATION_MS = 1500;
 
 const progressSteps = {
   welcome: 1,
@@ -38,18 +33,8 @@ export function OnboardingFlow() {
     enableBeforeUnload: false,
     shouldBlockFn: ({ action, next }) =>
       (action === "BACK" || action === "GO") &&
-      (step === "splash" || step === "welcome" || next.pathname !== "/onboarding"),
+      (step === "welcome" || next.pathname !== "/onboarding"),
   });
-
-  useEffect(() => {
-    if (step !== "splash") return;
-
-    const timer = window.setTimeout(() => {
-      void navigate({ to: "/onboarding", search: { step: "welcome" }, replace: true });
-    }, SPLASH_DURATION_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [navigate, step]);
 
   function goToStep(nextStep: OnboardingStep) {
     void navigate({ to: "/onboarding", search: { step: nextStep } });
@@ -58,10 +43,6 @@ export function OnboardingFlow() {
   function finishOnboarding() {
     completeOnboarding();
     void navigate({ to: "/", replace: true });
-  }
-
-  if (step === "splash") {
-    return <SplashScreen />;
   }
 
   const progress = progressSteps[step];
