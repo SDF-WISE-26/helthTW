@@ -27,6 +27,7 @@ const progressSteps = {
 
 export function OnboardingFlow() {
   const navigate = useNavigate({ from: "/onboarding" });
+  // TODO (#95): URL-based onboarding steps (?step=...) or local component state (useState).
   const { step } = useSearch({ from: "/onboarding" });
   const usageForm = useForm<UsageSelection>({
     resolver: zodResolver(usageSelectionSchema),
