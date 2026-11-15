@@ -1,5 +1,6 @@
 import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import type { AccountProfile } from "@/features/account/account";
 import { completeOnboarding } from "./onboarding-navigation";
 import type { OnboardingStep } from "./onboarding-navigation";
 import { SplashScreen } from "./splash-screen";
@@ -26,11 +27,7 @@ export function OnboardingFlow() {
   const navigate = useNavigate({ from: "/onboarding" });
   const { step } = useSearch({ from: "/onboarding" });
   const [usageMode, setUsageMode] = useState<UsageMode>();
-  const [profession, setProfession] = useState("");
-
-  // TODO (#95): Save profession once the account API supports a shared profession enum.
-  // Define offline persistence before saving profile values, explore mode skips profession data.
-
+  const [accountProfile, setAccountProfile] = useState<AccountProfile>({ profession: null });
   useBlocker({
     enableBeforeUnload: false,
     shouldBlockFn: ({ action, next }) =>
@@ -70,9 +67,9 @@ export function OnboardingFlow() {
       {step === "usage-selection" && (
         <UsageSelectionScreen
           usageMode={usageMode}
-          profession={profession}
+          profession={accountProfile.profession}
           onUsageModeChange={setUsageMode}
-          onProfessionChange={setProfession}
+          onProfessionChange={(profession) => setAccountProfile({ profession })}
           onExplore={() => goToStep("information")}
           onContinue={() => goToStep("information")}
         />

@@ -10,16 +10,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { onboardingContent as content } from "@/content/onboarding";
-import { ensureAccount } from "@/features/account/account";
+import { ensureAccount, professionValues } from "@/features/account/account";
+import type { AccountProfile, Profession } from "@/features/account/account";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
 
 export type UsageMode = "explore" | "professional";
 
 type Props = {
   usageMode: UsageMode | undefined;
-  profession: string;
+  profession: AccountProfile["profession"];
   onUsageModeChange: (mode: UsageMode) => void;
-  onProfessionChange: (profession: string) => void;
+  onProfessionChange: (profession: Profession) => void;
   onExplore: () => void;
   onContinue: () => void;
 };
@@ -85,7 +86,7 @@ export function UsageSelectionScreen({
         {/* TODO (#95): Define the purpose and required/optional status of profile fields before adding age or gender from the mockup. */}
         <OnboardingCard
           className={cn(
-            usageMode === "professional" && profession !== "" && selectedCardClassName,
+            usageMode === "professional" && profession !== null && selectedCardClassName,
             hasError && "border-destructive",
           )}
           contentClassName="space-y-0 p-0"
@@ -105,9 +106,11 @@ export function UsageSelectionScreen({
           {usageMode === "professional" && (
             <div className="px-5 pb-5">
               <Select
-                value={profession}
+                value={profession ?? ""}
                 onValueChange={(value) => {
-                  onProfessionChange(value);
+                  const selectedProfession = professionValues.find((role) => role === value);
+                  if (!selectedProfession) return;
+                  onProfessionChange(selectedProfession);
                   setHasError(false);
                 }}
               >
@@ -120,13 +123,13 @@ export function UsageSelectionScreen({
                   <SelectValue placeholder={content.professionPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  {content.professions.map((role) => (
+                  {professionValues.map((role) => (
                     <SelectItem
                       key={role}
                       value={role}
                       className="min-h-11 py-2 text-base leading-6"
                     >
-                      {role}
+                      {content.professions[role]}
                     </SelectItem>
                   ))}
                 </SelectContent>

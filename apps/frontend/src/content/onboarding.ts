@@ -1,3 +1,5 @@
+import type { Profession } from "@/features/account/account";
+
 export const onboardingContent = {
   title: "Schön, dass du da bist!",
   usageDescription: "Wähle aus, wie du helthTW nutzen möchtest.",
@@ -7,15 +9,15 @@ export const onboardingContent = {
   professionError:
     "Bitte wähle deinen Berufsgruppe aus, damit wir dich bestmöglich unterstützen können.",
   accountError: "Das hat nicht geklappt. Bitte versuche es erneut.",
-  professions: [
-    "Ersthelfer/in",
-    "Rettungsdienst",
-    "Feuerwehr",
-    "Polizei",
-    "Katastrophenschutz",
-    "Bundeswehr",
-    "Sonstige",
-  ],
+  professions: {
+    first_responder: "Ersthelfer/in",
+    emergency_medical_services: "Rettungsdienst",
+    fire_service: "Feuerwehr",
+    police: "Polizei",
+    civil_protection: "Katastrophenschutz",
+    armed_forces: "Bundeswehr",
+    other: "Sonstige",
+  } satisfies Record<Profession, string>,
 
   welcome: {
     title: "Willkommen bei helthTW",
