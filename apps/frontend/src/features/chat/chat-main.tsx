@@ -5,9 +5,10 @@ import { ChatThread } from "./chat-thread";
 import { ChatInput } from "./chat-input";
 import { ChatError } from "@/features/chat/chat-error.tsx";
 import { ChatAiNotice } from "@/features/chat/chat-ai-notice.tsx";
+import { api } from "@/api";
 
 const transport = new DefaultChatTransport({
-  api: "/api/v1/chat",
+  api: api.api.v1.chat.$path(),
 });
 
 export function ChatMain() {

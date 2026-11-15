@@ -19,7 +19,7 @@ function hasApiCode(error: Error): boolean {
   }
 }
 
-export function ChatError({ error, onRetry, onNewChat, onDismiss }: ChatErrorProps) {
+export function ChatError({ error, onRetry, onDismiss }: ChatErrorProps) {
   const description = hasApiCode(error)
     ? "Dein Helfer ist leider zur Zeit nicht verfügbar. Bitte versuche es später erneut."
     : "Der Server konnte nicht erreicht werden. Überprüfe deine Verbindung und versuche es erneut.";
@@ -33,9 +33,6 @@ export function ChatError({ error, onRetry, onNewChat, onDismiss }: ChatErrorPro
         <div className="mt-3 flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={onRetry}>
             Try again
-          </Button>
-          <Button size="sm" variant="outline" onClick={onNewChat}>
-            New chat
           </Button>
           <Button size="sm" variant="ghost" onClick={onDismiss}>
             Dismiss

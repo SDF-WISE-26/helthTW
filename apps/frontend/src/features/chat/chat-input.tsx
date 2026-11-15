@@ -1,4 +1,3 @@
-// chat-input.tsx
 import { useRef, useState } from "react";
 import { ArrowUpIcon, MicIcon } from "lucide-react";
 import {
