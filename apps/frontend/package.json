@@ -38,10 +38,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "catalog:",
     "@content-collections/cli": "catalog:",
     "@content-collections/core": "catalog:",
     "@content-collections/vite": "catalog:",
+    "@tailwindcss/typography": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/router-plugin": "catalog:",
     "@types/node": "catalog:",
