@@ -2,7 +2,7 @@
 
 Anonymous account without registration, see decision 0020. Insecure proof of concept, test data only.
 
-- Opening the app creates an account for the device, without name, email or phone.
+- Continuing from the onboarding usage-selection.tsx creates an account for the device, without name, email or phone.
 - Every request carries the device's account ID. Without a valid ID the backend answers 401.
 - The same device always keeps the same account, until its data is deleted.
 - "Delete all data" in the settings deletes the account and every record that belongs to it, on the server and on the device.

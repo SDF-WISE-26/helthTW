@@ -1,10 +1,12 @@
 export const onboardingContent = {
   title: "Schön, dass du da bist!",
+  usageDescription: "Wähle aus, wie du helthTW nutzen möchtest.",
   explore: "Ich möchte mich erst mal umschauen",
   professional: "Ich möchte die App zur Unterstützung nach belastenden Einsätzen nutzen",
   professionPlaceholder: "Berufsgruppe auswählen",
   professionError:
     "Bitte wähle deinen Berufsgruppe aus, damit wir dich bestmöglich unterstützen können.",
+  accountError: "Das hat nicht geklappt. Bitte versuche es erneut.",
   professions: [
     "Ersthelfer/in",
     "Rettungsdienst",

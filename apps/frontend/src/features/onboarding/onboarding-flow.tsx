@@ -28,8 +28,7 @@ export function OnboardingFlow() {
   const [usageMode, setUsageMode] = useState<UsageMode>();
   const [profession, setProfession] = useState("");
 
-  // TODO (#95): After integrating the account schema from main, add a shared profession enum
-  // to the user model and save the professional selection via the profile API.
+  // TODO (#95): Save profession once the account API supports a shared profession enum.
   // Define offline persistence before saving profile values, explore mode skips profession data.
 
   useBlocker({

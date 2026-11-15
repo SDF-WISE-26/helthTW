@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { cn } from "cn";
 import { FieldError } from "@/components/ui/field";
@@ -9,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { onboardingContent as content } from "@/content/onboarding";
+import { ensureAccount } from "@/features/account/account";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
 
 export type UsageMode = "explore" | "professional";
@@ -35,30 +37,32 @@ export function UsageSelectionScreen({
 }: Props) {
   // TODO (#95): Use React Hook Form and a shared Zod schema once the profile fields are defined.
   const [hasError, setHasError] = useState(false);
+  const accountRequest = useMutation({ mutationFn: ensureAccount });
 
   function handleContinue() {
-    if (!usageMode) return;
+    if (!usageMode || accountRequest.isPending) return;
     if (usageMode === "professional" && !profession) {
       setHasError(true);
       return;
     }
 
-    if (usageMode === "explore") {
-      onExplore();
-    } else {
-      onContinue();
-    }
+    accountRequest.mutate(undefined, {
+      onSuccess: usageMode === "explore" ? onExplore : onContinue,
+    });
   }
 
   return (
     <OnboardingScreen
       title={content.title}
-      actions={<OnboardingActions onContinue={handleContinue} disabled={!usageMode} />}
+      actions={
+        <div className="space-y-3" aria-busy={accountRequest.isPending}>
+          {accountRequest.isError && <FieldError>{content.accountError}</FieldError>}
+          <OnboardingActions onContinue={handleContinue} disabled={!usageMode} />
+        </div>
+      }
     >
-      <fieldset className="space-y-4">
-        <legend className="mb-4 text-muted-foreground">
-          Wähle aus, wie du helthTW nutzen möchtest.
-        </legend>
+      <fieldset className="space-y-4" disabled={accountRequest.isPending}>
+        <legend className="mb-4 text-muted-foreground">{content.usageDescription}</legend>
         <OnboardingCard
           className={usageMode === "explore" ? selectedCardClassName : undefined}
           contentClassName="p-0"
