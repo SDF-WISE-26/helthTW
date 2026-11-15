@@ -1,10 +1,11 @@
 import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { completeOnboarding } from "./onboarding-navigation";
 import type { OnboardingStep } from "./onboarding-navigation";
 import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
 import { UsageSelectionScreen } from "./usage-selection-screen";
+import type { UsageMode } from "./usage-selection-screen";
 import { InformationScreen } from "./information-screen";
 import { TutorialScreen } from "./tutorial-screen";
 import { ThankYouScreen } from "./thank-you-screen";
@@ -24,6 +25,12 @@ const progressSteps = {
 export function OnboardingFlow() {
   const navigate = useNavigate({ from: "/onboarding" });
   const { step } = useSearch({ from: "/onboarding" });
+  const [usageMode, setUsageMode] = useState<UsageMode>();
+  const [profession, setProfession] = useState("");
+
+  // TODO (#95): After integrating the account schema from main, add a shared profession enum
+  // to the user model and save the professional selection via the profile API.
+  // Define offline persistence before saving profile values, explore mode skips profession data.
 
   useBlocker({
     enableBeforeUnload: false,
@@ -63,6 +70,10 @@ export function OnboardingFlow() {
 
       {step === "usage-selection" && (
         <UsageSelectionScreen
+          usageMode={usageMode}
+          profession={profession}
+          onUsageModeChange={setUsageMode}
+          onProfessionChange={setProfession}
           onExplore={() => goToStep("information")}
           onContinue={() => goToStep("information")}
         />

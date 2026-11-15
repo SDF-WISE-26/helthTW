@@ -11,7 +11,13 @@ import {
 import { onboardingContent as content } from "@/content/onboarding";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
 
+export type UsageMode = "explore" | "professional";
+
 type Props = {
+  usageMode: UsageMode | undefined;
+  profession: string;
+  onUsageModeChange: (mode: UsageMode) => void;
+  onProfessionChange: (profession: string) => void;
   onExplore: () => void;
   onContinue: () => void;
 };
@@ -19,10 +25,15 @@ type Props = {
 const selectedCardClassName =
   "border-green-600 bg-green-50 dark:border-green-500 dark:bg-green-950/40";
 
-export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
+export function UsageSelectionScreen({
+  usageMode,
+  profession,
+  onUsageModeChange,
+  onProfessionChange,
+  onExplore,
+  onContinue,
+}: Props) {
   // TODO (#95): Use React Hook Form and a shared Zod schema once the profile fields are defined.
-  const [usageMode, setUsageMode] = useState<"explore" | "professional">();
-  const [profession, setProfession] = useState("");
   const [hasError, setHasError] = useState(false);
 
   function handleContinue() {
@@ -32,8 +43,6 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
       return;
     }
 
-    // TODO (#95): Pass profession and usage mode to the flow and retain the draft on Back.
-    // TODO (#95): Define profile API and offline persistence before saving these values.
     if (usageMode === "explore") {
       onExplore();
     } else {
@@ -61,7 +70,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
               value="explore"
               checked={usageMode === "explore"}
               onChange={() => {
-                setUsageMode("explore");
+                onUsageModeChange("explore");
                 setHasError(false);
               }}
               className="mt-1 size-4 shrink-0 accent-green-600 dark:accent-green-500"
@@ -83,7 +92,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
               name="usage-mode"
               value="professional"
               checked={usageMode === "professional"}
-              onChange={() => setUsageMode("professional")}
+              onChange={() => onUsageModeChange("professional")}
               className="mt-1 size-4 shrink-0 accent-current"
             />
             <span>{content.professional}</span>
@@ -94,7 +103,7 @@ export function UsageSelectionScreen({ onExplore, onContinue }: Props) {
               <Select
                 value={profession}
                 onValueChange={(value) => {
-                  setProfession(value);
+                  onProfessionChange(value);
                   setHasError(false);
                 }}
               >
