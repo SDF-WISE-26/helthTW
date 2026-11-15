@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as TabsRouteImport } from "./routes/_tabs"
-import { Route as EmergencyRouteImport } from "./routes/emergency"
 import { Route as InstallRouteImport } from "./routes/install"
 import { Route as OnboardingRouteImport } from "./routes/onboarding"
 import { Route as SettingsRouteImport } from "./routes/settings"
@@ -25,11 +24,6 @@ import { Route as TabsInfoTopicArticleRouteImport } from "./routes/_tabs/info/$t
 
 const TabsRoute = TabsRouteImport.update({
   id: "/_tabs",
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EmergencyRoute = EmergencyRouteImport.update({
-  id: "/emergency",
-  path: "/emergency",
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstallRoute = InstallRouteImport.update({
@@ -91,7 +85,6 @@ const TabsInfoTopicArticleRoute = TabsInfoTopicArticleRouteImport.update({
 
 export interface FileRoutesByFullPath {
   "/": typeof TabsIndexRoute
-  "/emergency": typeof EmergencyRoute
   "/install": typeof InstallRoute
   "/onboarding": typeof OnboardingRoute
   "/settings": typeof SettingsRoute
@@ -104,7 +97,6 @@ export interface FileRoutesByFullPath {
   "/info/$topic/": typeof TabsInfoTopicIndexRoute
 }
 export interface FileRoutesByTo {
-  "/emergency": typeof EmergencyRoute
   "/install": typeof InstallRoute
   "/onboarding": typeof OnboardingRoute
   "/settings": typeof SettingsRoute
@@ -120,7 +112,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/_tabs": typeof TabsRouteWithChildren
-  "/emergency": typeof EmergencyRoute
   "/install": typeof InstallRoute
   "/onboarding": typeof OnboardingRoute
   "/settings": typeof SettingsRoute
@@ -137,7 +128,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | "/"
-    | "/emergency"
     | "/install"
     | "/onboarding"
     | "/settings"
@@ -150,7 +140,6 @@ export interface FileRouteTypes {
     | "/info/$topic/"
   fileRoutesByTo: FileRoutesByTo
   to:
-    | "/emergency"
     | "/install"
     | "/onboarding"
     | "/settings"
@@ -165,7 +154,6 @@ export interface FileRouteTypes {
   id:
     | "__root__"
     | "/_tabs"
-    | "/emergency"
     | "/install"
     | "/onboarding"
     | "/settings"
@@ -181,7 +169,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   TabsRoute: typeof TabsRouteWithChildren
-  EmergencyRoute: typeof EmergencyRoute
   InstallRoute: typeof InstallRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
@@ -196,13 +183,6 @@ declare module "@tanstack/react-router" {
       path: ""
       fullPath: "/"
       preLoaderRoute: typeof TabsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    "/emergency": {
-      id: "/emergency"
-      path: "/emergency"
-      fullPath: "/emergency"
-      preLoaderRoute: typeof EmergencyRouteImport
       parentRoute: typeof rootRouteImport
     }
     "/install": {
@@ -307,7 +287,6 @@ const TabsRouteWithChildren = TabsRoute._addFileChildren(TabsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   TabsRoute: TabsRouteWithChildren,
-  EmergencyRoute: EmergencyRoute,
   InstallRoute: InstallRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,

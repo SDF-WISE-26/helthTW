@@ -1,6 +1,6 @@
 # Deployment
 
-Setup and operation of the two HTW VMs. Why it is built this way is in decisions 0010 to 0012 in [`decisions.md`](decisions.md).
+Setup and operation of the two HTW VMs. Why it is built this way is in decisions 0010 to 0012 in [`decisions/`](decisions/).
 
 ## Overview
 

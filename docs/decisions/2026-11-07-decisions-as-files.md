@@ -1,0 +1,7 @@
+# Decisions in separate files, read when relevant
+
+- **Status:** accepted · **Date:** 2026-11-07 · **Involved:** @LilGravyyyy, @tpiwko · **Ref:** #170
+- **Decision:** Supersedes 0009. Docs stay Markdown in `docs/`: workflow in `workflow.md`, specs per area in `specs/`, entry point and maintenance rules in `AGENTS.md`. Decisions live in `docs/decisions/`, one file each, named `<YYYY-MM-DD>-<topic>.md`. 0001 to 0020 keep their number as name. Superseded decisions stay in the folder, their status line names the successor. Agents read only the decisions that fit the task, not for brainstorming, and suggest recording new ones.
+- **Why:** In one file, everyone appended the next number at the bottom, so parallel PRs conflicted and numbers had to be changed. `AGENTS.md` sent agents to all decisions, which biased every chat and brainstorming from the start. Reading them only on request would mean they are never read, because nobody remembers to ask.
+- **Rejected:** Ticket number in the file name (not every decision has a ticket). Keeping one file with Git's `merge=union` (numbers still collide). Numbers assigned by a GitHub Action after the merge (extra automation, commits on `main`). A `superseded/` folder (extra step, breaks links, partly superseded decisions like 0010 do not fit). An index with one line per decision (the same file changes in every PR again, file names already say the topic).
+- **Caution:** Two decisions on the same day need different topics.
