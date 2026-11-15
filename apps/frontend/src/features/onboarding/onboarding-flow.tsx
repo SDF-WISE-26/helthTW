@@ -1,12 +1,14 @@
+import { usageSelectionSchema } from "@helthtw/shared/accounts";
+import type { UsageSelection } from "@helthtw/shared/accounts";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import type { AccountProfile } from "@/features/account/account";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { completeOnboarding } from "./onboarding-navigation";
 import type { OnboardingStep } from "./onboarding-navigation";
 import { SplashScreen } from "./splash-screen";
 import { WelcomeScreen } from "./welcome-screen";
 import { UsageSelectionScreen } from "./usage-selection-screen";
-import type { UsageMode } from "./usage-selection-screen";
 import { InformationScreen } from "./information-screen";
 import { TutorialScreen } from "./tutorial-screen";
 import { ThankYouScreen } from "./thank-you-screen";
@@ -26,8 +28,11 @@ const progressSteps = {
 export function OnboardingFlow() {
   const navigate = useNavigate({ from: "/onboarding" });
   const { step } = useSearch({ from: "/onboarding" });
-  const [usageMode, setUsageMode] = useState<UsageMode>();
-  const [accountProfile, setAccountProfile] = useState<AccountProfile>({ profession: null });
+  const usageForm = useForm<UsageSelection>({
+    resolver: zodResolver(usageSelectionSchema),
+    defaultValues: { profession: null },
+  });
+
   useBlocker({
     enableBeforeUnload: false,
     shouldBlockFn: ({ action, next }) =>
@@ -66,10 +71,7 @@ export function OnboardingFlow() {
 
       {step === "usage-selection" && (
         <UsageSelectionScreen
-          usageMode={usageMode}
-          profession={accountProfile.profession}
-          onUsageModeChange={setUsageMode}
-          onProfessionChange={(profession) => setAccountProfile({ profession })}
+          form={usageForm}
           onExplore={() => goToStep("information")}
           onContinue={() => goToStep("information")}
         />

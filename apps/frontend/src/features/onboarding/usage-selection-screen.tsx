@@ -1,5 +1,7 @@
+import type { UsageSelection } from "@helthtw/shared/accounts";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { Controller, useWatch } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 import { cn } from "cn";
 import { FieldError } from "@/components/ui/field";
 import {
@@ -11,16 +13,10 @@ import {
 } from "@/components/ui/select";
 import { onboardingContent as content } from "@/content/onboarding";
 import { ensureAccount, professionValues } from "@/features/account/account";
-import type { AccountProfile, Profession } from "@/features/account/account";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
 
-export type UsageMode = "explore" | "professional";
-
 type Props = {
-  usageMode: UsageMode | undefined;
-  profession: AccountProfile["profession"];
-  onUsageModeChange: (mode: UsageMode) => void;
-  onProfessionChange: (profession: Profession) => void;
+  form: UseFormReturn<UsageSelection>;
   onExplore: () => void;
   onContinue: () => void;
 };
@@ -28,29 +24,19 @@ type Props = {
 const selectedCardClassName =
   "border-green-600 bg-green-50 dark:border-green-500 dark:bg-green-950/40";
 
-export function UsageSelectionScreen({
-  usageMode,
-  profession,
-  onUsageModeChange,
-  onProfessionChange,
-  onExplore,
-  onContinue,
-}: Props) {
-  // TODO (#95): Use React Hook Form and a shared Zod schema once the profile fields are defined.
-  const [hasError, setHasError] = useState(false);
+export function UsageSelectionScreen({ form, onExplore, onContinue }: Props) {
+  const { control, register, handleSubmit, clearErrors, formState } = form;
+  const [usageMode, profession] = useWatch({ control, name: ["usageMode", "profession"] });
+  const usageModeField = register("usageMode");
+  const hasError = Boolean(formState.errors.profession);
   const accountRequest = useMutation({ mutationFn: ensureAccount });
 
-  function handleContinue() {
-    if (!usageMode || accountRequest.isPending) return;
-    if (usageMode === "professional" && !profession) {
-      setHasError(true);
-      return;
-    }
-
+  const handleContinue = handleSubmit(({ usageMode }) => {
+    if (accountRequest.isPending) return;
     accountRequest.mutate(undefined, {
       onSuccess: usageMode === "explore" ? onExplore : onContinue,
     });
-  }
+  });
 
   return (
     <OnboardingScreen
@@ -58,91 +44,92 @@ export function UsageSelectionScreen({
       actions={
         <div className="space-y-3" aria-busy={accountRequest.isPending}>
           {accountRequest.isError && <FieldError>{content.accountError}</FieldError>}
-          <OnboardingActions onContinue={handleContinue} disabled={!usageMode} />
+          <OnboardingActions form="onboarding-usage-selection" disabled={!usageMode} />
         </div>
       }
     >
-      <fieldset className="space-y-4" disabled={accountRequest.isPending}>
-        <legend className="mb-4 text-muted-foreground">{content.usageDescription}</legend>
-        <OnboardingCard
-          className={usageMode === "explore" ? selectedCardClassName : undefined}
-          contentClassName="p-0"
-        >
-          <label className="flex cursor-pointer items-start gap-3 p-5">
-            <input
-              type="radio"
-              name="usage-mode"
-              value="explore"
-              checked={usageMode === "explore"}
-              onChange={() => {
-                onUsageModeChange("explore");
-                setHasError(false);
-              }}
-              className="mt-1 size-4 shrink-0 accent-green-600 dark:accent-green-500"
-            />
-            <span>{content.explore}</span>
-          </label>
-        </OnboardingCard>
-        {/* TODO (#95): Define the purpose and required/optional status of profile fields before adding age or gender from the mockup. */}
-        <OnboardingCard
-          className={cn(
-            usageMode === "professional" && profession !== null && selectedCardClassName,
-            hasError && "border-destructive",
-          )}
-          contentClassName="space-y-0 p-0"
-        >
-          <label className="flex cursor-pointer items-start gap-3 p-5">
-            <input
-              type="radio"
-              name="usage-mode"
-              value="professional"
-              checked={usageMode === "professional"}
-              onChange={() => onUsageModeChange("professional")}
-              className="mt-1 size-4 shrink-0 accent-current"
-            />
-            <span>{content.professional}</span>
-          </label>
-
-          {usageMode === "professional" && (
-            <div className="px-5 pb-5">
-              <Select
-                value={profession ?? ""}
-                onValueChange={(value) => {
-                  const selectedProfession = professionValues.find((role) => role === value);
-                  if (!selectedProfession) return;
-                  onProfessionChange(selectedProfession);
-                  setHasError(false);
+      <form id="onboarding-usage-selection" onSubmit={handleContinue} noValidate>
+        <fieldset className="space-y-4" disabled={accountRequest.isPending}>
+          <legend className="mb-4 text-muted-foreground">{content.usageDescription}</legend>
+          <OnboardingCard
+            className={usageMode === "explore" ? selectedCardClassName : undefined}
+            contentClassName="p-0"
+          >
+            <label className="flex cursor-pointer items-start gap-3 p-5">
+              <input
+                {...usageModeField}
+                type="radio"
+                value="explore"
+                checked={usageMode === "explore"}
+                onChange={(event) => {
+                  void usageModeField.onChange(event);
+                  clearErrors("profession");
                 }}
-              >
-                <SelectTrigger
-                  className="w-full text-base data-[size=default]:h-12"
-                  aria-label={content.professionPlaceholder}
-                  aria-invalid={hasError}
-                  aria-describedby={hasError ? "onboarding-profession-error" : undefined}
-                >
-                  <SelectValue placeholder={content.professionPlaceholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  {professionValues.map((role) => (
-                    <SelectItem
-                      key={role}
-                      value={role}
-                      className="min-h-11 py-2 text-base leading-6"
-                    >
-                      {content.professions[role]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {hasError && (
-                <FieldError id="onboarding-profession-error" className="mt-3">
-                  {content.professionError}
-                </FieldError>
-              )}
-            </div>
-          )}
-        </OnboardingCard>
-      </fieldset>
+                className="mt-1 size-4 shrink-0 accent-green-600 dark:accent-green-500"
+              />
+              <span>{content.explore}</span>
+            </label>
+          </OnboardingCard>
+          {/* TODO (#95): Define the purpose and required/optional status of profile fields before adding age or gender from the mockup. */}
+          <OnboardingCard
+            className={cn(
+              usageMode === "professional" && profession !== null && selectedCardClassName,
+              hasError && "border-destructive",
+            )}
+            contentClassName="space-y-0 p-0"
+          >
+            <label className="flex cursor-pointer items-start gap-3 p-5">
+              <input
+                {...usageModeField}
+                type="radio"
+                value="professional"
+                checked={usageMode === "professional"}
+                className="mt-1 size-4 shrink-0 accent-current"
+              />
+              <span>{content.professional}</span>
+            </label>
+
+            {usageMode === "professional" && (
+              <div className="px-5 pb-5">
+                <Controller
+                  name="profession"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        className="w-full text-base data-[size=default]:h-12"
+                        aria-label={content.professionPlaceholder}
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={hasError ? "onboarding-profession-error" : undefined}
+                      >
+                        <SelectValue placeholder={content.professionPlaceholder} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {professionValues.map((role) => (
+                          <SelectItem
+                            key={role}
+                            value={role}
+                            className="min-h-11 py-2 text-base leading-6"
+                          >
+                            {content.professions[role]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {hasError && (
+                  <FieldError id="onboarding-profession-error" className="mt-3">
+                    {content.professionError}
+                  </FieldError>
+                )}
+              </div>
+            )}
+          </OnboardingCard>
+        </fieldset>
+      </form>
     </OnboardingScreen>
   );
 }

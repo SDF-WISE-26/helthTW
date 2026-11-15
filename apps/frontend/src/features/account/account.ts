@@ -1,24 +1,11 @@
 import { api } from "@/api";
 
-export const professionValues = [
-  "first_responder",
-  "emergency_medical_services",
-  "fire_service",
-  "police",
-  "civil_protection",
-  "armed_forces",
-  "other",
-] as const;
-
-export type Profession = (typeof professionValues)[number];
+export { professionValues } from "@helthtw/shared/accounts";
 
 // TODO (#95): Clarify additional profile fields, allowed values and required/optional status.
-// TODO (#95): Move profession values to a shared Zod schema
-// and persist the selected profession through the account API.
-export type AccountProfile = {
-  profession: Profession | null;
-};
+export type { AccountProfile, Profession } from "@helthtw/shared/accounts";
 
+// TODO (#95): Persist the selected profession through the account API.
 export async function ensureAccount() {
   const res = await api.api.v1.accounts.me.$get();
   if (!res.ok) throw new Error(`Account initialization failed: ${res.status}`);

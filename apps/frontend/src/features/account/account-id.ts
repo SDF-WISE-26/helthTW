@@ -4,7 +4,7 @@ function createAccountId() {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
 
   // Temporary fallback for local phone tests over HTTP (--host).
-  // TODO (#95): Remove once local phone tests use HTTPS
+  // TODO (#95): Remove once local phone tests are not used
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   bytes[6] = (bytes[6]! & 0x0f) | 0x40;
   bytes[8] = (bytes[8]! & 0x3f) | 0x80;

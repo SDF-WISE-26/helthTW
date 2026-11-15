@@ -88,16 +88,19 @@ export function OnboardingCard({
 
 export function OnboardingActions({
   onContinue,
+  form,
   disabled = false,
   continueLabel = content.actions.continue,
 }: {
-  onContinue: () => void;
+  onContinue?: () => void;
+  form?: string;
   disabled?: boolean;
   continueLabel?: string;
 }) {
   return (
     <Button
-      type="button"
+      type={form ? "submit" : "button"}
+      form={form}
       className="h-auto min-h-12 w-full px-4 py-3 text-base leading-6 whitespace-normal"
       onClick={onContinue}
       disabled={disabled}
