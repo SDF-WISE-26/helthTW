@@ -88,9 +88,11 @@ export function OnboardingCard({
 
 export function OnboardingActions({
   onContinue,
+  disabled = false,
   continueLabel = content.actions.continue,
 }: {
   onContinue: () => void;
+  disabled?: boolean;
   continueLabel?: string;
 }) {
   return (
@@ -98,6 +100,7 @@ export function OnboardingActions({
       type="button"
       className="h-auto min-h-12 w-full px-4 py-3 text-base leading-6 whitespace-normal"
       onClick={onContinue}
+      disabled={disabled}
     >
       {continueLabel}
     </Button>

@@ -61,11 +61,10 @@ export function OnboardingFlow() {
     <OnboardingLayout progress={progress} onSkip={finishOnboarding}>
       {step === "welcome" && <WelcomeScreen onContinue={() => goToStep("usage-selection")} />}
 
-      {/* TODO (#95): Route the profession path through where??? */}
       {step === "usage-selection" && (
         <UsageSelectionScreen
           onExplore={() => goToStep("information")}
-          onContinue={() => goToStep("tutorial")}
+          onContinue={() => goToStep("information")}
         />
       )}
 
