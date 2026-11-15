@@ -4,14 +4,13 @@ import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboardin
 
 type Props = {
   onContinue: () => void;
-  onSkip: () => void;
 };
 
-export function InformationScreen({ onContinue, onSkip }: Props) {
+export function InformationScreen({ onContinue }: Props) {
   return (
     <OnboardingScreen
       title={content.information.title}
-      actions={<OnboardingActions onContinue={onContinue} onSkip={onSkip} />}
+      actions={<OnboardingActions onContinue={onContinue} />}
     >
       <OnboardingCard>
         <p>{content.information.description}</p>

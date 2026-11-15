@@ -10,13 +10,7 @@ export function ThankYouScreen({ onFinish }: Props) {
     <OnboardingScreen
       title={content.thankYou.title}
       description={content.thankYou.description}
-      actions={
-        <OnboardingActions
-          onContinue={onFinish}
-          onSkip={onFinish}
-          continueLabel={content.actions.start}
-        />
-      }
+      actions={<OnboardingActions onContinue={onFinish} continueLabel={content.actions.start} />}
     />
   );
 }

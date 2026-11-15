@@ -7,9 +7,11 @@ import { onboardingContent as content } from "@/content/onboarding";
 
 export function OnboardingLayout({
   progress,
+  onSkip,
   children,
 }: {
   progress: number;
+  onSkip?: () => void;
   children: ReactNode;
 }) {
   const progressLabel = `Schritt ${progress} von 5`;
@@ -18,9 +20,19 @@ export function OnboardingLayout({
     <div className="fixed inset-0 z-50 bg-background">
       <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-8 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="shrink-0 space-y-2">
-          <p className="text-right text-sm leading-5 text-muted-foreground tabular-nums">
-            {progressLabel}
-          </p>
+          <div className="flex min-h-11 items-center justify-between gap-3">
+            <p className="text-sm leading-5 text-muted-foreground tabular-nums">{progressLabel}</p>
+            {onSkip && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="-mr-3 h-11 px-3 text-sm font-normal text-muted-foreground"
+                onClick={onSkip}
+              >
+                {content.actions.skip}
+              </Button>
+            )}
+          </div>
           <Progress value={progress * 20} aria-label={progressLabel} />
         </div>
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
@@ -76,23 +88,18 @@ export function OnboardingCard({
 
 export function OnboardingActions({
   onContinue,
-  onSkip,
   continueLabel = content.actions.continue,
 }: {
   onContinue: () => void;
-  onSkip: () => void;
   continueLabel?: string;
 }) {
-  const buttonClassName = "h-auto min-h-12 w-full px-4 py-3 text-base leading-6 whitespace-normal";
-
   return (
-    <div className="flex flex-col gap-3">
-      <Button type="button" className={buttonClassName} onClick={onContinue}>
-        {continueLabel}
-      </Button>
-      <Button type="button" variant="ghost" className={buttonClassName} onClick={onSkip}>
-        {content.actions.skip}
-      </Button>
-    </div>
+    <Button
+      type="button"
+      className="h-auto min-h-12 w-full px-4 py-3 text-base leading-6 whitespace-normal"
+      onClick={onContinue}
+    >
+      {continueLabel}
+    </Button>
   );
 }

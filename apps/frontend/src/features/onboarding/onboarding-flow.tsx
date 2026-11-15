@@ -58,10 +58,8 @@ export function OnboardingFlow() {
   const progress = progressSteps[step];
 
   return (
-    <OnboardingLayout progress={progress}>
-      {step === "welcome" && (
-        <WelcomeScreen onContinue={() => goToStep("usage-selection")} onSkip={finishOnboarding} />
-      )}
+    <OnboardingLayout progress={progress} onSkip={finishOnboarding}>
+      {step === "welcome" && <WelcomeScreen onContinue={() => goToStep("usage-selection")} />}
 
       {/* TODO (#95): Route the profession path through where??? */}
       {step === "usage-selection" && (
@@ -71,13 +69,9 @@ export function OnboardingFlow() {
         />
       )}
 
-      {step === "information" && (
-        <InformationScreen onContinue={() => goToStep("tutorial")} onSkip={finishOnboarding} />
-      )}
+      {step === "information" && <InformationScreen onContinue={() => goToStep("tutorial")} />}
 
-      {step === "tutorial" && (
-        <TutorialScreen onContinue={() => goToStep("thank-you")} onSkip={finishOnboarding} />
-      )}
+      {step === "tutorial" && <TutorialScreen onContinue={() => goToStep("thank-you")} />}
 
       {step === "thank-you" && <ThankYouScreen onFinish={finishOnboarding} />}
     </OnboardingLayout>

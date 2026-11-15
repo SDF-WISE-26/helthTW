@@ -3,16 +3,15 @@ import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboardin
 
 type Props = {
   onContinue: () => void;
-  onSkip: () => void;
 };
 
-export function TutorialScreen({ onContinue, onSkip }: Props) {
+export function TutorialScreen({ onContinue }: Props) {
   const tutorial = content.tutorial;
 
   return (
     <OnboardingScreen
       title={tutorial.title}
-      actions={<OnboardingActions onContinue={onContinue} onSkip={onSkip} />}
+      actions={<OnboardingActions onContinue={onContinue} />}
     >
       {/* TODO (#95): Implement an animated, interactive tutorial demonstrating how to use the chat. */}
       <OnboardingCard>
