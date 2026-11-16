@@ -6,17 +6,19 @@ import { Progress } from "@/components/ui/progress";
 import { onboardingContent as content } from "@/content/onboarding";
 
 export function OnboardingLayout({
-  progress,
+  stepNumber,
+  totalSteps,
   onSkip,
   embedded = false,
   children,
 }: {
-  progress: number;
+  stepNumber: number;
+  totalSteps: number;
   onSkip?: () => void;
   embedded?: boolean;
   children: ReactNode;
 }) {
-  const progressLabel = `Schritt ${progress} von 5`;
+  const progressLabel = `Schritt ${stepNumber} von ${totalSteps}`;
 
   return (
     <div
@@ -44,7 +46,7 @@ export function OnboardingLayout({
               </Button>
             )}
           </div>
-          <Progress value={progress * 20} aria-label={progressLabel} />
+          <Progress value={(stepNumber / totalSteps) * 100} aria-label={progressLabel} />
         </div>
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>
