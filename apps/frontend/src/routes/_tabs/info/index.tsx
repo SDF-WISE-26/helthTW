@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { ContactList } from "@/features/info/contact-list";
 
 export const Route = createFileRoute("/_tabs/info/")({
   component: Info,
@@ -15,7 +16,7 @@ function Info() {
         </Link>
       </Button>
       <h2 className="text-xl font-bold">Kontakte</h2>
-      <p>Ansprechpartner + Notrufnummern</p>
+      <ContactList />
     </>
   );
 }
