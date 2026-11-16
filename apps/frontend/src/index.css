@@ -231,7 +231,7 @@
     @apply border-border outline-ring/50;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scrollbar-width: none;
   }
   body {
     @apply bg-background text-body text-foreground antialiased;
