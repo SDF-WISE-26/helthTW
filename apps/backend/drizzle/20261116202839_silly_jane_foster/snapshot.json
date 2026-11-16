@@ -1,20 +1,11 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "77556b56-7a0c-4473-b5bb-876d2a4e403e",
+  "id": "9e60ca08-e1c8-4a50-b603-b4657a852d57",
   "prevIds": [
     "02fa925f-8537-4221-b663-ce203a2377ec"
   ],
   "ddl": [
-    {
-      "values": [
-        "check-in",
-        "screening"
-      ],
-      "name": "questionnaire_kind",
-      "entityType": "enums",
-      "schema": "public"
-    },
     {
       "isRlsEnabled": false,
       "name": "accounts",
@@ -102,6 +93,19 @@
       "generated": null,
       "identity": null,
       "name": "account_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "questionnaire_responses"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "questionnaire_id",
       "entityType": "columns",
       "schema": "public",
       "table": "questionnaire_responses"
@@ -215,19 +219,6 @@
       "generated": null,
       "identity": null,
       "name": "version",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "questionnaire_versions"
-    },
-    {
-      "type": "questionnaire_kind",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "kind",
       "entityType": "columns",
       "schema": "public",
       "table": "questionnaire_versions"
@@ -482,16 +473,18 @@
     {
       "nameExplicit": false,
       "columns": [
-        "version_id"
+        "version_id",
+        "questionnaire_id"
       ],
       "schemaTo": "public",
       "tableTo": "questionnaire_versions",
       "columnsTo": [
-        "id"
+        "id",
+        "questionnaire_id"
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "RESTRICT",
-      "name": "questionnaire_responses_TLe00UihIwel_fkey",
+      "name": "questionnaire_responses_ZOPo15jLTYq9_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "questionnaire_responses"
@@ -499,16 +492,20 @@
     {
       "nameExplicit": false,
       "columns": [
-        "scheduled_id"
+        "scheduled_id",
+        "account_id",
+        "questionnaire_id"
       ],
       "schemaTo": "public",
       "tableTo": "scheduled_questionnaires",
       "columnsTo": [
-        "id"
+        "id",
+        "account_id",
+        "questionnaire_id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "SET NULL",
-      "name": "questionnaire_responses_m4STZMSNomm7_fkey",
+      "onDelete": "NO ACTION",
+      "name": "questionnaire_responses_81QRfXkdHGn5_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "questionnaire_responses"
@@ -625,6 +622,31 @@
       "entityType": "uniques",
       "schema": "public",
       "table": "questionnaire_versions"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "id",
+        "questionnaire_id"
+      ],
+      "nullsNotDistinct": false,
+      "name": "questionnaire_versions_id_questionnaire_id_unique",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "questionnaire_versions"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "id",
+        "account_id",
+        "questionnaire_id"
+      ],
+      "nullsNotDistinct": false,
+      "name": "scheduled_questionnaires_id_account_id_questionnaire_id_unique",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "scheduled_questionnaires"
     },
     {
       "nameExplicit": false,

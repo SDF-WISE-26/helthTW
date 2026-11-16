@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-// Format of a questionnaire template, see decision 0020. A version of a template never changes.
-
-// Names for questionnaires, questions, options and tags: lowercase, digits, single dashes.
 export const identifier = z
   .string()
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, digits and single dashes");
@@ -11,14 +8,12 @@ export const identifier = z
 const option = z.strictObject({
   value: identifier,
   label: z.string().min(1).max(200),
-  // Only needed if the question counts towards the score.
   points: z.number().int().min(0).optional(),
 });
 
 const questionBase = { id: identifier, text: z.string().min(1).max(500) };
 
-// The answer types. A new type is one more entry here, the questions are stored as JSON.
-// There is no free text.
+// No free text. A new answer type is one more entry here.
 export const questionSchema = z.discriminatedUnion("type", [
   z.strictObject({
     ...questionBase,
@@ -39,7 +34,7 @@ export const questionSchema = z.discriminatedUnion("type", [
   z.strictObject({
     ...questionBase,
     type: z.literal("yes-no"),
-    // Marks a question where "yes" needs special handling, e.g. showing the crisis screen.
+    // "yes" needs special handling, e.g. the crisis screen.
     safety: z.boolean().default(false),
   }),
 ]);
@@ -50,9 +45,7 @@ export const scoringSchema = z.strictObject({ sum: z.array(identifier).min(1) })
 export const questionnaireTemplateSchema = z
   .strictObject({
     id: identifier,
-    // A change means a new, higher version.
     version: z.number().int().positive(),
-    kind: z.enum(["check-in", "screening"]),
     title: z.string().min(1).max(120),
     tags: z.array(identifier).min(1).max(10),
     questions: z.array(questionSchema).min(1).max(60),
@@ -98,7 +91,6 @@ export const questionnaireTemplateSchema = z
     });
   });
 
-// What a person answers, per question id: one option, several options, a number or yes/no.
 export const answersSchema = z.record(
   identifier,
   z.union([z.string(), z.array(z.string()), z.number(), z.boolean()]),
@@ -107,5 +99,4 @@ export const answersSchema = z.record(
 export type Question = z.infer<typeof questionSchema>;
 export type QuestionnaireTemplate = z.infer<typeof questionnaireTemplateSchema>;
 export type Answers = z.infer<typeof answersSchema>;
-// What the database keeps as JSON of a version. The rest of the template has its own columns.
 export type QuestionnaireDefinition = Pick<QuestionnaireTemplate, "questions" | "scoring">;

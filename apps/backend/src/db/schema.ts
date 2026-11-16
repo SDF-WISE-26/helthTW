@@ -1,8 +1,8 @@
 import {
+  foreignKey,
   index,
   integer,
   jsonb,
-  pgEnum,
   pgTable,
   timestamp,
   unique,
@@ -18,21 +18,14 @@ export const accountsTable = pgTable("accounts", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// Questionnaires, see decision 0021. The Zod schemas in packages/shared/src/questionnaires
-// describe `definition` and `answers`, the database does not look inside.
-
-// The same values as `kind` in the shared package.
-export const questionnaireKindEnum = pgEnum("questionnaire_kind", ["check-in", "screening"]);
-
-// A questionnaire as a whole, e.g. "check-in-kurz". Its content is in the versions.
 export const questionnairesTable = pgTable("questionnaires", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   slug: varchar({ length: 100 }).notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// One row per version. Rows are never updated: a change is a new row with a higher version,
-// so answers always point to the exact questions that were asked.
+// Rows are never updated: a change is a new row with a higher version,
+// so an answer always points to the questions that were asked.
 export const questionnaireVersionsTable = pgTable(
   "questionnaire_versions",
   {
@@ -41,19 +34,19 @@ export const questionnaireVersionsTable = pgTable(
       .notNull()
       .references(() => questionnairesTable.id, { onDelete: "restrict" }),
     version: integer().notNull(),
-    kind: questionnaireKindEnum().notNull(),
     title: varchar({ length: 120 }).notNull(),
     tags: varchar({ length: 100 }).array().notNull(),
-    // The questions and the optional scoring rule.
     definition: jsonb().$type<QuestionnaireDefinition>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [unique().on(table.questionnaireId, table.version)],
+  (table) => [
+    unique().on(table.questionnaireId, table.version),
+    unique().on(table.id, table.questionnaireId),
+  ],
 );
 
-// A questionnaire that is due on a day. There is no status column: it counts as answered once
-// a response points to it, and as due once `dueAt` has passed. The version is not fixed here,
-// the newest one is used when answering.
+// No status column: it counts as answered once a response points to it, and as due once
+// `dueAt` has passed. The version is not fixed, the newest one is used when answering.
 export const scheduledQuestionnairesTable = pgTable(
   "scheduled_questionnaires",
   {
@@ -67,11 +60,14 @@ export const scheduledQuestionnairesTable = pgTable(
     dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index().on(table.accountId, table.dueAt)],
+  (table) => [
+    index().on(table.accountId, table.dueAt),
+    unique().on(table.id, table.accountId, table.questionnaireId),
+  ],
 );
 
-// One row per submitted questionnaire. `answers` holds the answer per question id.
-// The score is stored with it, so a history needs no recalculation.
+// `questionnaireId` repeats what the version says, so the composite foreign keys can check that
+// version, account and questionnaire of a response match its scheduled questionnaire.
 export const questionnaireResponsesTable = pgTable(
   "questionnaire_responses",
   {
@@ -79,17 +75,26 @@ export const questionnaireResponsesTable = pgTable(
     accountId: uuid("account_id")
       .notNull()
       .references(() => accountsTable.id, { onDelete: "cascade" }),
-    versionId: integer("version_id")
-      .notNull()
-      .references(() => questionnaireVersionsTable.id, { onDelete: "restrict" }),
-    // Set when it answers a scheduled questionnaire, at most one response per scheduled one.
-    scheduledId: integer("scheduled_id")
-      .unique()
-      .references(() => scheduledQuestionnairesTable.id, { onDelete: "set null" }),
+    questionnaireId: integer("questionnaire_id").notNull(),
+    versionId: integer("version_id").notNull(),
+    scheduledId: integer("scheduled_id").unique(),
     answers: jsonb().$type<Answers>().notNull(),
-    // Empty for a questionnaire without a scoring rule.
     score: integer(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index().on(table.accountId, table.createdAt)],
+  (table) => [
+    index().on(table.accountId, table.createdAt),
+    foreignKey({
+      columns: [table.versionId, table.questionnaireId],
+      foreignColumns: [questionnaireVersionsTable.id, questionnaireVersionsTable.questionnaireId],
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.scheduledId, table.accountId, table.questionnaireId],
+      foreignColumns: [
+        scheduledQuestionnairesTable.id,
+        scheduledQuestionnairesTable.accountId,
+        scheduledQuestionnairesTable.questionnaireId,
+      ],
+    }),
+  ],
 );

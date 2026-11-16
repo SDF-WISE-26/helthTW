@@ -4,7 +4,6 @@ import { answersSchema, questionnaireTemplateSchema, type QuestionnaireTemplate 
 const template: QuestionnaireTemplate = {
   id: "check-in-kurz",
   version: 1,
-  kind: "check-in",
   title: "Kurzer Check-in",
   tags: ["check-in"],
   questions: [
@@ -23,7 +22,6 @@ const template: QuestionnaireTemplate = {
   scoring: { sum: ["schlaf", "belastung"] },
 };
 
-// Messages of the problems, to check that the right rule failed.
 const problems = (value: unknown) => {
   const result = questionnaireTemplateSchema.safeParse(value);
   return result.success ? [] : result.error.issues.map((i) => i.message);
@@ -171,9 +169,8 @@ describe("answersSchema", () => {
   });
 });
 
-// Example only: the Insomnia Severity Index (7 questions, 0-4 points each, total 0-28), English
-// wording, to show that a real instrument fits the format. The wording of the real instrument
-// and its licence are not settled yet, so this is a test, not content for the app.
+// Example only: the Insomnia Severity Index (7 questions, 0-4 points, total 0-28) shows that a real
+// instrument fits the format. Wording and licence are not settled, this is not content for the app.
 const scale = (labels: string[]) =>
   labels.map((label, i) => ({ value: `p${i}`, label, points: i }));
 const severity = scale(["None", "Mild", "Moderate", "Severe", "Very severe"]);
@@ -182,7 +179,6 @@ const intensity = scale(["Not at all", "A little", "Somewhat", "Much", "Very muc
 const isi: QuestionnaireTemplate = {
   id: "isi",
   version: 1,
-  kind: "screening",
   title: "Insomnia Severity Index (example)",
   tags: ["schlaf"],
   questions: [
