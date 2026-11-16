@@ -1,10 +1,17 @@
-import { ExternalLink, Mail, Phone } from "lucide-react";
+import { Globe, Mail, Phone } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "cn";
+import { content } from "./content";
 import type { Contact } from "./content";
 
 type Channel = Contact["channels"][number];
+
+// Avatar tint by category position, so the groups are told apart at a glance.
+const tints = [
+  "bg-secondary text-secondary-foreground",
+  "bg-status-watch-surface text-status-watch",
+];
 
 // Stored as +49… without spaces, the space after the country code only helps reading.
 const formatPhone = (value: string) => value.replace(/^\+49/, "+49 ");
@@ -17,62 +24,82 @@ const initials = (name: string) =>
     .join("");
 
 export function ContactCard({ contact }: { contact: Contact }) {
+  const tint = tints[content.categories.findIndex((c) => c.id === contact.category) % tints.length];
+
   return (
-    <Card size="sm">
-      <CardHeader className="flex items-center gap-3">
+    <article className="flex flex-col gap-3 rounded-2xl bg-card p-4 text-card-foreground ring-1 ring-foreground/5">
+      <header className="flex items-center gap-3">
         {/* Initials until the contacts get logos. */}
-        <Avatar size="lg" aria-hidden="true">
-          <AvatarFallback>{initials(contact.name)}</AvatarFallback>
+        <Avatar aria-hidden="true" className="size-12 after:hidden">
+          <AvatarFallback className={cn("text-label", tint)}>
+            {initials(contact.name)}
+          </AvatarFallback>
         </Avatar>
-        <div className="flex min-w-0 flex-col gap-1">
-          <CardTitle>{contact.name}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {contact.description && <p>{contact.description}</p>}
-        {contact.channels.length > 0 && (
-          <ul className="flex flex-col gap-2">
-            {contact.channels.map((channel) => (
-              <li key={channel.value}>
-                <ChannelLink channel={channel} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <h4 className="min-w-0 text-label">{contact.name}</h4>
+      </header>
+
+      {contact.description && <p className="text-small">{contact.description}</p>}
+
+      <ul className="flex flex-col divide-y divide-border/60">
+        {contact.channels.map((channel) => (
+          <li key={channel.value}>
+            <ChannelRow channel={channel} />
+          </li>
+        ))}
         {contact.website && (
-          <a
-            href={contact.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-1.5 self-start text-primary underline-offset-4 hover:underline"
-          >
-            <ExternalLink aria-hidden="true" className="size-4" />
-            Website
-          </a>
+          <li>
+            <Row
+              href={contact.website}
+              icon={Globe}
+              title="Website"
+              details={new URL(contact.website).hostname.replace(/^www\./, "")}
+              external
+            />
+          </li>
         )}
-      </CardContent>
-    </Card>
+      </ul>
+    </article>
   );
 }
 
-function ChannelLink({ channel }: { channel: Channel }) {
+function ChannelRow({ channel }: { channel: Channel }) {
   const phone = channel.type === "phone";
-  const Icon = phone ? Phone : Mail;
-  const details = [channel.label, channel.person, channel.availability].filter(Boolean).join(" · ");
-
   return (
-    <Button
-      asChild
-      variant="outline"
-      className="h-auto min-h-11 w-full justify-start gap-3 py-2 text-left whitespace-normal"
+    <Row
+      href={`${phone ? "tel" : "mailto"}:${channel.value}`}
+      icon={phone ? Phone : Mail}
+      title={phone ? formatPhone(channel.value) : channel.value}
+      details={[channel.label, channel.person, channel.availability].filter(Boolean).join(" · ")}
+    />
+  );
+}
+
+function Row({
+  href,
+  icon: Icon,
+  title,
+  details,
+  external,
+}: {
+  href: string;
+  icon: LucideIcon;
+  title: string;
+  details?: string;
+  external?: boolean;
+}) {
+  return (
+    <a
+      href={href}
+      {...(external && { target: "_blank", rel: "noopener noreferrer" })}
+      className="flex min-h-tap-min items-center gap-3 rounded-lg py-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <a href={`${phone ? "tel" : "mailto"}:${channel.value}`}>
-        <Icon aria-hidden="true" />
-        <span className="flex min-w-0 flex-col">
-          <span className="break-all">{phone ? formatPhone(channel.value) : channel.value}</span>
-          {details && <span className="text-xs font-normal text-muted-foreground">{details}</span>}
-        </span>
-      </a>
-    </Button>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+        <Icon aria-hidden="true" className="size-4" />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="font-medium break-all text-primary tabular-nums">{title}</span>
+        {details && <span className="text-caption text-muted-foreground">{details}</span>}
+      </span>
+    </a>
   );
 }
