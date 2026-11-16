@@ -19,6 +19,7 @@ const router = createRouter({
   // Query owns caching, so the router should always call loaders on preload/visit.
   defaultPreloadStaleTime: 0,
   scrollRestoration: true,
+  defaultViewTransition: true,
 });
 
 declare module "@tanstack/react-router" {
