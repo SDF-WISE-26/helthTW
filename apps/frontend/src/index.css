@@ -240,11 +240,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: none;
   }
   html {
     @apply font-sans;
-    /* Mobile-first: no scrollbar, so long pages do not shift sideways against short ones. */
-    scrollbar-width: none;
   }
   body {
     @apply bg-background text-body text-foreground antialiased;
