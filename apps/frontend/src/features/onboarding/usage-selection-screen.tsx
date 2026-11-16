@@ -45,7 +45,10 @@ export function UsageSelectionScreen({ form, onExplore, onContinue }: Props) {
       actions={
         <div className="space-y-3" aria-busy={accountRequest.isPending}>
           {accountRequest.isError && <FieldError>{content.accountError}</FieldError>}
-          <OnboardingActions form="onboarding-usage-selection" disabled={!usageMode} />
+          <OnboardingActions
+            form="onboarding-usage-selection"
+            disabled={!usageMode || accountRequest.isPending}
+          />
         </div>
       }
     >
