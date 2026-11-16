@@ -25,7 +25,7 @@ export function OnboardingDrawer() {
       <DrawerTrigger asChild>
         <Button variant="outline">{content.actions.restart}</Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[90dvh] data-[vaul-drawer-direction=bottom]:max-h-[90dvh]">
+      <DrawerContent className="h-[90dvh] bg-background data-[vaul-drawer-direction=bottom]:max-h-[90dvh]">
         <DrawerTitle className="sr-only">{content.welcome.title}</DrawerTitle>
         <DrawerDescription className="sr-only">{content.welcome.description}</DrawerDescription>
         {open && (
