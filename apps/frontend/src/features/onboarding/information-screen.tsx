@@ -18,7 +18,7 @@ export function InformationScreen({ onContinue }: Props) {
         <p>{content.information.disclaimer}</p>
         <p>{content.information.emergency}</p>
 
-        {/* TODO (#95): Link to research material. */}
+        {/* TODO (#95): Set the information-material URL and replace the disabled button with a working link. */}
         <Button
           variant="outline"
           className="h-auto min-h-12 px-4 py-3 text-base leading-6 whitespace-normal"

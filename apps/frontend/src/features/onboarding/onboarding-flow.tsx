@@ -29,6 +29,7 @@ export function OnboardingFlow({
   onFinish: () => void;
   embedded?: boolean;
 }) {
+  // TODO (#95): Prefill the saved profession once the profile API exists; handle loading and errors.
   const usageForm = useForm<UsageSelection>({
     resolver: zodResolver(usageSelectionSchema),
     defaultValues: { profession: null },

@@ -33,6 +33,7 @@ export function UsageSelectionScreen({ form, onExplore, onContinue }: Props) {
 
   const handleContinue = handleSubmit(({ usageMode }) => {
     if (accountRequest.isPending) return;
+    // TODO (#95): Submit the validated profession once backend profile persistence is available.
     accountRequest.mutate(undefined, {
       onSuccess: usageMode === "explore" ? onExplore : onContinue,
     });
