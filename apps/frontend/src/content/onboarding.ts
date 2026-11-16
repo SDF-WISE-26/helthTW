@@ -28,6 +28,7 @@ export const onboardingContent = {
     continue: "Weiter",
     skip: "Überspringen",
     start: "App starten",
+    restart: "Onboarding wiederholen",
   },
 
   information: {

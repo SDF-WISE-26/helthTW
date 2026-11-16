@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
+import { OnboardingPage } from "@/features/onboarding/onboarding-page";
 import {
   beforeOnboardingLoad,
   validateOnboardingSearch,
@@ -8,5 +8,5 @@ import {
 export const Route = createFileRoute("/onboarding")({
   validateSearch: validateOnboardingSearch,
   beforeLoad: beforeOnboardingLoad,
-  component: OnboardingFlow,
+  component: OnboardingPage,
 });

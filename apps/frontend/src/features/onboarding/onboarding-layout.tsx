@@ -8,17 +8,28 @@ import { onboardingContent as content } from "@/content/onboarding";
 export function OnboardingLayout({
   progress,
   onSkip,
+  embedded = false,
   children,
 }: {
   progress: number;
   onSkip?: () => void;
+  embedded?: boolean;
   children: ReactNode;
 }) {
   const progressLabel = `Schritt ${progress} von 5`;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background">
-      <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-8 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div
+      className={
+        embedded ? "flex min-h-0 flex-1 flex-col bg-background" : "fixed inset-0 z-50 bg-background"
+      }
+    >
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-md flex-col gap-8 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+          embedded ? "min-h-0 flex-1" : "h-dvh",
+        )}
+      >
         <div className="shrink-0 space-y-2">
           <div className="flex min-h-11 items-center justify-between gap-3">
             <p className="text-sm leading-5 text-muted-foreground tabular-nums">{progressLabel}</p>
