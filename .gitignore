@@ -33,3 +33,5 @@ dist-ssr
 # AI agent worktrees
 .claude/worktrees/
 md/
+.codex
+.mcp.json

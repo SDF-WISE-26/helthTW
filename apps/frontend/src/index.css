@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 /* Light by default. The class "dark" on <html> switches to dark, see features/settings/theme.ts. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -33,6 +34,10 @@
   --color-status-reach: var(--status-reach);
   --color-status-reach-surface: var(--status-reach-surface);
   --color-ochre: var(--ochre);
+  --color-topic-1: var(--topic-1);
+  --color-topic-2: var(--topic-2);
+  --color-topic-3: var(--topic-3);
+  --color-topic-4: var(--topic-4);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -120,6 +125,12 @@
   --night-600: #2e3a30;
   --ochre-500: #d4a72c;
   --ochre-300: #e0b84a;
+
+  /* Topic card surfaces, white text on all of them, same in both themes */
+  --topic-1: var(--moss-700);
+  --topic-2: #2f6b62;
+  --topic-3: #8a5a12;
+  --topic-4: #3d5568;
 
   --radius: 16px;
 }
@@ -229,6 +240,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: none;
   }
   html {
     @apply font-sans;
