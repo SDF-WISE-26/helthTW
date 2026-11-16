@@ -42,11 +42,7 @@ export function OnboardingFlow({
       {step === "welcome" && <WelcomeScreen onContinue={() => onStepChange("usage-selection")} />}
 
       {step === "usage-selection" && (
-        <UsageSelectionScreen
-          form={usageForm}
-          onExplore={() => onStepChange("information")}
-          onContinue={() => onStepChange("information")}
-        />
+        <UsageSelectionScreen form={usageForm} onContinue={() => onStepChange("information")} />
       )}
 
       {step === "information" && <InformationScreen onContinue={() => onStepChange("tutorial")} />}

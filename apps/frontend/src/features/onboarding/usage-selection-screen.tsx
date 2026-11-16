@@ -17,26 +17,23 @@ import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboardin
 
 type Props = {
   form: UseFormReturn<UsageSelection>;
-  onExplore: () => void;
   onContinue: () => void;
 };
 
 const selectedCardClassName =
   "border-green-600 bg-green-50 dark:border-green-500 dark:bg-green-950/40";
 
-export function UsageSelectionScreen({ form, onExplore, onContinue }: Props) {
+export function UsageSelectionScreen({ form, onContinue }: Props) {
   const { control, register, handleSubmit, clearErrors, formState } = form;
   const [usageMode, profession] = useWatch({ control, name: ["usageMode", "profession"] });
   const usageModeField = register("usageMode");
   const hasError = Boolean(formState.errors.profession);
   const accountRequest = useMutation({ mutationFn: ensureAccount });
 
-  const handleContinue = handleSubmit(({ usageMode }) => {
+  const handleContinue = handleSubmit(() => {
     if (accountRequest.isPending) return;
     // TODO (#95): Submit the validated profession once backend profile persistence is available.
-    accountRequest.mutate(undefined, {
-      onSuccess: usageMode === "explore" ? onExplore : onContinue,
-    });
+    accountRequest.mutate(undefined, { onSuccess: onContinue });
   });
 
   return (
