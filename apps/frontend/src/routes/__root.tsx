@@ -12,10 +12,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootLayout() {
   // Screens under routes/_tabs/ get the tab bar.
   const tabs = useMatch({ from: "/_tabs", shouldThrow: false });
+  const onboarding = useMatch({ from: "/onboarding", shouldThrow: false });
 
   return (
     <div className="mx-auto flex min-h-svh max-w-md flex-col">
-      <AppHeader />
+      {!onboarding && <AppHeader />}
       <main className="flex flex-1 flex-col gap-3 p-4">
         <Outlet />
       </main>
