@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
-import { content } from "./content";
+import { content, topicItems } from "./content";
 import type { Topic } from "./content";
 import { summarizeKinds } from "./item-kind";
 import { TopicArt } from "./topic-art";
@@ -19,7 +19,7 @@ export function TopicList() {
 }
 
 function TopicCard({ topic, index }: { topic: Topic; index: number }) {
-  const items = content.items.filter((item) => item.topic === topic.id);
+  const items = topicItems(topic.id);
 
   return (
     <Link
