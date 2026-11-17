@@ -4,19 +4,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
+  DrawerBody,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { ArticleBody } from "./article-body";
 import { content } from "./content";
 import type { ContentItem } from "./content";
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
-
-// `cn` does not know our custom text sizes, so overriding the drawer's text-base needs `!`.
-const titleClass = "text-card-title! font-semibold text-foreground";
 
 export function ItemSheet({ topicId, itemId }: { topicId: string; itemId: string }) {
   const [open, setOpen] = useState(true);
@@ -44,16 +43,16 @@ export function ItemSheet({ topicId, itemId }: { topicId: string; itemId: string
       // Leave only after the slide-out, otherwise the sheet just vanishes.
       onAnimationEnd={(isOpen) => !isOpen && leave()}
     >
-      <DrawerContent className="mx-auto w-full max-w-md data-[vaul-drawer-direction=bottom]:max-h-[90dvh]">
+      <DrawerContent>
         {item ? (
           <ItemDetails item={item} />
         ) : (
           <>
-            <div className="flex flex-col gap-2 px-5 pt-4">
-              <DrawerTitle className={titleClass}>Beitrag nicht gefunden</DrawerTitle>
+            <DrawerBody>
+              <DrawerTitle>Beitrag nicht gefunden</DrawerTitle>
               <DrawerDescription>Diesen Beitrag gibt es nicht (mehr).</DrawerDescription>
-            </div>
-            <DrawerFooter className="px-5 pb-6">
+            </DrawerBody>
+            <DrawerFooter>
               <Button size="lg" onClick={() => setOpen(false)}>
                 Zurück zum Thema
               </Button>
@@ -73,15 +72,21 @@ function ItemDetails({ item }: { item: ContentItem }) {
 
   return (
     <>
-      <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-5 pt-4 pb-2">
-        <DrawerTitle className={titleClass}>{item.title}</DrawerTitle>
-        <DrawerDescription className="text-body! text-foreground">{item.summary}</DrawerDescription>
+      <DrawerBody>
+        <DrawerTitle>{item.title}</DrawerTitle>
+        <DrawerDescription>{item.summary}</DrawerDescription>
         {meta.length > 0 && <p className="text-small text-muted-foreground">{meta.join(" · ")}</p>}
-      </div>
+        {/* An article is read right in the sheet, which grows to almost full height and scrolls. */}
+        {item.kind === "article" && (
+          <div className="mt-3">
+            <ArticleBody markdown={item.body} />
+          </div>
+        )}
+      </DrawerBody>
 
       {item.kind !== "article" && (
-        <DrawerFooter className="px-5 pb-6">
-          <Button asChild size="lg" className="w-full">
+        <DrawerFooter>
+          <Button asChild size="lg">
             <a href={item.url} target="_blank" rel="noopener noreferrer">
               {item.kind === "pdf" ? "PDF öffnen" : "Website öffnen"}
               <ExternalLink aria-hidden="true" />
