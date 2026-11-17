@@ -1,12 +1,10 @@
 import { cn } from "cn";
-import { content } from "./content";
+import { content, topicItems } from "./content";
 import { FeaturedItemCard, ItemCard } from "./item-card";
-import { itemKinds, summarizeKinds } from "./item-kind";
+import { summarizeKinds } from "./item-kind";
 import { InfoNotFound } from "./not-found";
 import { TopicArt } from "./topic-art";
 import { topicSurface, topicTransition } from "./topic-look";
-
-const kindOrder = Object.keys(itemKinds);
 
 // A topic with all its items. The header repeats the topic card, so the tap feels continuous.
 export function TopicPage({ topicId }: { topicId: string }) {
@@ -14,12 +12,9 @@ export function TopicPage({ topicId }: { topicId: string }) {
   if (index === -1) return <InfoNotFound />;
 
   const topic = content.topics[index];
-  const items = content.items
-    .filter((item) => item.topic === topic.id)
-    .toSorted((a, b) => kindOrder.indexOf(a.kind) - kindOrder.indexOf(b.kind));
-  // Sorted articles first, so a topic with an article starts with it.
-  const featured = items[0]?.kind === "article" ? items[0] : undefined;
-  const rest = featured ? items.slice(1) : items;
+  const items = topicItems(topic.id);
+  const featured = items.find((item) => item.kind === "article");
+  const rest = items.filter((item) => item !== featured);
 
   return (
     <>
