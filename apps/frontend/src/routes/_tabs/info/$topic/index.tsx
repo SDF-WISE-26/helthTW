@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
+import { createFileRoute } from "@tanstack/react-router";
+import { TopicPage } from "@/features/info/topic-page";
 
 export const Route = createFileRoute("/_tabs/info/$topic/")({
   component: Topic,
@@ -7,15 +7,5 @@ export const Route = createFileRoute("/_tabs/info/$topic/")({
 
 function Topic() {
   const { topic } = Route.useParams();
-
-  return (
-    <>
-      <h1 className="text-2xl font-bold">Thema</h1>
-      <Button asChild variant="outline" size="lg">
-        <Link to="/info/$topic/$article" params={{ topic, article: "schlaf1" }}>
-          Artikel
-        </Link>
-      </Button>
-    </>
-  );
+  return <TopicPage topicId={topic} />;
 }
