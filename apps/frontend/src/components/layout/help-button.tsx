@@ -12,7 +12,7 @@ export function HelpButton() {
         </Button>
       </DrawerTrigger>
 
-      <DrawerContent className="max-h-[90dvh]">
+      <DrawerContent>
         <div className="min-h-0 overflow-y-auto px-4 pb-6">
           <EmergencyScreen />
         </div>
