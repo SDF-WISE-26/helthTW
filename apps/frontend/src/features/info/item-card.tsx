@@ -5,11 +5,14 @@ import { itemKinds, kindLabel } from "./item-kind";
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-// Every item opens in the app first, also pdf and link.
 const itemLink = (item: ContentItem) =>
-  ({ to: "/info/$topic/$article", params: { topic: item.topic, article: item.id } }) as const;
+  ({
+    to: "/info/$topic/$item",
+    params: { topic: item.topic, item: item.id },
+    viewTransition: false,
+    resetScroll: false,
+  }) as const;
 
-// One item in a list.
 export function ItemCard({ item }: { item: ContentItem }) {
   const Icon = itemKinds[item.kind].icon;
 

@@ -11,7 +11,8 @@ export function AppHeader() {
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4">
+    // Own transition name: otherwise named elements (topic header) are lifted above it mid-transition.
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 [view-transition-name:app-header]">
       {TOP_LEVEL_PATHS.includes(pathname) ? (
         <span className="font-bold">helthTW</span>
       ) : (
