@@ -1,5 +1,5 @@
-import { usageSelectionSchema } from "@helthtw/shared/accounts";
-import type { UsageSelection } from "@helthtw/shared/accounts";
+import { usageSelectionSchema } from "./usage-selection-form";
+import type { UsageSelection } from "./usage-selection-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";

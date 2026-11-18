@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { usageSelectionSchema } from "./index";
+import { usageSelectionSchema } from "./usage-selection-form";
 
 describe("usageSelectionSchema", () => {
   it("allows exploring without a profession", () => {

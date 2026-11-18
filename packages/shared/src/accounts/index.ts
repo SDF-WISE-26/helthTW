@@ -18,11 +18,3 @@ export const accountProfileSchema = z.object({
 });
 
 export type AccountProfile = z.infer<typeof accountProfileSchema>;
-
-export const usageSelectionSchema = accountProfileSchema
-  .extend({ usageMode: z.enum(["explore", "professional"]) })
-  .refine(({ usageMode, profession }) => usageMode === "explore" || profession !== null, {
-    path: ["profession"],
-  });
-
-export type UsageSelection = z.infer<typeof usageSelectionSchema>;

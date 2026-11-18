@@ -1,4 +1,3 @@
-import type { UsageSelection } from "@helthtw/shared/accounts";
 import { useMutation } from "@tanstack/react-query";
 import { Controller, useWatch } from "react-hook-form";
 import type { UseFormReturn } from "react-hook-form";
@@ -14,6 +13,7 @@ import {
 import { onboardingContent as content } from "@/content/onboarding";
 import { ensureAccount, professionValues } from "@/features/account/account";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
+import type { UsageSelection } from "./usage-selection-form";
 
 type Props = {
   form: UseFormReturn<UsageSelection>;
@@ -24,7 +24,7 @@ const selectedCardClassName =
   "border-green-600 bg-green-50 dark:border-green-500 dark:bg-green-950/40";
 
 export function UsageSelectionScreen({ form, onContinue }: Props) {
-  const { control, register, handleSubmit, clearErrors, formState } = form;
+  const { control, register, handleSubmit, setValue, clearErrors, formState } = form;
   const [usageMode, profession] = useWatch({ control, name: ["usageMode", "profession"] });
   const usageModeField = register("usageMode");
   const hasError = Boolean(formState.errors.profession);
@@ -64,6 +64,7 @@ export function UsageSelectionScreen({ form, onContinue }: Props) {
                 checked={usageMode === "explore"}
                 onChange={(event) => {
                   void usageModeField.onChange(event);
+                  setValue("profession", null);
                   clearErrors("profession");
                 }}
                 className="mt-1 size-4 shrink-0 accent-green-600 dark:accent-green-500"
