@@ -10,9 +10,11 @@ jobs:
     if: ${{ github.event.pull_request.merged && !startsWith(github.head_ref, 'doku/') }}
     runs-on: ubuntu-26.04
     permissions:
+      contents: read
       issues: write
       pull-requests: read
     steps:
+      - uses: actions/checkout@v5
       - id: app
         uses: actions/create-github-app-token@v2
         with:
@@ -30,35 +32,7 @@ jobs:
             exit 1
           fi
           echo "ISSUE=$issue" >> "$GITHUB_ENV"
-          read -r project field option item < <(gh api graphql \
-            -f org="${GITHUB_REPOSITORY%/*}" -f repo="${GITHUB_REPOSITORY#*/}" -F issue="$issue" \
-            -f query='query($org: String!, $repo: String!, $issue: Int!) {
-              organization(login: $org) {
-                projectV2(number: 1) {
-                  id
-                  field(name: "Status") { ... on ProjectV2SingleSelectField { id options { id name } } }
-                }
-              }
-              repository(owner: $org, name: $repo) {
-                issue(number: $issue) { projectItems(first: 20) { nodes { id project { number } } } }
-              }
-            }' \
-            --jq '.data as $d | $d.organization.projectV2 as $p | [
-              $p.id, $p.field.id,
-              ($p.field.options[] | select(.name == "PO Abnahme") | .id),
-              ($d.repository.issue.projectItems.nodes[] | select(.project.number == 1) | .id)
-            ] | @tsv')
-          if [ -z "$item" ]; then
-            echo "::error::Ticket #$issue ist nicht auf dem Board oder die Spalte 'PO Abnahme' fehlt"
-            exit 1
-          fi
-          gh api graphql -f project="$project" -f item="$item" -f field="$field" -f option="$option" \
-            -f query='mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $project, itemId: $item, fieldId: $field, value: { singleSelectOptionId: $option }
-              }) { projectV2Item { id } }
-            }' > /dev/null
-          echo "Ticket #$issue wurde nach 'PO Abnahme' verschoben"
+          .github/scripts/move-ticket.sh "$issue" "PO Abnahme"
 
       - name: Close ticket
         env:
@@ -68,5 +42,7 @@ jobs:
           approvers=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews" \
             --jq '[.[] | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED")]
               | group_by(.user.login) | map(last | select(.state == "APPROVED") | "@" + .user.login) | join(", ")')
-          gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY" \
-            --comment "Gemergt mit #$PR, approved von: ${approvers:-niemandem}"
+          # "Closes #<ticket>" may have closed it already, and gh issue close then skips the comment.
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" \
+            --body "Gemergt mit #$PR, approved von: ${approvers:-niemandem}"
+          gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY"
