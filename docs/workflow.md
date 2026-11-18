@@ -29,16 +29,16 @@ Commit messages and PR titles follow the Conventional Commits standard: `<type>(
 
 ## What is checked automatically
 
-| When                                  | What                                                                                                    |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests             |
-| commit message                        | format as above                                                                                         |
-| before every push                     | `vp run ready`: check, secretlint, tests, build                                                         |
-| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                                  |
-| PR against `main`                     | title, branch name; ticket to "In review", linked, milestone and labels copied; test results as comment |
-| tag pushed                            | tag is `vX.Y.Z`, new, and exactly one step above the highest tag (patch, minor or major)                |
-| release published                     | CI and the tag check, then deploy to the prod-vm (see below)                                            |
-| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                                     |
+| When                                  | What                                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests                              |
+| commit message                        | format as above                                                                                                          |
+| before every push                     | `vp run ready`: check, secretlint, tests, build                                                                          |
+| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                                                   |
+| PR against `main`                     | title, branch name; author assigned; ticket to "In review", linked, milestone and labels copied; test results as comment |
+| tag pushed                            | tag is `vX.Y.Z`, new, and exactly one step above the highest tag (patch, minor or major)                                 |
+| release published                     | CI and the tag check, then deploy to the prod-vm (see below)                                                             |
+| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                                                      |
 
 The local hooks are only active once `vp install` has run.
 

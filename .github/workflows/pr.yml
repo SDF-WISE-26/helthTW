@@ -8,6 +8,19 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
+  assignee:
+    runs-on: ubuntu-26.04
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Assign the PR author
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh api "repos/$GITHUB_REPOSITORY/issues/$PR/assignees" -f "assignees[]=$AUTHOR" > /dev/null
+
   ticket:
     # doku/** has no ticket. experiment/** fails the name check below, so it can't reach main.
     if: ${{ !startsWith(github.head_ref, 'doku/') }}
