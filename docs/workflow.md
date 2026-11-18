@@ -24,21 +24,21 @@ Commit messages and PR titles follow the Conventional Commits standard: `<type>(
 1. Take the ticket on the board.
 2. Create a branch: `git switch -c feature/<nr>`
 3. Work and commit as often as you like. Don't squash yourself, the merge does that.
-4. Move the ticket on the board to "In review".
-5. Open a PR against `main`, title in commit format, at least one review. The PR title becomes the commit message on `main`.
-6. After the merge, the pipeline moves the ticket to "PO Abnahme".
+4. Open a PR against `main`, title in commit format, at least one review. The PR title becomes the commit message on `main`. The pipeline moves the ticket to "In review", links it under Development (`Closes #<nr>`) and copies its milestone, labels and type to the PR. Whatever is missing stays empty and is listed in a PR comment.
+5. After the merge, the pipeline moves the ticket to "PO Abnahme".
 
 ## What is checked automatically
 
-| When                                  | What                                                                                        |
-| ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests |
-| commit message                        | format as above                                                                             |
-| before every push                     | `vp run ready`: check, secretlint, tests, build                                             |
-| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                      |
-| PR against `main`                     | title, branch name, ticket is in "In review"                                                |
-| release published                     | CI, then deploy to the prod-vm (see below)                                                  |
-| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                         |
+| When                                  | What                                                                                                    |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests             |
+| commit message                        | format as above                                                                                         |
+| before every push                     | `vp run ready`: check, secretlint, tests, build                                                         |
+| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                                  |
+| PR against `main`                     | title, branch name; ticket to "In review", linked, milestone and labels copied; test results as comment |
+| tag pushed                            | tag is `vX.Y.Z`, new, and exactly one step above the highest tag (patch, minor or major)                |
+| release published                     | CI and the tag check, then deploy to the prod-vm (see below)                                            |
+| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                                     |
 
 The local hooks are only active once `vp install` has run.
 

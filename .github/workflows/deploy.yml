@@ -29,8 +29,12 @@ jobs:
     if: github.event_name == 'release'
     uses: ./.github/workflows/ci.yml
 
+  tag:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/tag.yml
+
   deploy:
-    needs: ci
+    needs: [ci, tag]
     runs-on: [self-hosted, htw-ops]
     environment: production
     timeout-minutes: 30
