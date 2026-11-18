@@ -8,3 +8,4 @@ const provider = createOpenAICompatible({
 });
 
 export const chatModel = provider.chatModel(env.LLM_MODEL);
+export const voiceModel = env.VOICE_LLM_MODEL ? provider.chatModel(env.VOICE_LLM_MODEL) : chatModel;

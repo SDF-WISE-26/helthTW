@@ -12,5 +12,3 @@ const uiMessageSchema = z
 export const chatRequestSchema = z.object({
   messages: z.array(uiMessageSchema).min(1),
 });
-
-export const MAX_MESSAGES = 10;

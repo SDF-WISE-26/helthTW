@@ -6,6 +6,7 @@ Contract of the REST API between backend and frontend.
 
 - Paths: `/api/v1/<resource>`, English, plural, kebab-case, no verbs, e.g. `GET /api/v1/check-ins/:id`.
 - Exception: `/api/alive_ping` stays unversioned, deploy and health check depend on it.
+- Creating a session is a resource too: `POST /api/v1/voice/sessions` (contract in [`voice.md`](voice.md)).
 - `GET` reads, `POST` creates, `PATCH` partially updates, `DELETE` deletes. `PUT` only when a resource is really replaced as a whole.
 - Breaking changes only with a new version or together with the frontend.
 
@@ -16,23 +17,26 @@ Contract of the REST API between backend and frontend.
 - Lists always as `{ "items": [...] }`, so pagination can be added without breaking anything.
 - Errors always as `{ "error": { "code", "message", "details" } }`. `code` is stable and meant for the frontend, `message` for developers, `details` is optional.
 
-| Status | Meaning                          |
-| ------ | -------------------------------- |
-| 200    | read or updated                  |
-| 201    | created                          |
-| 204    | success, no content              |
-| 400    | invalid input                    |
-| 401    | not signed in                    |
-| 403    | signed in, but no access         |
-| 404    | resource or route missing        |
-| 409    | conflict with the current state  |
-| 500    | error in the backend, no details |
+| Status | Meaning                                        |
+| ------ | ---------------------------------------------- |
+| 200    | read or updated                                |
+| 201    | created                                        |
+| 204    | success, no content                            |
+| 400    | invalid input                                  |
+| 401    | not signed in                                  |
+| 403    | signed in, but no access                       |
+| 404    | resource or route missing                      |
+| 409    | conflict with the current state                |
+| 413    | request too large, e.g. too many chat messages |
+| 500    | error in the backend, no details               |
+| 503    | feature not configured on this backend         |
 
 ## Input and privacy
 
 - Every input (`param`, `query`, `json`) is validated with Zod before it reaches the service.
 - No health data, chat content or personal data in logs and error messages.
 - The caller's own account ID comes from the `X-Account-Id` header via `requireAccount`, never from path or body.
+- Every LLM reply goes through the gateway (`modules/gateway`), never `streamText` directly in a module.
 - Responses contain only explicitly selected fields.
 
 ## Example

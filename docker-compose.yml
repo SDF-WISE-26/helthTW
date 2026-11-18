@@ -12,5 +12,18 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  # Self-hosted LiveKit for voice, optional: `docker compose --profile livekit up -d`.
+  # Then LIVEKIT_URL=ws://localhost:7880, LIVEKIT_API_KEY=devkey, LIVEKIT_API_SECRET=secret (the --dev keys).
+  # Same version as LiveKit Cloud at the time of writing.
+  livekit:
+    image: livekit/livekit-server:v1.13.10
+    profiles: [livekit]
+    command: ["--dev", "--bind", "0.0.0.0", "--node-ip", "127.0.0.1"]
+    restart: unless-stopped
+    ports:
+      - "7880:7880" # signalling (WebSocket) and API
+      - "7881:7881" # WebRTC over TCP
+      - "7882:7882/udp" # WebRTC over UDP
+
 volumes:
   postgres-data:

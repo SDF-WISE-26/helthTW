@@ -1,0 +1,22 @@
+# One guard gateway for text chat and voice
+
+- **Status:** proposed · **Date:** 2026-11-13 · **Involved:** @xavierwelscher · **Ref:** #86
+- **Decision:**
+  - Every LLM reply, typed or spoken, goes through `modules/gateway` (`streamGuardedReply`).
+  - A `Guard` checks the user's turn before the LLM, then each sentence of the reply before it leaves the backend.
+  - A guard returns `allow`, `replace` (with a text) or `block`. On anything but `allow` the LLM call is aborted and the turn ends with the replacement or a fallback text.
+  - `GUARD_PROVIDER` selects the guard. The only one so far is `passthrough`. Jev (TypeSafe AI) or another System-One model is meant to be added as a further guard in `guards/`.
+  - Logs only hold verdict codes. LLM errors leave the gateway without the request, since it contains the conversation.
+- **Why:**
+  - Checking in one place means the chat UI, TTS and a later avatar only ever see checked text.
+  - The sentence is the smallest unit that can be judged and the unit TTS speaks, so checking per sentence costs little latency.
+  - Behind an interface, the choice of guard model stays open.
+- **Rejected:**
+  - Separate checks in chat and voice: two places to keep in sync.
+  - Checking the whole reply before sending: voice would wait for the full answer.
+  - Checking per token: a guard can't judge fragments.
+  - LLM provider moderation only: not under our control, and no German crisis handling.
+- **Caution:**
+  - Text chat now streams one sentence at a time instead of token by token.
+  - The fixed voice greeting skips the gateway on purpose, so it must stay a reviewed text.
+  - `BLOCKED_REPLY` is placeholder wording and needs review like the crisis screen.
