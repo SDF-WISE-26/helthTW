@@ -430,23 +430,33 @@ Runs on the prod-vm apart from the app, in `/srv/monitoring` with [`deploy/monit
 - `socket-proxy` is the only container with the Docker socket. It only passes on reading requests, Dozzle gets them through `/srv/monitoring/socket`.
 - `deploy.sh` and releases never touch it. Changes to the file are installed by hand as below.
 
-### Opening Dozzle
+### Opening the monitoring
 
-Dozzle only listens on `127.0.0.1:8888` of the prod-vm and has no login. Devs reach it through an SSH tunnel as the user `monitoring`, which can do nothing else ([Access for devs](#access-for-devs)). Send your public key to an admin, then add this to `~/.ssh/config` on your own machine:
+The tools only listen on `127.0.0.1` of the prod-vm and have no login of their own. Devs reach them through an SSH tunnel as the user `monitoring`, which can do nothing else ([Access for devs](#access-for-devs)). Once per machine:
 
-```
-Host helthtw-logs
-  HostName <prod-host>
-  User monitoring
-  IdentityFile ~/.ssh/<your-key>
-  LocalForward 8888 127.0.0.1:8888
-  SessionType none
-  ExitOnForwardFailure yes
-```
+1. Connect to the HTW VPN with OpenVPN, as in HTW's [guide](https://rz.htw-berlin.de/en/tutorials/vpn/). Not needed inside the HTW network, e.g. on eduroam, where OpenVPN does not connect.
+2. Create a key with a passphrase and send only the `.pub` file to an admin, never the private key. Admins are the team members with their own sudo login on the prod-vm, ask in the team chat who that is. Also tell them the fingerprint in person or over a second channel, so they can check the key is yours:
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_helthtw_monitoring
+   cat ~/.ssh/id_ed25519_helthtw_monitoring.pub      # send this line
+   ssh-keygen -lf ~/.ssh/id_ed25519_helthtw_monitoring.pub   # fingerprint, SHA256:…
+   ```
+3. Once the admin has added it, add this to `~/.ssh/config` on your own machine:
+   ```
+   Host helthtw-logs
+     HostName <prod-host>
+     User monitoring
+     IdentityFile ~/.ssh/id_ed25519_helthtw_monitoring
+     IdentitiesOnly yes
+     LocalForward 8888 127.0.0.1:8888
+     SessionType none
+     ExitOnForwardFailure yes
+   ```
 
-In the VPN, run `ssh helthtw-logs` and open http://localhost:8888. The command prints nothing and keeps the tunnel open until Ctrl+C.
+Then, in the VPN, run `ssh helthtw-logs` and open Dozzle at http://localhost:8888. The command prints nothing and keeps the tunnel open until Ctrl+C.
 
-- `SessionType none` does what `-N` does: only the tunnel, no shell. With `ExitOnForwardFailure`, SSH stops with an error if port 8888 is taken on your machine. Then use e.g. `LocalForward 18888 127.0.0.1:8888` and `localhost:18888`.
+- Each further tool gets its own `LocalForward` line in this block, and its port must be allowed for `monitoring` ([Access for devs](#access-for-devs)).
+- `IdentitiesOnly` makes SSH offer only this key, not every key in your agent. `SessionType none` does what `-N` does: only the tunnel, no shell. With `ExitOnForwardFailure`, SSH stops with an error if port 8888 is taken on your machine. Then use e.g. `LocalForward 18888 127.0.0.1:8888` and `localhost:18888`.
 - `Permission denied (publickey)`: your key is not on the VM yet. `connect failed` in the SSH window: Dozzle is not running.
 - Admins can also use their own login: `ssh -N -L 8888:127.0.0.1:8888 <admin>@<prod-host>`.
 - Requests to the site do not show up: Caddy has no access log and the backend only logs its start.
@@ -483,10 +493,11 @@ sudo systemctl reload ssh
 
 Undo: `sudo rm /etc/ssh/sshd_config.d/monitoring.conf && sudo systemctl reload ssh`. The rules are in their own file, so updates never ask about a changed `sshd_config`.
 
-Add a dev with the `.pub` line they sent (never the private key). Replace the comment at the end of the line with their name, so the line can be found later. Names stay on the VM.
+Add a dev with the `.pub` line they sent (never the private key), but only if its fingerprint matches the one they told you in person or over a second channel. Otherwise anyone could send a key in their name and read all logs. Replace the comment at the end of the line with their name, so the line can be found later. Names stay on the VM.
 
 ```bash
 key='<the .pub line>'
+printf '%s\n' "$key" | ssh-keygen -lf -   # must match the fingerprint the dev told you
 printf 'restrict,port-forwarding,permitopen="127.0.0.1:8888" %s\n' "$key" | sudo tee -a /home/monitoring/.ssh/authorized_keys >/dev/null
 ```
 
