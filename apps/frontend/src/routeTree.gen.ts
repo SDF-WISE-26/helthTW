@@ -19,8 +19,7 @@ import { Route as TabsWellbeingRouteImport } from "./routes/_tabs/wellbeing"
 import { Route as IncidentsNewRouteImport } from "./routes/incidents/new"
 import { Route as QuestionnairesQuestionnaireIdRouteImport } from "./routes/questionnaires/$questionnaireId"
 import { Route as TabsInfoIndexRouteImport } from "./routes/_tabs/info/index"
-import { Route as TabsInfoTopicRouteRouteImport } from "./routes/_tabs/info/$topic/route"
-import { Route as TabsInfoTopicItemRouteImport } from "./routes/_tabs/info/$topic/$item"
+import { Route as TabsInfoTopicRouteImport } from "./routes/_tabs/info/$topic"
 
 const TabsRoute = TabsRouteImport.update({
   id: "/_tabs",
@@ -72,15 +71,10 @@ const TabsInfoIndexRoute = TabsInfoIndexRouteImport.update({
   path: "/info/",
   getParentRoute: () => TabsRoute,
 } as any)
-const TabsInfoTopicRouteRoute = TabsInfoTopicRouteRouteImport.update({
+const TabsInfoTopicRoute = TabsInfoTopicRouteImport.update({
   id: "/info/$topic",
   path: "/info/$topic",
   getParentRoute: () => TabsRoute,
-} as any)
-const TabsInfoTopicItemRoute = TabsInfoTopicItemRouteImport.update({
-  id: "/$item",
-  path: "/$item",
-  getParentRoute: () => TabsInfoTopicRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -92,9 +86,8 @@ export interface FileRoutesByFullPath {
   "/wellbeing": typeof TabsWellbeingRoute
   "/incidents/new": typeof IncidentsNewRoute
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
-  "/info/$topic": typeof TabsInfoTopicRouteRouteWithChildren
+  "/info/$topic": typeof TabsInfoTopicRoute
   "/info/": typeof TabsInfoIndexRoute
-  "/info/$topic/$item": typeof TabsInfoTopicItemRoute
 }
 export interface FileRoutesByTo {
   "/install": typeof InstallRoute
@@ -105,9 +98,8 @@ export interface FileRoutesByTo {
   "/incidents/new": typeof IncidentsNewRoute
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
   "/": typeof TabsIndexRoute
-  "/info/$topic": typeof TabsInfoTopicRouteRouteWithChildren
+  "/info/$topic": typeof TabsInfoTopicRoute
   "/info": typeof TabsInfoIndexRoute
-  "/info/$topic/$item": typeof TabsInfoTopicItemRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,9 +112,8 @@ export interface FileRoutesById {
   "/incidents/new": typeof IncidentsNewRoute
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
   "/_tabs/": typeof TabsIndexRoute
-  "/_tabs/info/$topic": typeof TabsInfoTopicRouteRouteWithChildren
+  "/_tabs/info/$topic": typeof TabsInfoTopicRoute
   "/_tabs/info/": typeof TabsInfoIndexRoute
-  "/_tabs/info/$topic/$item": typeof TabsInfoTopicItemRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,7 +128,6 @@ export interface FileRouteTypes {
     | "/questionnaires/$questionnaireId"
     | "/info/$topic"
     | "/info/"
-    | "/info/$topic/$item"
   fileRoutesByTo: FileRoutesByTo
   to:
     | "/install"
@@ -150,7 +140,6 @@ export interface FileRouteTypes {
     | "/"
     | "/info/$topic"
     | "/info"
-    | "/info/$topic/$item"
   id:
     | "__root__"
     | "/_tabs"
@@ -164,7 +153,6 @@ export interface FileRouteTypes {
     | "/_tabs/"
     | "/_tabs/info/$topic"
     | "/_tabs/info/"
-    | "/_tabs/info/$topic/$item"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -252,35 +240,17 @@ declare module "@tanstack/react-router" {
       id: "/_tabs/info/$topic"
       path: "/info/$topic"
       fullPath: "/info/$topic"
-      preLoaderRoute: typeof TabsInfoTopicRouteRouteImport
+      preLoaderRoute: typeof TabsInfoTopicRouteImport
       parentRoute: typeof TabsRoute
-    }
-    "/_tabs/info/$topic/$item": {
-      id: "/_tabs/info/$topic/$item"
-      path: "/$item"
-      fullPath: "/info/$topic/$item"
-      preLoaderRoute: typeof TabsInfoTopicItemRouteImport
-      parentRoute: typeof TabsInfoTopicRouteRoute
     }
   }
 }
-
-interface TabsInfoTopicRouteRouteChildren {
-  TabsInfoTopicItemRoute: typeof TabsInfoTopicItemRoute
-}
-
-const TabsInfoTopicRouteRouteChildren: TabsInfoTopicRouteRouteChildren = {
-  TabsInfoTopicItemRoute: TabsInfoTopicItemRoute,
-}
-
-const TabsInfoTopicRouteRouteWithChildren =
-  TabsInfoTopicRouteRoute._addFileChildren(TabsInfoTopicRouteRouteChildren)
 
 interface TabsRouteChildren {
   TabsChatRoute: typeof TabsChatRoute
   TabsWellbeingRoute: typeof TabsWellbeingRoute
   TabsIndexRoute: typeof TabsIndexRoute
-  TabsInfoTopicRouteRoute: typeof TabsInfoTopicRouteRouteWithChildren
+  TabsInfoTopicRoute: typeof TabsInfoTopicRoute
   TabsInfoIndexRoute: typeof TabsInfoIndexRoute
 }
 
@@ -288,7 +258,7 @@ const TabsRouteChildren: TabsRouteChildren = {
   TabsChatRoute: TabsChatRoute,
   TabsWellbeingRoute: TabsWellbeingRoute,
   TabsIndexRoute: TabsIndexRoute,
-  TabsInfoTopicRouteRoute: TabsInfoTopicRouteRouteWithChildren,
+  TabsInfoTopicRoute: TabsInfoTopicRoute,
   TabsInfoIndexRoute: TabsInfoIndexRoute,
 }
 

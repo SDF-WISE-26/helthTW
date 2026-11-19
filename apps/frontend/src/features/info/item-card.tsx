@@ -1,24 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { ContentItem } from "./content";
 import { itemKinds, kindLabel } from "./item-kind";
+import { itemLink } from "./item-link";
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
-
-const itemLink = (item: ContentItem) =>
-  ({
-    to: "/info/$topic/$item",
-    params: { topic: item.topic, item: item.id },
-    viewTransition: false,
-    resetScroll: false,
-  }) as const;
 
 export function ItemCard({ item }: { item: ContentItem }) {
   const Icon = itemKinds[item.kind].icon;
 
   return (
     <Link
-      {...itemLink(item)}
+      {...itemLink(item.id)}
       className={`flex items-center gap-3 rounded-2xl bg-card p-4 text-card-foreground ring-1 ring-foreground/5 transition-transform active:scale-[0.98] ${focus}`}
     >
       <span className="flex size-10 shrink-0 items-center justify-center self-start rounded-full bg-secondary text-secondary-foreground">
@@ -34,7 +27,6 @@ export function ItemCard({ item }: { item: ContentItem }) {
           <span className="mt-1 text-caption text-muted-foreground">{item.source}</span>
         )}
       </span>
-      <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
     </Link>
   );
 }
@@ -43,7 +35,7 @@ export function ItemCard({ item }: { item: ContentItem }) {
 export function FeaturedItemCard({ item }: { item: ContentItem }) {
   return (
     <Link
-      {...itemLink(item)}
+      {...itemLink(item.id)}
       className={`flex flex-col gap-2 rounded-2xl bg-secondary p-5 text-secondary-foreground transition-transform active:scale-[0.98] ${focus}`}
     >
       <span className="text-caption font-semibold tracking-wide uppercase opacity-80">
