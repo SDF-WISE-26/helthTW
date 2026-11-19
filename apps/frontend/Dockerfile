@@ -13,6 +13,7 @@ RUN vp install --frozen-lockfile --filter "frontend..."
 COPY --chown=vp:vp packages/shared packages/shared
 COPY --chown=vp:vp apps/backend apps/backend
 COPY --chown=vp:vp apps/frontend apps/frontend
+COPY --chown=vp:vp content content
 RUN vp run frontend#build
 
 # --- runtime: Caddy serves the files and forwards /api to the backend

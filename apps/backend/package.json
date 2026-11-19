@@ -19,9 +19,12 @@
     "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/openai-compatible": "catalog:",
     "@helthtw/shared": "workspace:*",
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "catalog:",
+    "ai": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",

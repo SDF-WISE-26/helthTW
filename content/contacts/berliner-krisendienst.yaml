@@ -1,0 +1,44 @@
+name: Berliner Krisendienst
+category: krisen-hotlines
+audience: alle Menschen in Krisen, Rufnummer nach Bezirk
+tags: [krise, hilfe-holen]
+channels:
+  - type: phone
+    label: Mitte, Friedrichshain-Kreuzberg
+    value: "+49303906310"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Charlottenburg-Wilmersdorf
+    value: "+49303906320"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Spandau
+    value: "+49303906330"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Pankow
+    value: "+49303906340"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Reinickendorf
+    value: "+49303906350"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Steglitz-Zehlendorf, Tempelhof-Schöneberg
+    value: "+49303906360"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Lichtenberg, Marzahn-Hellersdorf
+    value: "+49303906370"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Treptow-Köpenick
+    value: "+49303906380"
+    availability: täglich rund um die Uhr
+  - type: phone
+    label: Neukölln
+    value: "+49303906390"
+    availability: täglich rund um die Uhr
+website: https://www.berliner-notruf.de/
+source: berlin.de – Landesbeauftragte für psychische Gesundheit
+lastReviewed: 2026-03-23

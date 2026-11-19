@@ -9,7 +9,7 @@ Summary of the rules that Git hooks and CI enforce. The PR checks come with PR #
 - `doku/<name>` for docs-only changes: needs no ticket and may merge to `main`.
 - `experiment/<name>` for trying things out: runs through CI but must not merge to `main`.
 - The PR pipeline rejects any other name.
-- Commits from these branches are squashed: exactly one commit per PR lands on `main`, to keep the history clean.
+- PRs keep their full commit history and are squash-merged, so one commit per PR lands on `main`.
 
 ## Commits
 
@@ -23,25 +23,22 @@ Commit messages and PR titles follow the Conventional Commits standard: `<type>(
 
 1. Take the ticket on the board.
 2. Create a branch: `git switch -c feature/<nr>`
-3. Work and commit.
-4. Before the PR, squash to one commit yourself:
-   `git fetch && git rebase origin/main`, then `git reset --soft origin/main` and commit again.
-   After changes from the review, squash again and upload with `git push --force-with-lease`.
-5. Move the ticket on the board to "In review".
-6. Open a PR against `main`, title in commit format, at least one review.
-7. After the merge, the pipeline moves the ticket to "PO Abnahme".
+3. Work and commit as often as you like. Don't squash yourself, the merge does that.
+4. Open a PR against `main`, title in commit format, at least one review. The PR title becomes the commit message on `main`. The pipeline moves the ticket to "In review", links it under Development (`Closes #<nr>`) and copies its milestone, labels and type to the PR. Whatever is missing stays empty and is listed in a PR comment.
+5. After the merge, the pipeline moves the ticket to "PO Abnahme".
 
 ## What is checked automatically
 
-| When                                  | What                                                                                        |
-| ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests |
-| commit message                        | format as above                                                                             |
-| before every push                     | `vp run ready`: check, secretlint, tests, build                                             |
-| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                      |
-| PR against `main`                     | title, branch name, ticket is in "In review", exactly one commit                            |
-| release published                     | CI, then deploy to the prod-vm (see below)                                                  |
-| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                         |
+| When                                  | What                                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| before every commit                   | `vp check --fix` and secretlint on changed files; if `.ts`/`.tsx` are among them, all tests                              |
+| commit message                        | format as above                                                                                                          |
+| before every push                     | `vp run ready`: check, secretlint, tests, build                                                                          |
+| push to one of the branch types above | CI: `vp run ready` and gitleaks over the whole history                                                                   |
+| PR against `main`                     | title, branch name; author assigned; ticket to "In review", linked, milestone and labels copied; test results as comment |
+| tag pushed                            | tag is `vX.Y.Z`, new, and exactly one step above the highest tag (patch, minor or major)                                 |
+| release published                     | CI and the tag check, then deploy to the prod-vm (see below)                                                             |
+| manually under Actions → Deploy       | rollback to the commit hash in the `rollback` field                                                                      |
 
 The local hooks are only active once `vp install` has run.
 

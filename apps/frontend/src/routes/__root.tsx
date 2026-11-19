@@ -14,9 +14,9 @@ function RootLayout() {
   const tabs = useMatch({ from: "/_tabs", shouldThrow: false });
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-md flex-col">
+    <div className="mx-auto flex h-dvh max-w-md flex-col">
       <AppHeader />
-      <main className="flex flex-1 flex-col gap-3 p-4">
+      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
         <Outlet />
       </main>
       {tabs && <TabBar />}

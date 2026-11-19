@@ -1,0 +1,14 @@
+name: DRK Landesverband Berliner Rotes Kreuz – PSNV-Teams
+category: psnv-e
+audience: haupt- und ehrenamtliche Einsatzkräfte des DRK Berlin
+tags: [einsatznachsorge, psnv]
+channels:
+  - type: phone
+    label: Ehrenamtskoordination PSNV
+    value: "+49306003001143"
+  - type: email
+    label: PSNV-Ansprechperson
+    person: Christoph Müller
+    value: muellerch@drk-berlin.de
+website: https://www.drk-berlin.de/angebote/bevoelkerungsschutz-und-rettung/psychosoziale-notfallversorgung.html
+source: https://www.drk-berlin.de/angebote/bevoelkerungsschutz-und-rettung/psychosoziale-notfallversorgung.html

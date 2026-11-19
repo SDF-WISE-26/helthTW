@@ -1,0 +1,29 @@
+# Shared vocabulary for content, contacts and later questionnaires. Use only ids from this list.
+- id: akutphase
+  label: Akutphase
+- id: angehoerige
+  label: Angehörige
+- id: belastungsreaktion
+  label: Belastungsreaktion
+- id: einsatznachsorge
+  label: Einsatznachsorge
+- id: ersthelfende
+  label: Ersthelfende
+- id: hilfe-holen
+  label: Hilfe holen
+- id: kinder
+  label: Kinder und Jugendliche
+- id: krise
+  label: Krise
+- id: psnv
+  label: PSNV
+- id: rettungsdienst
+  label: Rettungsdienst
+- id: schlaf
+  label: Schlaf
+- id: seelsorge
+  label: Seelsorge
+- id: trauma
+  label: Trauma
+- id: unfallversicherung
+  label: Unfallversicherung
