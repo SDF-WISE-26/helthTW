@@ -46,5 +46,4 @@ export type MaterialSelection = { itemIds: string[]; contactIds: string[] };
 // Input and output of the chat tools, as tool parts of the messages carry them.
 export type ChatTools = {
   show_material: { input: z.output<typeof showMaterialInputSchema>; output: MaterialSelection };
-  show_crisis: { input: Record<string, never>; output: { shown: true } };
 };

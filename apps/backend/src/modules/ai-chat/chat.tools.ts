@@ -1,5 +1,4 @@
 import { tool } from "ai";
-import { z } from "zod";
 import { showMaterialInputSchema } from "@helthtw/shared/chat";
 import type { ChatCatalog, ChatTools } from "@helthtw/shared/chat";
 
@@ -12,7 +11,7 @@ const pick = (ids: string[], known: Set<string>) =>
 
 type Output<Name extends keyof ChatTools> = Promise<ChatTools[Name]["output"]>;
 
-// The tools that the LLM uses to pick content and trigger the crisis screen - common AI sdk approach
+// The tools that the LLM uses to pick content - common AI sdk approach
 export function createChatTools(catalog: ChatCatalog) {
   const itemIds = new Set(catalog.items.map((item) => item.id));
   const contactIds = new Set(catalog.contacts.map((contact) => contact.id));
@@ -26,12 +25,6 @@ export function createChatTools(catalog: ChatCatalog) {
         itemIds: pick(item_ids, itemIds),
         contactIds: pick(contact_ids, contactIds),
       }),
-    }),
-    show_crisis: tool({
-      description:
-        "Zeigt bei Anzeichen einer akuten Krise den festen, geprüften Krisenhinweis der App an.",
-      inputSchema: z.object({}),
-      execute: async (): Output<"show_crisis"> => ({ shown: true }),
     }),
   };
 }

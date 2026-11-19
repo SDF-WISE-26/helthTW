@@ -11,7 +11,6 @@ import {
 import { Message, MessageContent } from "@/components/ui/message";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { ChatMarkdown } from "@/features/chat/chat-markdown.tsx";
-import { ChatCrisis } from "./chat-crisis";
 import { ChatMaterial } from "./chat-material";
 
 export type ChatUIMessage = UIMessage<unknown, UIDataTypes, ChatTools>;
@@ -25,10 +24,8 @@ function textOf(message: ChatUIMessage) {
   return material?.input?.reply ?? "";
 }
 
-// Tool results the chat shows: picked material or the crisis notice. Calls still streaming show nothing yet.
-const isShown = (p: Part) =>
-  (p.type === "tool-show_material" || p.type === "tool-show_crisis") &&
-  p.state === "output-available";
+// Tool results the chat shows: the picked material. Calls still streaming show nothing yet.
+const isShown = (p: Part) => p.type === "tool-show_material" && p.state === "output-available";
 
 function Thinking() {
   return (
@@ -51,9 +48,6 @@ function Thinking() {
 }
 
 function ToolResult({ part }: { part: Part }) {
-  if (part.type === "tool-show_crisis" && part.state === "output-available") {
-    return <ChatCrisis />;
-  }
   if (part.type === "tool-show_material" && part.state === "output-available") {
     return <ChatMaterial selection={part.output} />;
   }
