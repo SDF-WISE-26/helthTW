@@ -36,9 +36,10 @@ const fold = (term: string) =>
 const suffixes = (term: string) =>
   Array.from({ length: Math.max(1, term.length - minQueryLength + 1) }, (_, i) => term.slice(i));
 
-const tagLabel = new Map(content.tags.map((tag) => [tag.id, tag.label]));
+// A tag is found by its label and by the words people use for it ("schlafen" for "Schlaf").
+const tagWords = new Map(content.tags.map((tag) => [tag.id, [tag.label, ...tag.synonyms]]));
 const categoryLabel = new Map(content.categories.map((c) => [c.id, c.label]));
-const labels = (ids: string[]) => ids.map((id) => tagLabel.get(id)).join(" ");
+const labels = (ids: string[]) => ids.flatMap((id) => tagWords.get(id) ?? []).join(" ");
 
 const itemDocs = content.items.map((item): Doc => ({
   id: `item:${item.id}`,
@@ -61,8 +62,10 @@ const index = new MiniSearch<Doc>({
     // Words shorter than 2 letters (e.g. while typing the next one) are left out.
     processTerm: (term) => (term.length < minQueryLength ? null : fold(term)),
     prefix: true,
-    // Every word must match, so each further word narrows the results.
-    combineWith: "AND",
+    // Typos: short words must be right, longer ones may be 1 or 2 letters off
+    // ("albtraume" finds "albtraum"). Every ending is indexed, so tolerance on short words
+    // would match bits of almost any word.
+    fuzzy: (term) => (term.length < 5 ? false : term.length < 9 ? 1 : 2),
     boost: { title: 3, tags: 2 },
   },
 });
@@ -76,7 +79,12 @@ export function searchInfo(query: string, type?: SearchType): Hits {
   const results: Hits = { items: [], contacts: [] };
   if (query.trim().length < minQueryLength) return results;
 
-  for (const { id } of index.search(query)) {
+  // Every word must match, so each further word narrows the results. A sentence like
+  // "kann nicht schlafen" has words nothing contains, then any word counts, most matches first.
+  const and = index.search(query, { combineWith: "AND" });
+  const hits = and.length > 0 ? and : index.search(query, { combineWith: "OR" });
+
+  for (const { id } of hits) {
     const item = items.get(id);
     if (item && showsItem(item, type)) results.items.push(item);
     const contact = contacts.get(id);
