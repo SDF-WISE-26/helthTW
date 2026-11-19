@@ -1,4 +1,5 @@
-import type { ChatStatus, UIMessage } from "ai";
+import type { ChatStatus, UIDataTypes, UIMessage } from "ai";
+import type { ChatTools } from "@helthtw/shared/chat";
 import {
   MessageScrollerProvider,
   MessageScroller,
@@ -10,10 +11,24 @@ import {
 import { Message, MessageContent } from "@/components/ui/message";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { ChatMarkdown } from "@/features/chat/chat-markdown.tsx";
+import { ChatCrisis } from "./chat-crisis";
+import { ChatMaterial } from "./chat-material";
 
-function textOf(message: UIMessage) {
-  return message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+export type ChatUIMessage = UIMessage<unknown, UIDataTypes, ChatTools>;
+type Part = ChatUIMessage["parts"][number];
+
+// Free text, or else the reply the model wrote into show_material (shown while it streams in).
+function textOf(message: ChatUIMessage) {
+  const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+  if (text) return text;
+  const material = message.parts.find((p) => p.type === "tool-show_material");
+  return material?.input?.reply ?? "";
 }
+
+// Tool results the chat shows: picked material or the crisis notice. Calls still streaming show nothing yet.
+const isShown = (p: Part) =>
+  (p.type === "tool-show_material" || p.type === "tool-show_crisis") &&
+  p.state === "output-available";
 
 function Thinking() {
   return (
@@ -35,15 +50,31 @@ function Thinking() {
   );
 }
 
-export function ChatThread({ messages, status }: { messages: UIMessage[]; status: ChatStatus }) {
+function ToolResult({ part }: { part: Part }) {
+  if (part.type === "tool-show_crisis" && part.state === "output-available") {
+    return <ChatCrisis />;
+  }
+  if (part.type === "tool-show_material" && part.state === "output-available") {
+    return <ChatMaterial selection={part.output} />;
+  }
+  return null;
+}
+
+export function ChatThread({
+  messages,
+  status,
+}: {
+  messages: ChatUIMessage[];
+  status: ChatStatus;
+}) {
   const last = messages.at(-1);
-  const lastHasText = !!last && textOf(last).length > 0;
+  const lastHasContent = !!last && (textOf(last).length > 0 || last.parts.some(isShown));
 
   // "submitted": request sent, nothing back yet.
-  // "streaming" with an empty assistant message: stream opened, first token not here yet.
+  // "streaming" with an empty assistant message: stream opened, first token or tool result not here yet.
   const thinking =
     status === "submitted" ||
-    (status === "streaming" && last?.role === "assistant" && !lastHasText);
+    (status === "streaming" && last?.role === "assistant" && !lastHasContent);
 
   return (
     <MessageScrollerProvider autoScroll>
@@ -53,22 +84,28 @@ export function ChatThread({ messages, status }: { messages: UIMessage[]; status
             {messages.map((m) => {
               const isUser = m.role === "user";
               const text = textOf(m);
-              if (!isUser && !text) return null; // stream to AI is open, but no response from AI loaded yet -> the thinking indicator covers this case
+              const tools = isUser ? [] : m.parts.filter(isShown);
+              if (!isUser && !text && !tools.length) return null; // stream to AI is open, but no response from AI loaded yet -> the thinking indicator covers this case
 
               const align = isUser ? "end" : "start";
               return (
                 <MessageScrollerItem key={m.id} messageId={m.id} scrollAnchor={isUser}>
                   <Message align={align}>
                     <MessageContent>
-                      <Bubble align={align} variant={isUser ? "muted" : "default"}>
-                        {isUser ? (
-                          <BubbleContent className="whitespace-pre-wrap">{text}</BubbleContent>
-                        ) : (
-                          <BubbleContent>
-                            <ChatMarkdown>{text}</ChatMarkdown>
-                          </BubbleContent>
-                        )}
-                      </Bubble>
+                      {text && (
+                        <Bubble align={align} variant={isUser ? "muted" : "default"}>
+                          {isUser ? (
+                            <BubbleContent className="whitespace-pre-wrap">{text}</BubbleContent>
+                          ) : (
+                            <BubbleContent>
+                              <ChatMarkdown>{text}</ChatMarkdown>
+                            </BubbleContent>
+                          )}
+                        </Bubble>
+                      )}
+                      {tools.map((part, i) => (
+                        <ToolResult key={i} part={part} />
+                      ))}
                     </MessageContent>
                   </Message>
                 </MessageScrollerItem>

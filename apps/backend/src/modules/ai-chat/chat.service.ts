@@ -1,12 +1,15 @@
 import { streamText, convertToModelMessages, toUIMessageStream, type UIMessage } from "ai";
+import type { ChatCatalog } from "@helthtw/shared/chat";
 import { chatModel } from "../../lib/llm";
-import { SYSTEM_PROMPT } from "./chat.prompts";
+import { buildSystemPrompt } from "./prompt/chat.prompt-utils";
+import { createChatTools } from "./chat.tools";
 
-export async function streamChatReply(messages: UIMessage[]) {
+export async function streamChatReply(messages: UIMessage[], catalog: ChatCatalog) {
   const result = streamText({
     model: chatModel,
-    instructions: SYSTEM_PROMPT,
+    instructions: buildSystemPrompt(catalog),
     messages: await convertToModelMessages(messages),
+    tools: createChatTools(catalog),
     maxOutputTokens: 600,
   });
 

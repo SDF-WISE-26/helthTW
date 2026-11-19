@@ -13,14 +13,15 @@ const itemLink = (item: ContentItem) =>
     resetScroll: false,
   }) as const;
 
-export function ItemCard({ item }: { item: ContentItem }) {
+// shared for chat feature
+export const itemCardClass = `flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left text-card-foreground ring-1 ring-foreground/5 transition-transform active:scale-[0.98] ${focus}`;
+
+// split content from behaviour: this component implements the content body of the ItemCard for info section and chat
+export function ItemCardBody({ item }: { item: ContentItem }) {
   const Icon = itemKinds[item.kind].icon;
 
   return (
-    <Link
-      {...itemLink(item)}
-      className={`flex items-center gap-3 rounded-2xl bg-card p-4 text-card-foreground ring-1 ring-foreground/5 transition-transform active:scale-[0.98] ${focus}`}
-    >
+    <>
       <span className="flex size-10 shrink-0 items-center justify-center self-start rounded-full bg-secondary text-secondary-foreground">
         <Icon aria-hidden="true" className="size-5" />
       </span>
@@ -35,6 +36,15 @@ export function ItemCard({ item }: { item: ContentItem }) {
         )}
       </span>
       <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
+    </>
+  );
+}
+
+// split content from behavior: this component implements the behavior of an itemCard in the info section
+export function ItemCard({ item }: { item: ContentItem }) {
+  return (
+    <Link {...itemLink(item)} className={itemCardClass}>
+      <ItemCardBody item={item} />
     </Link>
   );
 }
