@@ -3,16 +3,10 @@ import { ContactList } from "./contact-list";
 import { ItemCard } from "./item-card";
 import { searchInfo, suggestedTags } from "./search";
 
-const caption = "text-caption font-semibold tracking-wide text-muted-foreground uppercase";
-
 // Before typing: tags as a first idea of what to look for.
 export function SearchSuggestions({ onPick }: { onPick: (query: string) => void }) {
   return (
     <section aria-labelledby="search-suggestions" className="flex flex-col gap-2">
-      <h2 id="search-suggestions" className={caption}>
-        Vorschläge
-      </h2>
-      {/* One scrolling row up to the screen edge instead of several lines of chips. */}
       <ul className="-mx-4 flex gap-2 overflow-x-auto px-4">
         {suggestedTags.map((tag) => (
           <li key={tag.id} className="shrink-0">
