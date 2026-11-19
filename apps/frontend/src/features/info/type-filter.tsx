@@ -1,23 +1,24 @@
 import { Check } from "lucide-react";
 import { cn } from "cn";
-import { searchTypes, typeLabel } from "./search";
+import { typeLabel } from "./search";
 import type { SearchType } from "./search";
 
-const options = [
-  { type: undefined, label: "Alle" },
-  ...searchTypes.map((type) => ({ type, label: typeLabel[type] })),
-];
-
-// Filter chips under the search field, before and while typing. Always all of them in the
-// same place, so the row does not jump under the thumb. One at a time, "Alle" is none.
-// Outlined until chosen, unlike the filled suggestion chips that start a search.
+// Filter chips above the results, only the types the results have. One at a time,
+// "Alle" is none. Outlined until chosen, the chosen one filled with a check.
 export function TypeFilter({
+  types,
   value,
   onChange,
 }: {
+  types: SearchType[];
   value?: SearchType;
   onChange: (type?: SearchType) => void;
 }) {
+  const options = [
+    { type: undefined, label: "Alle" },
+    ...types.map((type) => ({ type, label: typeLabel[type] })),
+  ];
+
   return (
     <div
       role="group"

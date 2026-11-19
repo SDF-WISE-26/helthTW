@@ -3,7 +3,7 @@ import { content } from "./content";
 import type { Contact, ContentItem } from "./content";
 import { itemKinds } from "./item-kind";
 
-type Hits = { items: ContentItem[]; contacts: Contact[] };
+export type Hits = { items: ContentItem[]; contacts: Contact[] };
 
 // What the results can be narrowed to: one item kind or contacts. In the URL as `?type=`.
 export const searchTypes = ["article", "pdf", "link", "contact"] as const;
@@ -14,9 +14,6 @@ export const typeLabel: Record<SearchType, string> = {
   link: itemKinds.link.many,
   contact: "Kontakte",
 };
-
-const showsItem = (item: ContentItem, type?: SearchType) => !type || item.kind === type;
-const showsContacts = (type?: SearchType) => !type || type === "contact";
 
 // Items and contacts share one index, so how rare a word is counts across both.
 type Doc = { id: string; title: string; tags: string; text: string };
@@ -74,8 +71,8 @@ index.addAll([...itemDocs, ...contactDocs]);
 const items = new Map(content.items.map((item) => [`item:${item.id}`, item]));
 const contacts = new Map(content.contacts.map((contact) => [`contact:${contact.id}`, contact]));
 
-// Best match first, in two groups, only the given type if there is one.
-export function searchInfo(query: string, type?: SearchType): Hits {
+// Best match first, in two groups.
+export function searchInfo(query: string): Hits {
   const results: Hits = { items: [], contacts: [] };
   if (query.trim().length < minQueryLength) return results;
 
@@ -86,19 +83,34 @@ export function searchInfo(query: string, type?: SearchType): Hits {
 
   for (const { id } of hits) {
     const item = items.get(id);
-    if (item && showsItem(item, type)) results.items.push(item);
+    if (item) results.items.push(item);
     const contact = contacts.get(id);
-    if (contact && showsContacts(type)) results.contacts.push(contact);
+    if (contact) results.contacts.push(contact);
   }
   return results;
 }
 
-// Tags in use by the given type (or any), in the order of tags.yaml: the suggestions before typing.
-export function suggestedTags(type?: SearchType) {
-  const entries = [
-    ...content.items.filter((item) => showsItem(item, type)),
-    ...(showsContacts(type) ? content.contacts : []),
-  ];
-  const used = new Set(entries.flatMap((entry) => entry.tags));
-  return content.tags.filter((tag) => used.has(tag.id));
+// The types among the results, in the order of searchTypes: the filters worth offering.
+export const typesIn = ({ items, contacts }: Hits) =>
+  searchTypes.filter((type) =>
+    type === "contact" ? contacts.length > 0 : items.some((item) => item.kind === type),
+  );
+
+export const ofType = ({ items, contacts }: Hits, type?: SearchType): Hits =>
+  type
+    ? {
+        items: items.filter((item) => item.kind === type),
+        contacts: type === "contact" ? contacts : [],
+      }
+    : { items, contacts };
+
+// Suggestions when the field is focused: a few tags as a start, those of the most items.
+// Items only, most contacts share "PSNV" and "Einsatznachsorge", which would push out the rest.
+const tagUse = new Map<string, number>();
+for (const entry of content.items) {
+  for (const tag of entry.tags) tagUse.set(tag, (tagUse.get(tag) ?? 0) + 1);
 }
+export const suggestedTags = content.tags
+  .filter((tag) => tagUse.has(tag.id))
+  .toSorted((a, b) => tagUse.get(b.id)! - tagUse.get(a.id)!)
+  .slice(0, 6);

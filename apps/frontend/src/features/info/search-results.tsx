@@ -1,60 +1,78 @@
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactCard } from "./contact-card";
 import { ContactList } from "./contact-list";
-import { content } from "./content";
 import type { ContentItem } from "./content";
 import { ItemCard } from "./item-card";
-import { searchInfo, suggestedTags, typeLabel } from "./search";
+import { ofType, searchInfo, searchTypes, suggestedTags, typeLabel, typesIn } from "./search";
 import type { SearchType } from "./search";
+import { TypeFilter } from "./type-filter";
 
-// Before typing: tags as a first idea of what to look for, only those of the chosen type.
-export function SearchSuggestions({
-  type,
-  onPick,
-}: {
-  type?: SearchType;
-  onPick: (query: string) => void;
-}) {
+// Field focused, nothing typed yet: a few plain text suggestions, tapping one searches for it.
+export function SearchSuggestions({ onPick }: { onPick: (query: string) => void }) {
   return (
-    <section aria-labelledby="search-suggestions" className="flex flex-col gap-2">
-      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4">
-        {suggestedTags(type).map((tag) => (
-          <li key={tag.id} className="shrink-0">
-            <button
-              type="button"
-              onClick={() => onPick(tag.label)}
-              className="min-h-10 rounded-full bg-secondary px-4 text-small font-medium text-secondary-foreground transition-transform outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.97]"
-            >
-              {tag.label}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <ul aria-label="Vorschläge" className="flex flex-col divide-y divide-border/60">
+      {suggestedTags.map((tag) => (
+        <li key={tag.id}>
+          <button
+            type="button"
+            onClick={() => onPick(tag.label)}
+            className="flex min-h-tap-min w-full items-center gap-3 rounded-lg py-2 text-left text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Search aria-hidden="true" className="size-5 text-muted-foreground" />
+            {tag.label}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
-// A type chosen but nothing typed: everything of that type, contacts grouped as on /info.
-export function TypeBrowse({ type }: { type: SearchType }) {
-  if (type === "contact") return <ContactList />;
-  return <ItemList items={content.items.filter((item) => item.kind === type)} />;
-}
-
-// While typing: the results in place of topics and contacts.
+// While typing: the results, filters only once there is more than one type to tell apart.
 export function SearchResults({
   query,
   type,
-  onSearchAll,
+  onType,
 }: {
   query: string;
   type?: SearchType;
-  onSearchAll: () => void;
+  onType: (type?: SearchType) => void;
 }) {
-  const { items, contacts } = searchInfo(query, type);
-  const found = items.length + contacts.length > 0;
+  const all = searchInfo(query);
+  const { items, contacts } = ofType(all, type);
+  const present = typesIn(all);
+  // A chosen type stays, even when the new query has none of it, so it can be undone.
+  const types = searchTypes.filter((t) => present.includes(t) || t === type);
+
+  if (present.length === 0) {
+    return (
+      <section aria-labelledby="results-none" className="flex flex-col gap-3">
+        <h2 id="results-none" className="text-heading">
+          Nichts gefunden zu „{query.trim()}“
+        </h2>
+        <p className="text-muted-foreground">
+          Versuch ein anderes Wort, oder wende dich direkt an eine dieser Stellen.
+        </p>
+        <ContactList />
+      </section>
+    );
+  }
 
   return (
     <>
+      {(types.length > 1 || type) && <TypeFilter types={types} value={type} onChange={onType} />}
+
+      {items.length + contacts.length === 0 && type && (
+        <section aria-labelledby="results-none" className="flex flex-col items-start gap-3">
+          <h2 id="results-none" className="text-heading">
+            Keine {typeLabel[type]} zu „{query.trim()}“
+          </h2>
+          <Button size="lg" variant="outline" onClick={() => onType(undefined)}>
+            In allen suchen
+          </Button>
+        </section>
+      )}
+
       {items.length > 0 && (
         <section aria-labelledby="results-items" className="flex flex-col gap-3">
           <h2 id="results-items" className="text-heading">
@@ -72,24 +90,6 @@ export function SearchResults({
           {contacts.map((contact) => (
             <ContactCard key={contact.id} contact={contact} />
           ))}
-        </section>
-      )}
-
-      {!found && (
-        <section aria-labelledby="results-none" className="flex flex-col gap-3">
-          <h2 id="results-none" className="text-heading">
-            {type ? `Keine ${typeLabel[type]}` : "Nichts gefunden"} zu „{query.trim()}“
-          </h2>
-          {/* The filter is the likelier reason, so lifting it comes first. */}
-          {type && (
-            <Button size="lg" variant="outline" className="self-start" onClick={onSearchAll}>
-              In allen suchen
-            </Button>
-          )}
-          <p className="text-muted-foreground">
-            Versuch ein anderes Wort, oder wende dich direkt an eine dieser Stellen.
-          </p>
-          <ContactList />
         </section>
       )}
     </>

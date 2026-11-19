@@ -10,9 +10,11 @@ import {
 export function SearchField({
   value,
   onChange,
+  onFocus,
 }: {
   value: string;
   onChange: (value: string) => void;
+  onFocus?: () => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   // Typing goes into a draft. The value comes back from the URL a tick later, and taking
@@ -35,9 +37,12 @@ export function SearchField({
   return (
     <form
       role="search"
+      // Enter closes the keyboard, so the results can be seen.
       onSubmit={(event) => {
         event.preventDefault();
+        input.current?.blur();
       }}
+      className="flex-1"
     >
       <InputGroup className="h-tap-min rounded-xl bg-card">
         <InputGroupAddon>
@@ -50,6 +55,7 @@ export function SearchField({
           aria-label="Infomaterial und Kontakte durchsuchen"
           placeholder="Themen, Beiträge, Kontakte"
           ref={input}
+          onFocus={onFocus}
           value={draft}
           onChange={(event) => change(event.target.value)}
           // Our own clear button instead of the browser's, same on every platform.
