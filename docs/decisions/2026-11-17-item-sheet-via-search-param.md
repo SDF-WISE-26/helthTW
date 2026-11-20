@@ -1,0 +1,7 @@
+# Info items open as a sheet via `?item=` on any screen
+
+- **Status:** proposed · **Date:** 2026-11-17 · **Involved:** @justingebert · **Ref:** #61, #147
+- **Decision:** An item opens as a bottom sheet over the current screen through the search param `?item=<id>` (e.g. `/info?q=trauma&item=rupert`, `/info/was-jetzt-hilft?item=nach-dem-einsatz`). The root route validates the param and mounts the one `ItemSheet`. Links use `itemLink(id)` from `features/info/item-link.ts`, which keeps the current path and search. Back closes the sheet, a deep link without history drops the param. Replaces the route `/info/$topic/$item`.
+- **Why:** A path change is a page change in the router, so a nested item route always draws its parent (the topic) behind the sheet, also when opened from search. Items will open from more screens (search #61, embedding #66, self-test #117, incident page #184), and the item id is unique on its own, so the topic in the path was redundant. One param means one sheet, no per-screen routes and no topic check.
+- **Rejected:** Nested `/info/$topic/$item` with route masking per screen (works, but every opening screen needs its own param, mask and fallback). Item as its own page `/items/$item` (gives up the sheet from #147). Path `/items/$item` with the background location in history state (React Router's pattern, TanStack Router has no support for it).
+- **Caution:** The param is on the root route, so it is part of every route's search type. Links to another screen drop it, which closes the sheet.

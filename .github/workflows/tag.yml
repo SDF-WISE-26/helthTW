@@ -1,0 +1,43 @@
+name: Tag
+
+on:
+  push:
+    tags: ["**"]
+  # Deploy runs it again, so a release on a bad tag never goes live.
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Tag is new and counted up by one step
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Der Tag '$TAG' muss vX.Y.Z heißen, z. B. v1.2.0"
+            exit 1
+          fi
+          version=${TAG#v}
+          others=$(gh api "repos/$GITHUB_REPOSITORY/tags" --paginate --jq '.[].name' | grep -vxF "$TAG" || true)
+          # The same version under another name, e.g. 1.2.0 next to v1.2.0
+          if grep -qxF -e "$version" -e "v$version" <<<"$others"; then
+            echo "::error::Version $version gibt es bereits als Tag"
+            exit 1
+          fi
+          previous=$(grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' <<<"$others" | sed 's/^v//' | sort -V | tail -n 1 || true)
+          if [ -z "$previous" ]; then
+            echo "Erster Versions-Tag: $TAG"
+            exit 0
+          fi
+          IFS=. read -r major minor patch <<<"$previous"
+          allowed="$major.$minor.$((patch + 1)) $major.$((minor + 1)).0 $((major + 1)).0.0"
+          if [[ " $allowed " != *" $version "* ]]; then
+            echo "::error::Nach v$previous ist nur v${allowed// /, v} erlaubt, nicht $TAG"
+            exit 1
+          fi
+          echo "$TAG folgt auf v$previous"

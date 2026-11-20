@@ -11,7 +11,7 @@ GitHub: release published (rollback manually) → .github/workflows/deploy.yml
              docker build → docker save | ssh prod deploy <sha> → health check from outside
 
 ops-vm   user github-runner: runner service, Docker for building, SSH key only for deploy.sh
-prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, tls/):
+prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, backend.env, tls/):
          web (Caddy, HTTPS on 443, 80 redirects) → backend (Node) → postgres (volume), migrate runs before every start
 ```
 
@@ -73,8 +73,10 @@ At the next release, the deploy aborts at "Installed files match the repo". Rein
 - Back up the old file first: `sudo cp -a /srv/helthtw/compose.yml /srv/helthtw/compose.yml.alt`. The automatic rollback always uses the installed `compose.yml`. If the new one is broken, it does not help, only the backup does.
 - A rollback to older images runs with the new `compose.yml`. So it must fit them too.
 
-### .env and password
+### .env, backend.env and password
 
+- `.env` only fills in placeholders in `compose.yml` (`POSTGRES_PASSWORD`). `backend.env` goes straight into the `migrate` and `backend` containers, the other containers never see it.
+- New backend setting (e.g. from `apps/backend/.env.example`): add a line to `backend.env`, then re-run the deploy. `compose.yml` stays unchanged. `DATABASE_URL` does not belong there, `compose.yml` builds it from the password.
 - `POSTGRES_PASSWORD` only takes effect when the volume is first created. Whoever changes it later must first change it in Postgres (`ALTER USER helthtw PASSWORD '…'`), otherwise migrate and backend fail with "password authentication failed".
 - After a change to `.env`, the next deploy recreates the Postgres container. The backend reconnects by itself afterwards.
 
@@ -178,7 +180,12 @@ cd
 sudo install -o root -g deploy -m 640 /dev/null /srv/helthtw/.env
 printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" | sudo tee /srv/helthtw/.env >/dev/null
 
-ls -la /srv/helthtw   # deploy.sh root:root 755, compose.yml root:root 644, .env root:deploy 640
+# The backend's settings, same permissions. In the editor, add the LLM_* lines from apps/backend/.env.example
+# with real values. sudoedit keeps the API key out of the shell history.
+sudo install -o root -g deploy -m 640 /dev/null /srv/helthtw/backend.env
+sudoedit /srv/helthtw/backend.env
+
+ls -la /srv/helthtw   # deploy.sh root:root 755, compose.yml root:root 644, .env and backend.env root:deploy 640
 sudo -u deploy -H /srv/helthtw/deploy.sh status
 ```
 

@@ -1,4 +1,3 @@
-import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,28 +12,16 @@ import {
 import { ArticleBody } from "./article-body";
 import { content } from "./content";
 import type { ContentItem } from "./content";
+import { useCloseItem } from "./item-link";
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-export function ItemSheet({ topicId, itemId }: { topicId: string; itemId: string }) {
+// The sheet for `?item=<id>` on any screen, mounted once in the root layout (see item-link.ts).
+export function ItemSheet({ itemId }: { itemId: string }) {
   const [open, setOpen] = useState(true);
-  const router = useRouter();
-  const navigate = useNavigate();
-  const canGoBack = useCanGoBack();
-  const item = content.items.find((i) => i.id === itemId && i.topic === topicId);
-
-  // Back to where the sheet was opened from, a deep link lands on the topic.
-  const leave = () =>
-    canGoBack
-      ? router.history.back()
-      : navigate({
-          to: "/info/$topic",
-          params: { topic: topicId },
-          replace: true,
-          resetScroll: false,
-          viewTransition: false,
-        });
+  const leave = useCloseItem();
+  const item = content.items.find((i) => i.id === itemId);
 
   return (
     <Drawer
@@ -54,7 +41,7 @@ export function ItemSheet({ topicId, itemId }: { topicId: string; itemId: string
             </DrawerBody>
             <DrawerFooter>
               <Button size="lg" onClick={() => setOpen(false)}>
-                Zurück zum Thema
+                Zurück
               </Button>
             </DrawerFooter>
           </>
