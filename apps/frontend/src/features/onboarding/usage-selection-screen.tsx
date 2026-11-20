@@ -1,4 +1,3 @@
-import { useMutation } from "@tanstack/react-query";
 import { Controller, useWatch } from "react-hook-form";
 import type { UseFormReturn } from "react-hook-form";
 import { cn } from "cn";
@@ -11,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { onboardingContent as content } from "@/content/onboarding";
-import { ensureAccount, professionValues } from "@/features/account/account";
+import { professionValues } from "@/features/account/account";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
 import type { UsageSelection } from "./usage-selection-form";
 
@@ -28,29 +27,19 @@ export function UsageSelectionScreen({ form, onContinue }: Props) {
   const [usageMode, profession] = useWatch({ control, name: ["usageMode", "profession"] });
   const usageModeField = register("usageMode");
   const hasError = Boolean(formState.errors.profession);
-  const accountRequest = useMutation({ mutationFn: ensureAccount });
 
   const handleContinue = handleSubmit(() => {
-    if (accountRequest.isPending) return;
     // TODO (#95): Submit the validated profession once backend profile persistence is available.
-    accountRequest.mutate(undefined, { onSuccess: onContinue });
+    onContinue();
   });
 
   return (
     <OnboardingScreen
       title={content.title}
-      actions={
-        <div className="space-y-3" aria-busy={accountRequest.isPending}>
-          {accountRequest.isError && <FieldError>{content.accountError}</FieldError>}
-          <OnboardingActions
-            form="onboarding-usage-selection"
-            disabled={!usageMode || accountRequest.isPending}
-          />
-        </div>
-      }
+      actions={<OnboardingActions form="onboarding-usage-selection" disabled={!usageMode} />}
     >
       <form id="onboarding-usage-selection" onSubmit={handleContinue} noValidate>
-        <fieldset className="space-y-4" disabled={accountRequest.isPending}>
+        <fieldset className="space-y-4">
           <legend className="mb-4 text-muted-foreground">{content.usageDescription}</legend>
           <OnboardingCard
             className={usageMode === "explore" ? selectedCardClassName : undefined}

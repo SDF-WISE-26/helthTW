@@ -1,4 +1,5 @@
 import { redirect } from "@tanstack/react-router";
+import { ensureAccount } from "@/features/account/account";
 
 export const onboardingSteps = [
   "welcome",
@@ -40,6 +41,7 @@ export function beforeOnboardingLoad() {
 }
 
 export function completeOnboarding() {
+  void ensureAccount().catch(() => {});
   completedInSession = true;
 
   try {

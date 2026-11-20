@@ -8,7 +8,6 @@ export const onboardingContent = {
   professionPlaceholder: "Berufsgruppe auswählen",
   professionError:
     "Bitte wähle deinen Berufsgruppe aus, damit wir dich bestmöglich unterstützen können.",
-  accountError: "Das hat nicht geklappt. Bitte versuche es erneut.",
   professions: {
     first_responder: "Ersthelfer/in",
     emergency_medical_services: "Rettungsdienst",
