@@ -8,45 +8,131 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
+  assignee:
+    runs-on: ubuntu-26.04
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Assign the PR author
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh api "repos/$GITHUB_REPOSITORY/issues/$PR/assignees" -f "assignees[]=$AUTHOR" > /dev/null
+
   ticket:
     # doku/** has no ticket. experiment/** fails the name check below, so it can't reach main.
     if: ${{ !startsWith(github.head_ref, 'doku/') }}
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
+      - uses: actions/checkout@v5
       - id: app
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-      - name: Ticket is in review
+      # Whatever the ticket lacks stays empty on the PR and is listed in one comment.
+      - name: Sync ticket to PR
         env:
-          GH_TOKEN: ${{ steps.app.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
+          APP_TOKEN: ${{ steps.app.outputs.token }}
           BRANCH: ${{ github.head_ref }}
+          PR: ${{ github.event.pull_request.number }}
         run: |
           issue=$(echo "$BRANCH" | sed -nE 's#^(feature|hotfix|bug)/([0-9]+)$#\2#p')
           if [ -z "$issue" ]; then
             echo "::error::Der Branch '$BRANCH' muss feature|hotfix|bug/<ticket> oder doku/<name> heißen"
             exit 1
           fi
-          status=$(gh api graphql \
+          missing=()
+          ticket=$(gh api graphql \
             -f owner="${GITHUB_REPOSITORY%/*}" -f repo="${GITHUB_REPOSITORY#*/}" -F issue="$issue" \
             -f query='query($owner: String!, $repo: String!, $issue: Int!) {
-              # fails loudly if the token cannot see the board, issue.projectItems would just be empty
-              organization(login: $owner) { projectV2(number: 1) { title } }
               repository(owner: $owner, name: $repo) {
                 issue(number: $issue) {
-                  projectItems(first: 20) {
-                    nodes {
-                      project { number }
-                      fieldValueByName(name: "Status") { ... on ProjectV2ItemFieldSingleSelectValue { name } }
-                    }
-                  }
+                  issueType { name }
+                  milestone { number }
+                  labels(first: 50) { nodes { name } }
                 }
               }
             }' \
-            --jq '.data.repository.issue.projectItems.nodes[] | select(.project.number == 1) | .fieldValueByName.name')
-          if [ "$status" != "In review" ]; then
-            echo "::error::Ticket #$issue steht in '${status:-nicht auf dem Board}', erwartet wird 'In review'"
-            exit 1
+            --jq '.data.repository.issue' 2>/dev/null || true)
+
+          if [ -z "$ticket" ] || [ "$ticket" = null ]; then
+            missing+=("Ticket #$issue")
+          else
+            GH_TOKEN=$APP_TOKEN .github/scripts/move-ticket.sh "$issue" "In review" || missing+=("Board entry")
+
+            # A closing keyword is what links the ticket under Development.
+            body=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq '.body // ""')
+            if ! grep -qiE "\b(close[sd]?|fix(e[sd])?|resolve[sd]?) #$issue\b" <<<"$body"; then
+              jq -n --arg body "${body:+$body$'\n\n'}Closes #$issue" '{body: $body}' |
+                gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$PR" --input - > /dev/null
+            fi
+
+            milestone=$(jq -r '.milestone.number // empty' <<<"$ticket")
+            if [ -n "$milestone" ]; then
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/$PR" -F milestone="$milestone" > /dev/null
+            else
+              missing+=("Milestone")
+            fi
+
+            # PRs have no issue type, so the ticket's type becomes a label.
+            type=$(jq -r '.issueType.name // empty' <<<"$ticket")
+            if [ -n "$type" ]; then
+              gh label create "$type" --repo "$GITHUB_REPOSITORY" --color ededed 2>/dev/null || true
+            else
+              missing+=("Type")
+            fi
+            [ "$(jq '.labels.nodes | length' <<<"$ticket")" -gt 0 ] || missing+=("Labels")
+            labels=$(jq -c '[.issueType.name // empty] + [.labels.nodes[].name]' <<<"$ticket")
+            if [ "$labels" != "[]" ]; then
+              jq -n --argjson labels "$labels" '{labels: $labels}' |
+                gh api "repos/$GITHUB_REPOSITORY/issues/$PR/labels" --input - > /dev/null
+            fi
           fi
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            printf -- '- %s not found\n' "${missing[@]}" | tee missing.md
+            .github/scripts/pr-comment.sh "$PR" ticket missing.md
+          else
+            .github/scripts/pr-comment.sh "$PR" ticket
+          fi
+
+  tests:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: .node-version
+          cache: true
+      - id: test
+        run: |
+          set -o pipefail
+          vp test --passWithNoTests 2>&1 | tee test.log
+      # One comment per PR, updated on every push.
+      - name: Post results to PR
+        if: ${{ !cancelled() && steps.test.outcome != 'skipped' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          OUTCOME: ${{ steps.test.outcome }}
+        run: |
+          {
+            [ "$OUTCOME" = success ] && echo "### ✅ Tests bestanden" || echo "### ❌ Tests fehlgeschlagen"
+            echo '```'
+            # GitHub comments are limited to 65536 characters, the summary is at the end.
+            sed 's/\x1b\[[0-9;]*m//g' test.log | tail -c 60000
+            echo '```'
+          } > comment.md
+          .github/scripts/pr-comment.sh "$PR" tests comment.md

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { chatCatalogSchema } from "@helthtw/shared/chat";
 
 // schema is mirroring the useChat hook from AI SDK
 const uiMessageSchema = z
@@ -11,6 +12,5 @@ const uiMessageSchema = z
 
 export const chatRequestSchema = z.object({
   messages: z.array(uiMessageSchema).min(1),
+  catalog: chatCatalogSchema,
 });
-
-export const MAX_MESSAGES = 10;

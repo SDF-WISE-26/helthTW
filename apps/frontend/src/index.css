@@ -265,5 +265,22 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
   }
+}
+
+/* Elements with the same view-transition-name on both pages morph into each other, the rest cross-fades. */
+::view-transition-group(*) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+/* The topic card is only a coloured surface (title, meta and art move on their own),
+   so it may stretch to the header's height instead of keeping its aspect ratio. */
+::view-transition-old(*.topic-card),
+::view-transition-new(*.topic-card) {
+  height: 100%;
 }

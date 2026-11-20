@@ -1,5 +1,6 @@
 # Production stack on the prod-vm, started by deploy.sh.
-# Needs IMAGE_TAG (the commit hash), a .env next to this file with POSTGRES_PASSWORD and tls/ with fullchain.pem and key.pem.
+# Needs IMAGE_TAG (the commit hash) and next to this file: .env with POSTGRES_PASSWORD, backend.env with the backend's
+# settings (LLM_*, see apps/backend/.env.example) and tls/ with fullchain.pem and key.pem.
 # Our images are loaded with `docker load`, never pulled, so a same-named image on Docker Hub can't sneak in.
 name: helthtw-prod
 
@@ -49,6 +50,9 @@ services:
     image: helthtw-backend:${IMAGE_TAG:?set IMAGE_TAG}
     restart: "no"
     command: ["node", "dist/migrate.mjs"]
+    # The backend's settings. Only migrate and backend load this file, so web and postgres never see its secrets.
+    # migrate needs it too because the backend checks all its settings at startup, also when only migrating.
+    env_file: backend.env
     environment:
       DATABASE_URL: *database-url
     depends_on:
@@ -59,6 +63,7 @@ services:
   backend:
     <<: *app
     image: helthtw-backend:${IMAGE_TAG}
+    env_file: backend.env
     environment:
       DATABASE_URL: *database-url
       PORT: "3000"

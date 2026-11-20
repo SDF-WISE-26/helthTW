@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 // Abstract placeholder art for the topic cards until real images exist.
 // White and ochre shapes, so every variant works on every topic colour.
 
@@ -30,7 +32,15 @@ const variants = [
   </>,
 ];
 
-export function TopicArt({ variant, className }: { variant: number; className?: string }) {
+export function TopicArt({
+  variant,
+  className,
+  style,
+}: {
+  variant: number;
+  className?: string;
+  style?: CSSProperties;
+}) {
   return (
     <svg
       viewBox="0 0 140 120"
@@ -38,6 +48,7 @@ export function TopicArt({ variant, className }: { variant: number; className?: 
       preserveAspectRatio="xMaxYMid slice"
       aria-hidden="true"
       className={className}
+      style={style}
     >
       {variants[variant % variants.length]}
     </svg>
