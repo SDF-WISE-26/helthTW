@@ -1,6 +1,13 @@
-# Vite+ Monorepo Starter
+# helthTW
 
-A starter for creating a Vite+ monorepo.
+A progressive web app that supports emergency responders after stressful operations. Student project at HTW Berlin.
+
+| Path              | What                                                            |
+| ----------------- | --------------------------------------------------------------- |
+| `apps/frontend`   | React PWA                                                       |
+| `apps/backend`    | Hono API with PostgreSQL                                        |
+| `packages/shared` | Code shared by frontend and backend                             |
+| `content/`        | Info material and contacts, see its [README](content/README.md) |
 
 ## Prerequisites
 
@@ -10,26 +17,32 @@ A starter for creating a Vite+ monorepo.
 
 ## Getting started
 
-1. Install dependencies:
+1. Install dependencies and the Git hooks:
 
 ```bash
 vp install
 ```
 
-2. Start the dev database (Postgres on `localhost:5432`):
+2. Create the backend settings. The example values are enough to start, the chat needs real LLM values:
+
+```bash
+cp apps/backend/.env.example apps/backend/.env
+```
+
+3. Start the dev database (Postgres on `localhost:5432`):
 
 ```bash
 docker compose up -d
 ```
 
-3. Create the tables and fill them with dev data (CAREFUL! this wipes existing data):
+4. Create the tables and fill them with dev data (CAREFUL! this wipes existing data):
 
 ```bash
 vp run backend#db:push
 vp run backend#db:seed
 ```
 
-4. Start frontend and backend:
+5. Start frontend and backend, then open http://localhost:5173:
 
 ```bash
 vp run dev
@@ -37,7 +50,7 @@ vp run dev
 
 ## Development
 
-- Check everything is ready:
+- Check everything before pushing (the pre-push hook runs the same):
 
 ```bash
 vp run ready
@@ -46,7 +59,7 @@ vp run ready
 - Run the tests:
 
 ```bash
-vp run -r test
+vp test
 ```
 
 - Build the monorepo:
@@ -54,3 +67,11 @@ vp run -r test
 ```bash
 vp run -r build
 ```
+
+## More
+
+- [`AGENTS.md`](AGENTS.md): toolchain, project rules, where the docs are
+- [`docs/workflow.md`](docs/workflow.md): branches, commits, PRs, automated checks
+- [`docs/decisions/`](docs/decisions/): decisions with reasons
+- [`docs/specs/`](docs/specs/): what each area must do
+- [`docs/deployment.md`](docs/deployment.md): the HTW VMs, releases and rollback
