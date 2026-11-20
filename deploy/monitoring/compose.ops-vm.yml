@@ -1,0 +1,40 @@
+# Monitoring on the ops-vm: only Beszel's agent. The hub on the prod-vm (compose.yml) dials it over SSH on port 45876,
+# which HTW's firewall only opens for the prod-vm. The agent accepts nothing but the hub's key and runs no commands.
+# Installed by hand to /srv/monitoring/compose.yml (docs/deployment.md, "Monitoring"). Needs a .env next to it with
+# BESZEL_KEY and the folder beszel_agent_data/ owned by 65534.
+name: helthtw-monitoring
+
+services:
+  beszel-agent:
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    image: henrygd/beszel-agent:0.21.2@sha256:343254226ae57a5cc6f8c23c755b1464730aba2abc7043116a2e222711ec6e1a
+    user: "65534:65534"
+    # Host network, so it sees the VM's network interfaces and HTW's firewall decides who reaches the port.
+    network_mode: host
+    environment:
+      LISTEN: "45876"
+      # The hub's public key, the same as on the prod-vm.
+      KEY: ${BESZEL_KEY:?set BESZEL_KEY in .env}
+      # Nothing runs in containers here for long, so the agent gets no Docker access at all.
+      DOCKER_HOST: ""
+      SKIP_SYSTEMD: "true"
+      SKIP_GPU: "true"
+    volumes:
+      - ./beszel_agent_data:/var/lib/beszel-agent
+    tmpfs: ["/tmp:mode=1777"]
+    healthcheck:
+      test: ["CMD", "/agent", "health"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
+    mem_limit: 64m
