@@ -39,7 +39,6 @@ export const onboardingContent = {
     disclaimer: "Die App ersetzt keine professionelle Therapie oder medizinische Behandlung.",
     emergency: "Wenn du sofort Hilfe benötigst oder in akuter Gefahr bist, wähle die 112.",
     research: "Link Quellen",
-    continue: "Weiter",
   },
 
   tutorial: {
