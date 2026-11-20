@@ -1,9 +1,12 @@
 import {
+  date,
   foreignKey,
   index,
   integer,
   jsonb,
   pgTable,
+  text,
+  time,
   timestamp,
   unique,
   uuid,
@@ -97,4 +100,30 @@ export const questionnaireResponsesTable = pgTable(
       ],
     }),
   ],
+);
+
+// No status or progress columns: closed once `closedAt` is set, the step "immediate tips read"
+// is done once `tipsReadAt` is set. The backend sets both times, the person only triggers them.
+// Questionnaires join as steps via a later `scheduled_questionnaires.incident_id` (#67).
+// `date`, `time` and `note` are health data: never log them.
+export const incidentsTable = pgTable(
+  "incidents",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accountsTable.id, { onDelete: "cascade" }),
+    // When the incident happened, in local time. A string, so no time zone shifts the day.
+    date: date({ mode: "string" }).notNull(),
+    time: time(),
+    note: text(),
+    tipsReadAt: timestamp("tips_read_at", { withTimezone: true }),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index().on(table.accountId, table.date)],
 );
