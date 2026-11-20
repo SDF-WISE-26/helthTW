@@ -69,7 +69,7 @@ export function OnboardingScreen({
     <>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <section className="space-y-6 pb-1 text-base leading-relaxed">
-          <header className="top-0 z-20 space-y-3 bg-background [@media(min-height:32rem)]:sticky">
+          <header className="space-y-3">
             <h1 className="text-2xl leading-tight font-bold tracking-tight text-balance">
               {title}
             </h1>
