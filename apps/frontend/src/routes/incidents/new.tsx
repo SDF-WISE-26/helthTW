@@ -1,6 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { ArticleBody } from "@/features/info/article-body";
+import { getArticleSection } from "@/features/info/article-sections";
+import { content } from "@/features/info/content";
 
 // One route, three steps: when → reminders → tips. The step lives in the URL so back works.
 export const Route = createFileRoute("/incidents/new")({
@@ -12,6 +15,25 @@ export const Route = createFileRoute("/incidents/new")({
   }),
   component: LogIncident,
 });
+
+function IncidentHelpExcerpt() {
+  const article = content.items.find(
+    (item) => item.kind === "article" && item.id === "nach-dem-einsatz",
+  );
+  if (!article || article.kind !== "article") return null;
+
+  const section = getArticleSection(article.body, "Wann du früher Hilfe holen solltest");
+  if (!section) return null;
+
+  return (
+    <section aria-labelledby="incident-help-title" className="rounded-2xl bg-card p-4">
+      <h2 id="incident-help-title" className="text-heading">
+        {section.title}
+      </h2>
+      <ArticleBody markdown={section.markdown.replace(/^##[^\n]+\n*/, "")} />
+    </section>
+  );
+}
 
 function LogIncident() {
   const { step } = Route.useSearch();
@@ -47,7 +69,7 @@ function LogIncident() {
   return (
     <>
       <h1 className="text-2xl font-bold">Sofort Tipps</h1>
-      <p>BLA BLA</p>
+      <IncidentHelpExcerpt />
       <Button asChild variant="outline" size="lg">
         <Link to="/chat">Chat</Link>
       </Button>
