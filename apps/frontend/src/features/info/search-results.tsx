@@ -11,7 +11,13 @@ import { TypeFilter } from "./type-filter";
 // Field focused, nothing typed yet: a few plain text suggestions, tapping one searches for it.
 export function SearchSuggestions({ onPick }: { onPick: (query: string) => void }) {
   return (
-    <ul aria-label="Vorschläge" className="flex flex-col divide-y divide-border/60">
+    <ul
+      aria-label="Vorschläge"
+      // The tap must not take the focus from the field: that would end the search and
+      // remove the suggestions before the tap lands.
+      onMouseDown={(event) => event.preventDefault()}
+      className="flex flex-col divide-y divide-border/60"
+    >
       {suggestedTags.map((tag) => (
         <li key={tag.id}>
           <button

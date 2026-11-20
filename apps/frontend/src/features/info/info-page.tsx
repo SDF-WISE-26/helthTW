@@ -18,52 +18,31 @@ export function InfoPage({
   search: InfoSearch;
   onSearch: (next: InfoSearch) => void;
 }) {
-  // Search mode starts on focus and ends only with "Abbrechen", not on blur: tapping a
-  // suggestion blurs the field first, and the suggestion would be gone before the tap lands.
-  const [active, setActive] = useState(q !== "");
-  const searching = active || q !== "";
+  // The search shows while the field is focused or holds a query. Leaving an empty field
+  // (tap outside, close the keyboard, the X) brings topics and contacts back.
+  const [focused, setFocused] = useState(false);
+  const searching = focused || q !== "";
   const typed = q.trim().length >= minQueryLength;
 
-  const setQuery = (value: string) => onSearch({ q: value || undefined });
+  // An emptied query takes its filter along, so the next search starts from all types.
+  const setQuery = (value: string) =>
+    onSearch(value ? { q: value } : { q: undefined, type: undefined });
   const pick = (value: string) => {
     onSearch({ q: value });
     // Close the keyboard, so the results can be seen.
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   };
-  const cancel = () => {
-    setActive(false);
-    onSearch({ q: undefined, type: undefined });
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-  };
 
   return (
     <>
-      <h1 className="text-2xl font-bold">Infomaterial</h1>
-      <div className="flex items-center gap-2">
-        <SearchField value={q} onChange={setQuery} onFocus={() => setActive(true)} />
-        {searching && (
-          <button
-            type="button"
-            onClick={cancel}
-            className="min-h-tap-min shrink-0 rounded-lg px-1 font-medium text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            Abbrechen
-          </button>
-        )}
-      </div>
+      <SearchField value={q} onChange={setQuery} onFocusChange={setFocused} />
 
       {!searching ? (
         <>
           <section aria-labelledby="info-topics" className="mt-2 flex flex-col gap-3">
-            <h2 id="info-topics" className="text-heading">
-              Themen
-            </h2>
             <TopicList />
           </section>
-          <section aria-labelledby="info-contacts" className="mt-8 flex flex-col gap-3">
-            <h2 id="info-contacts" className="text-heading">
-              Kontakte
-            </h2>
+          <section aria-labelledby="info-contacts" className="flex flex-col gap-3">
             <ContactList />
           </section>
         </>

@@ -10,11 +10,11 @@ import {
 export function SearchField({
   value,
   onChange,
-  onFocus,
+  onFocusChange,
 }: {
   value: string;
   onChange: (value: string) => void;
-  onFocus?: () => void;
+  onFocusChange?: (focused: boolean) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   // Typing goes into a draft. The value comes back from the URL a tick later, and taking
@@ -28,11 +28,21 @@ export function SearchField({
     echoes.current = echo === -1 ? [] : echoes.current.slice(echo + 1);
   }, [value]);
 
+  const [focused, setFocused] = useState(false);
+  const focus = (next: boolean) => {
+    setFocused(next);
+    onFocusChange?.(next);
+  };
+
   const change = (next: string) => {
     echoes.current.push(next);
     setDraft(next);
     onChange(next);
   };
+
+  // One step back, like the cancel of a phone's search: clear the text, or with nothing
+  // to clear, leave the field.
+  const back = () => (draft ? change("") : input.current?.blur());
 
   return (
     <form
@@ -42,7 +52,6 @@ export function SearchField({
         event.preventDefault();
         input.current?.blur();
       }}
-      className="flex-1"
     >
       <InputGroup className="h-tap-min rounded-xl bg-card">
         <InputGroupAddon>
@@ -55,21 +64,26 @@ export function SearchField({
           aria-label="Infomaterial und Kontakte durchsuchen"
           placeholder="Themen, Beiträge, Kontakte"
           ref={input}
-          onFocus={onFocus}
+          onFocus={() => focus(true)}
+          onBlur={() => focus(false)}
+          onKeyDown={(event) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            back();
+          }}
           value={draft}
           onChange={(event) => change(event.target.value)}
           // Our own clear button instead of the browser's, same on every platform.
           className="text-body [&::-webkit-search-cancel-button]:appearance-none"
         />
-        {draft && (
+        {(draft || focused) && (
           <InputGroupAddon align="inline-end">
             <InputGroupButton
               size="icon-sm"
-              aria-label="Suche leeren"
-              onClick={() => {
-                change("");
-                input.current?.focus();
-              }}
+              aria-label={draft ? "Suche leeren" : "Suche schließen"}
+              // Keep the focus in the field, so clearing leaves the keyboard open.
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={back}
             >
               <X aria-hidden="true" className="size-5" />
             </InputGroupButton>
