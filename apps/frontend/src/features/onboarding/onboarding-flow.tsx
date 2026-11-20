@@ -1,6 +1,7 @@
 import { usageSelectionSchema } from "./usage-selection-form";
 import type { UsageSelection } from "./usage-selection-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { onboardingSteps } from "./onboarding-navigation";
@@ -13,16 +14,13 @@ import { ThankYouScreen } from "./thank-you-screen";
 import { OnboardingLayout } from "./onboarding-layout";
 
 export function OnboardingFlow({
-  step,
-  onStepChange,
   onFinish,
   embedded = false,
 }: {
-  step: OnboardingStep;
-  onStepChange: (step: OnboardingStep) => void;
   onFinish: () => void;
   embedded?: boolean;
 }) {
+  const [step, setStep] = useState<OnboardingStep>(onboardingSteps[0]);
   // TODO (#95): Prefill the saved profession once the profile API exists; handle loading and errors.
   const usageForm = useForm<UsageSelection>({
     resolver: zodResolver(usageSelectionSchema),
@@ -34,7 +32,7 @@ export function OnboardingFlow({
   function goToNextStep() {
     const nextStep = onboardingSteps[stepNumber];
     if (nextStep) {
-      onStepChange(nextStep);
+      setStep(nextStep);
     } else {
       onFinish();
     }

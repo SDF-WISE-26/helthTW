@@ -11,10 +11,6 @@ export const onboardingSteps = [
 
 export type OnboardingStep = (typeof onboardingSteps)[number];
 
-export function validateOnboardingSearch(search: Record<string, unknown>) {
-  return { step: onboardingSteps.find((step) => step === search.step) ?? onboardingSteps[0] };
-}
-
 const STORAGE_KEY = "helthtw:onboarding-complete";
 let completedInSession = false;
 
@@ -30,7 +26,7 @@ function hasCompletedOnboarding() {
 
 export function beforeHomeLoad() {
   if (!hasCompletedOnboarding()) {
-    throw redirect({ to: "/onboarding", search: { step: onboardingSteps[0] }, replace: true });
+    throw redirect({ to: "/onboarding", replace: true });
   }
 }
 

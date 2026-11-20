@@ -1,28 +1,14 @@
-import { useBlocker, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { OnboardingFlow } from "./onboarding-flow";
-import { completeOnboarding, onboardingSteps } from "./onboarding-navigation";
-import type { OnboardingStep } from "./onboarding-navigation";
+import { completeOnboarding } from "./onboarding-navigation";
 
 export function OnboardingPage() {
   const navigate = useNavigate({ from: "/onboarding" });
-  // TODO (#95): URL-based onboarding steps (?step=...) or local component state (useState).
-  const { step } = useSearch({ from: "/onboarding" });
-
-  useBlocker({
-    enableBeforeUnload: false,
-    shouldBlockFn: ({ action, next }) =>
-      (action === "BACK" || action === "GO") &&
-      (step === onboardingSteps[0] || next.pathname !== "/onboarding"),
-  });
-
-  function goToStep(nextStep: OnboardingStep) {
-    void navigate({ to: "/onboarding", search: { step: nextStep } });
-  }
 
   function finishOnboarding() {
     completeOnboarding();
     void navigate({ to: "/", replace: true });
   }
 
-  return <OnboardingFlow step={step} onStepChange={goToStep} onFinish={finishOnboarding} />;
+  return <OnboardingFlow onFinish={finishOnboarding} />;
 }
