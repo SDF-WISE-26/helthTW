@@ -1,4 +1,4 @@
-import type { Profession } from "@/features/account/account";
+import type { Profession } from "@helthtw/shared/accounts";
 
 export const onboardingContent = {
   title: "Schön, dass du da bist!",

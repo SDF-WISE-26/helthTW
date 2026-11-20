@@ -1,10 +1,5 @@
 import { api } from "@/api";
 
-export { professionValues } from "@helthtw/shared/accounts";
-
-// TODO (#95): Clarify additional profile fields, allowed values and required/optional status.
-export type { AccountProfile, Profession } from "@helthtw/shared/accounts";
-
 // TODO (#95): Add API calls to load and save the profession once backend profile endpoints exist.
 export async function ensureAccount() {
   const res = await api.api.v1.accounts.me.$get();

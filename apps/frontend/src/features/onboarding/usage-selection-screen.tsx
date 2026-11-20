@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { onboardingContent as content } from "@/content/onboarding";
-import { professionValues } from "@/features/account/account";
+import { professionValues } from "@helthtw/shared/accounts";
 import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
 import type { UsageSelection } from "./usage-selection-form";
 
