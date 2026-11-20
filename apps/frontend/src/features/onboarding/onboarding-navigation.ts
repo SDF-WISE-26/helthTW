@@ -37,6 +37,8 @@ export function beforeOnboardingLoad() {
 }
 
 export function completeOnboarding() {
+  // TODO (#95): Clarify if the backend is unreachable and account
+  // cannot be initialized when onboarding finishes or is skipped.
   void ensureAccount().catch(() => {});
   completedInSession = true;
 

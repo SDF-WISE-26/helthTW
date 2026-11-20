@@ -1,4 +1,5 @@
 export const ACCOUNT_ID_KEY = "accountId";
+let sessionAccountId: string | undefined;
 
 function createAccountId() {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -20,10 +21,17 @@ function createAccountId() {
 
 // PoC: random ID per device, sent with every request. Not secure, test data only.
 export function getAccountId() {
-  let id = localStorage.getItem(ACCOUNT_ID_KEY);
-  if (!id) {
-    id = createAccountId();
-    localStorage.setItem(ACCOUNT_ID_KEY, id);
+  try {
+    const storedId = localStorage.getItem(ACCOUNT_ID_KEY);
+    if (storedId) {
+      sessionAccountId = storedId;
+      return storedId;
+    }
+
+    if (!sessionAccountId) sessionAccountId = createAccountId();
+    localStorage.setItem(ACCOUNT_ID_KEY, sessionAccountId);
+  } catch {
+    if (!sessionAccountId) sessionAccountId = createAccountId();
   }
-  return id;
+  return sessionAccountId;
 }
