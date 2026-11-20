@@ -51,7 +51,7 @@ export function ItemSheet({ itemId }: { itemId: string }) {
   );
 }
 
-function ItemDetails({ item }: { item: ContentItem }) {
+export function ItemDetails({ item }: { item: ContentItem }) {
   const meta = [
     item.source && `Quelle: ${item.source}`,
     item.lastReviewed && `Zuletzt geprüft am ${formatDate(item.lastReviewed)}`,
