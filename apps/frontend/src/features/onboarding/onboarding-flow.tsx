@@ -27,10 +27,11 @@ export function OnboardingFlow({
     defaultValues: { profession: null },
   });
 
-  const stepNumber = onboardingSteps.indexOf(step) + 1;
+  const stepIndex = onboardingSteps.indexOf(step);
+  const stepNumber = stepIndex + 1;
 
   function goToNextStep() {
-    const nextStep = onboardingSteps[stepNumber];
+    const nextStep = onboardingSteps[stepIndex + 1];
     if (nextStep) {
       setStep(nextStep);
     } else {
