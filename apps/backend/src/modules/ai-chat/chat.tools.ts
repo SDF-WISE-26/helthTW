@@ -1,6 +1,6 @@
 import { tool } from "ai";
-import { showMaterialInputSchema } from "@helthtw/shared/chat";
-import type { ChatCatalog, ChatTools } from "@helthtw/shared/chat";
+import { type MaterialSelection, showMaterialInputSchema } from "@helthtw/shared/chat";
+import type { ChatCatalog } from "@helthtw/shared/chat";
 
 const MAX_PER_KIND = 3;
 
@@ -8,8 +8,6 @@ const MAX_PER_KIND = 3;
 // this function makes sure that no IDs that the LLM picked are hallucinated and max item amounts are enforced
 const pick = (ids: string[], known: Set<string>) =>
   [...new Set(ids)].filter((id) => known.has(id)).slice(0, MAX_PER_KIND);
-
-type Output<Name extends keyof ChatTools> = Promise<ChatTools[Name]["output"]>;
 
 // The tools that the LLM uses to pick content - common AI sdk approach
 export function createChatTools(catalog: ChatCatalog) {
@@ -21,7 +19,7 @@ export function createChatTools(catalog: ChatCatalog) {
       description:
         "Zeigt der Person passendes Infomaterial und/oder Kontakte aus Abschnitt 7 an. Nur IDs aus Abschnitt 7 verwenden, insgesamt mindestens eine.",
       inputSchema: showMaterialInputSchema,
-      execute: async ({ item_ids, contact_ids }): Output<"show_material"> => ({
+      execute: async ({ item_ids, contact_ids }): Promise<MaterialSelection> => ({
         itemIds: pick(item_ids, itemIds),
         contactIds: pick(contact_ids, contactIds),
       }),
