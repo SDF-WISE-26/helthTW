@@ -1,6 +1,10 @@
-import { Button } from "@/components/ui/button";
 import { onboardingContent as content } from "@/content/onboarding";
-import { OnboardingActions, OnboardingCard, OnboardingScreen } from "./onboarding-layout";
+import {
+  OnboardingActions,
+  OnboardingButton,
+  OnboardingCard,
+  OnboardingScreen,
+} from "./onboarding-layout";
 
 type Props = {
   onContinue: () => void;
@@ -19,13 +23,9 @@ export function InformationScreen({ onContinue }: Props) {
         <p>{content.information.emergency}</p>
 
         {/* TODO (#95): Set the information-material URL and replace the disabled button with a working link. */}
-        <Button
-          variant="outline"
-          className="h-auto min-h-12 px-4 py-3 text-base leading-6 whitespace-normal"
-          disabled
-        >
+        <OnboardingButton variant="outline" disabled>
           {content.information.research}
-        </Button>
+        </OnboardingButton>
       </OnboardingCard>
     </OnboardingScreen>
   );

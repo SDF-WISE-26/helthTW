@@ -99,6 +99,15 @@ export function OnboardingCard({
   );
 }
 
+export function OnboardingButton({ className, ...props }: ComponentProps<typeof Button>) {
+  return (
+    <Button
+      className={cn("h-auto min-h-12 px-4 py-3 text-base leading-6 whitespace-normal", className)}
+      {...props}
+    />
+  );
+}
+
 export function OnboardingActions({
   onContinue,
   form,
@@ -111,14 +120,14 @@ export function OnboardingActions({
   continueLabel?: string;
 }) {
   return (
-    <Button
+    <OnboardingButton
       type={form ? "submit" : "button"}
       form={form}
-      className="h-auto min-h-12 w-full px-4 py-3 text-base leading-6 whitespace-normal"
+      className="w-full"
       onClick={onContinue}
       disabled={disabled}
     >
       {continueLabel}
-    </Button>
+    </OnboardingButton>
   );
 }
