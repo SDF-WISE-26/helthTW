@@ -1,5 +1,12 @@
 import { api } from "@/api";
 
+// TODO (#95): Add API calls to load and save the profession once backend profile endpoints exist.
+export async function ensureAccount() {
+  const res = await api.api.v1.accounts.me.$get();
+  if (!res.ok) throw new Error(`Account initialization failed: ${res.status}`);
+  return res.json();
+}
+
 // Server first, so a failed request keeps the device ID and the user can retry.
 export async function deleteAllData() {
   const res = await api.api.v1.accounts.me.$delete();
