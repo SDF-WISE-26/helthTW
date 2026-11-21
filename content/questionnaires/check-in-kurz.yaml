@@ -1,0 +1,24 @@
+# Example for development, not a validated questionnaire.
+id: check-in-kurz
+version: 1
+title: Kurzer Check-in
+tags: [belastungsreaktion]
+questions:
+  - id: belastung
+    type: number
+    text: Wie belastet fühlst du dich heute? (0 = gar nicht, 10 = sehr stark)
+    min: 0
+    max: 10
+  - id: symptome
+    type: select-multiple
+    text: Was ist dir in den letzten Tagen aufgefallen?
+    options:
+      - { value: unruhe, label: Innere Unruhe, points: 1 }
+      - { value: gruebeln, label: Ich muss viel grübeln, points: 1 }
+      - { value: nichts, label: Nichts davon, points: 0 }
+  - id: sicherheit
+    type: yes-no
+    text: Hast du in den letzten Tagen daran gedacht, dir etwas anzutun?
+    safety: true
+scoring:
+  sum: [belastung, symptome]

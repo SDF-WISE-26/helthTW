@@ -1,0 +1,22 @@
+# Example for development, not a validated questionnaire.
+id: schlaf-kurz
+version: 1
+title: Kurzer Schlaf-Check
+tags: [schlaf]
+questions:
+  - id: einschlafen
+    type: select-one
+    text: Wie lange hast du gestern zum Einschlafen gebraucht?
+    options:
+      - { value: kurz, label: Weniger als 15 Minuten, points: 0 }
+      - { value: mittel, label: 15 bis 30 Minuten, points: 1 }
+      - { value: lang, label: Länger als 30 Minuten, points: 2 }
+  - id: durchschlafen
+    type: select-one
+    text: Bist du in der Nacht aufgewacht?
+    options:
+      - { value: nein, label: Nein, points: 0 }
+      - { value: einmal, label: Einmal, points: 1 }
+      - { value: mehrmals, label: Mehrmals, points: 2 }
+scoring:
+  sum: [einschlafen, durchschlafen]
