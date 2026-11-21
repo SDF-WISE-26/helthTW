@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -8,41 +8,22 @@ import {
 } from "@/components/ui/input-group";
 
 export function SearchField({
+  ref,
   value,
+  active,
   onChange,
   onFocusChange,
 }: {
+  ref: RefObject<HTMLInputElement | null>;
   value: string;
+  // Searching (focused or holding a query): shows the X to clear or leave.
+  active: boolean;
   onChange: (value: string) => void;
-  onFocusChange?: (focused: boolean) => void;
+  onFocusChange: (focused: boolean) => void;
 }) {
-  const input = useRef<HTMLInputElement>(null);
-  // Typing goes into a draft. The value comes back from the URL a tick later, and taking
-  // that echo over would put the cursor at the end. Any other value comes from outside
-  // (a picked tag, a link to /info, back and forward) and replaces the draft.
-  const [draft, setDraft] = useState(value);
-  const echoes = useRef<string[]>([]);
-  useEffect(() => {
-    const echo = echoes.current.indexOf(value);
-    if (echo === -1) setDraft(value);
-    echoes.current = echo === -1 ? [] : echoes.current.slice(echo + 1);
-  }, [value]);
-
-  const [focused, setFocused] = useState(false);
-  const focus = (next: boolean) => {
-    setFocused(next);
-    onFocusChange?.(next);
-  };
-
-  const change = (next: string) => {
-    echoes.current.push(next);
-    setDraft(next);
-    onChange(next);
-  };
-
   // One step back, like the cancel of a phone's search: clear the text, or with nothing
   // to clear, leave the field.
-  const back = () => (draft ? change("") : input.current?.blur());
+  const back = () => (value ? onChange("") : ref.current?.blur());
 
   return (
     <form
@@ -50,7 +31,7 @@ export function SearchField({
       // Enter closes the keyboard, so the results can be seen.
       onSubmit={(event) => {
         event.preventDefault();
-        input.current?.blur();
+        ref.current?.blur();
       }}
     >
       <InputGroup className="h-tap-min rounded-xl bg-card">
@@ -63,24 +44,24 @@ export function SearchField({
           autoComplete="off"
           aria-label="Infomaterial und Kontakte durchsuchen"
           placeholder="Themen, Beiträge, Kontakte"
-          ref={input}
-          onFocus={() => focus(true)}
-          onBlur={() => focus(false)}
+          ref={ref}
+          onFocus={() => onFocusChange(true)}
+          onBlur={() => onFocusChange(false)}
           onKeyDown={(event) => {
             if (event.key !== "Escape") return;
             event.preventDefault();
             back();
           }}
-          value={draft}
-          onChange={(event) => change(event.target.value)}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
           // Our own clear button instead of the browser's, same on every platform.
           className="text-body [&::-webkit-search-cancel-button]:appearance-none"
         />
-        {(draft || focused) && (
+        {active && (
           <InputGroupAddon align="inline-end">
             <InputGroupButton
               size="icon-sm"
-              aria-label={draft ? "Suche leeren" : "Suche schließen"}
+              aria-label={value ? "Suche leeren" : "Suche schließen"}
               // Keep the focus in the field, so clearing leaves the keyboard open.
               onMouseDown={(event) => event.preventDefault()}
               onClick={back}

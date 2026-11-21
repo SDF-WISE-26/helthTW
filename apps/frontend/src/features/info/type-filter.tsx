@@ -16,7 +16,7 @@ export function TypeFilter({
 }) {
   const options = [
     { type: undefined, label: "Alle" },
-    ...types.map((type) => ({ type, label: typeLabel[type] })),
+    ...types.map((type) => ({ type, label: typeLabel(type) })),
   ];
 
   return (

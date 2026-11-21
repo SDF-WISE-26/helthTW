@@ -71,7 +71,7 @@ export function SearchResults({
       {items.length + contacts.length === 0 && type && (
         <section aria-labelledby="results-none" className="flex flex-col items-start gap-3">
           <h2 id="results-none" className="text-heading">
-            Keine {typeLabel[type]} zu „{query.trim()}“
+            Keine {typeLabel(type)} zu „{query.trim()}“
           </h2>
           <Button size="lg" variant="outline" onClick={() => onType(undefined)}>
             In allen suchen
@@ -82,7 +82,7 @@ export function SearchResults({
       {items.length > 0 && (
         <section aria-labelledby="results-items" className="flex flex-col gap-3">
           <h2 id="results-items" className="text-heading">
-            {type ? typeLabel[type] : "Beiträge"}
+            {type ? typeLabel(type) : "Beiträge"}
           </h2>
           <ItemList items={items} />
         </section>

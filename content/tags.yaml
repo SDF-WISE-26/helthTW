@@ -1,6 +1,3 @@
-# Shared vocabulary for content, contacts and later questionnaires. Use only ids from this list.
-# `synonyms`: words people type when they mean this tag, searched like the label. Everyday words,
-# not clinical terms. A phrase like "bilder im kopf" matches when all its words are typed.
 - id: akutphase
   label: Akutphase
   synonyms: [akut, sofort, erste stunden, direkt danach, notfall]
