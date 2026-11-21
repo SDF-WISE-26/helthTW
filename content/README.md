@@ -1,6 +1,6 @@
 # Content
 
-Info material and contacts for `/info`.
+Info material and contacts for `/info`, and the questionnaire templates.
 
 ## Terms
 
@@ -14,13 +14,14 @@ Info material and contacts for `/info`.
 
 ## Layout
 
-| Path                      | What                                                          |
-| ------------------------- | ------------------------------------------------------------- |
-| `topics.yaml`             | Topics by need, not by format, in display order               |
-| `contact-categories.yaml` | Contact groups, in display order                              |
-| `tags.yaml`               | The only allowed tags, shared by content, contacts and search |
-| `items/<slug>.md`         | One content item: `article`, `pdf` or `link`                  |
-| `contacts/<slug>.yaml`    | One contact                                                   |
+| Path                         | What                                                              |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `topics.yaml`                | Topics by need, not by format, in display order                   |
+| `contact-categories.yaml`    | Contact groups, in display order                                  |
+| `tags.yaml`                  | The only allowed tags, shared by content, contacts and search     |
+| `items/<slug>.md`            | One content item: `article`, `pdf` or `link`                      |
+| `contacts/<slug>.yaml`       | One contact                                                       |
+| `questionnaires/<slug>.yaml` | One questionnaire, format in `packages/shared/src/questionnaires` |
 
 ## Rules
 
@@ -32,3 +33,4 @@ Info material and contacts for `/info`.
 - IDs in `topics.yaml`, `contact-categories.yaml` and `tags.yaml` must be unique.
 - Phone numbers as `+49…` without spaces, so they can be called directly.
 - Unknown fields are ignored, so a new field can be added before the app uses it.
+- **Questionnaires** are the exception: unknown fields fail, so a typo is not ignored. The `id` must match the file name and the tags must be in `tags.yaml`. `vp test` checks all of this.
