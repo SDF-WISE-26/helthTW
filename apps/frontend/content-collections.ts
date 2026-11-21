@@ -52,7 +52,12 @@ const tags = defineSingleton({
   typeName: "TagList",
   filePath: `${root}/tags.yaml`,
   parser: list,
-  schema: z.object({ entries: idList(z.object({ id: slug, label: text })) }),
+  schema: z.object({
+    entries: idList(
+      // Synonyms: words people type for this tag, searched like the label.
+      z.object({ id: slug, label: text, synonyms: z.array(text).default([]) }),
+    ),
+  }),
 });
 
 // The file name is the id, links to it must survive a new title.

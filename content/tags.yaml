@@ -1,29 +1,55 @@
-# Shared vocabulary for content, contacts and later questionnaires. Use only ids from this list.
 - id: akutphase
   label: Akutphase
+  synonyms: [akut, sofort, erste stunden, direkt danach, notfall]
 - id: angehoerige
   label: Angehörige
+  synonyms: [familie, partner, partnerin, ehefrau, ehemann, eltern, freunde]
 - id: belastungsreaktion
   label: Belastungsreaktion
+  synonyms:
+    [
+      bilder im kopf,
+      flashback,
+      stress,
+      zittern,
+      unruhe,
+      anspannung,
+      grübeln,
+      gedankenkreisen,
+      überfordert,
+      reizbar,
+    ]
 - id: einsatznachsorge
   label: Einsatznachsorge
+  synonyms: [nachsorge, nachbesprechung, debriefing, nach dem einsatz]
 - id: ersthelfende
   label: Ersthelfende
+  synonyms: [ersthelfer, ersthelferin, erste hilfe, laienhelfer, geholfen]
 - id: hilfe-holen
   label: Hilfe holen
+  synonyms: [hilfe, unterstützung, beratung, anrufen, wer hilft]
 - id: kinder
   label: Kinder und Jugendliche
+  synonyms: [kind, sohn, tochter, jugendlicher, schule]
 - id: krise
   label: Krise
+  synonyms: [notfall, verzweifelt, suizid, suizidgedanken, nicht mehr weiter, ausweglos]
 - id: psnv
   label: PSNV
+  synonyms: [psychosoziale notfallversorgung, notfallseelsorge, krisenintervention]
 - id: rettungsdienst
   label: Rettungsdienst
+  synonyms: [rettungskraft, rettungskräfte, sanitäter, notfallsanitäter, feuerwehr, rettungswagen]
 - id: schlaf
   label: Schlaf
+  synonyms:
+    [schlafen, einschlafen, durchschlafen, schlaflos, schlafstörung, albtraum, albträume, müde]
 - id: seelsorge
   label: Seelsorge
+  synonyms: [reden, sprechen, gespräch, zuhören, telefon, anonym, seelsorger]
 - id: trauma
   label: Trauma
+  synonyms: [traumatisch, schock, angst, schlimmes erlebnis, ptbs]
 - id: unfallversicherung
   label: Unfallversicherung
+  synonyms: [versicherung, versichert, unfallkasse, berufsgenossenschaft, kosten]
