@@ -29,10 +29,9 @@ const fold = (term: string) =>
 const suffixes = (term: string) =>
   Array.from({ length: Math.max(1, term.length - minQueryLength + 1) }, (_, i) => term.slice(i));
 
-// A tag is found by its label and by the words people use for it ("schlafen" for "Schlaf").
-const tagWords = new Map(content.tags.map((tag) => [tag.id, [tag.label, ...tag.synonyms]]));
+const tagLabel = new Map(content.tags.map((tag) => [tag.id, tag.label]));
 const categoryLabel = new Map(content.categories.map((c) => [c.id, c.label]));
-const labels = (ids: string[]) => ids.flatMap((id) => tagWords.get(id) ?? []).join(" ");
+const labels = (ids: string[]) => ids.map((id) => tagLabel.get(id)).join(" ");
 
 const itemDocs = content.items.map((item): Doc => ({
   id: `item:${item.id}`,

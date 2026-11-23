@@ -49,24 +49,31 @@ export function SearchResults({
   const present = typesIn(all);
   // A chosen type stays, even when the new query has none of it, so it can be undone.
   const types = searchTypes.filter((t) => present.includes(t) || t === type);
+  // Also with nothing found at all, so a chosen type never filters unseen.
+  const filter = (types.length > 1 || type) && (
+    <TypeFilter types={types} value={type} onChange={onType} />
+  );
 
   if (present.length === 0) {
     return (
-      <section aria-labelledby="results-none" className="flex flex-col gap-3">
-        <h2 id="results-none" className="text-heading">
-          Nichts gefunden zu „{query.trim()}“
-        </h2>
-        <p className="text-muted-foreground">
-          Versuch ein anderes Wort, oder wende dich direkt an eine dieser Stellen.
-        </p>
-        <ContactList />
-      </section>
+      <>
+        {filter}
+        <section aria-labelledby="results-none" className="flex flex-col gap-3">
+          <h2 id="results-none" className="text-heading">
+            Nichts gefunden zu „{query.trim()}“
+          </h2>
+          <p className="text-muted-foreground">
+            Versuch ein anderes Wort, oder wende dich direkt an eine dieser Stellen.
+          </p>
+          <ContactList />
+        </section>
+      </>
     );
   }
 
   return (
     <>
-      {(types.length > 1 || type) && <TypeFilter types={types} value={type} onChange={onType} />}
+      {filter}
 
       {items.length + contacts.length === 0 && type && (
         <section aria-labelledby="results-none" className="flex flex-col items-start gap-3">
