@@ -1,3 +1,4 @@
+# Shared vocabulary for content, contacts and later questionnaires. Use only ids from this list.
 - id: akutphase
   label: Akutphase
   synonyms: [akut, sofort, erste stunden, direkt danach, notfall]

@@ -53,10 +53,7 @@ const tags = defineSingleton({
   filePath: `${root}/tags.yaml`,
   parser: list,
   schema: z.object({
-    entries: idList(
-      // Synonyms: words people type for this tag, searched like the label.
-      z.object({ id: slug, label: text, synonyms: z.array(text).default([]) }),
-    ),
+    entries: idList(z.object({ id: slug, label: text, synonyms: z.array(text).default([]) })),
   }),
 });
 
