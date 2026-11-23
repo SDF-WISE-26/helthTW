@@ -1,15 +1,5 @@
 import { redirect } from "@tanstack/react-router";
 
-export const onboardingSteps = [
-  "welcome",
-  "usage-selection",
-  "information",
-  "tutorial",
-  "thank-you",
-] as const;
-
-export type OnboardingStep = (typeof onboardingSteps)[number];
-
 const STORAGE_KEY = "helthtw:onboarding-complete";
 
 function hasCompletedOnboarding() {

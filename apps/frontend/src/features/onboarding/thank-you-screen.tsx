@@ -2,15 +2,15 @@ import { onboardingContent as content } from "@/content/onboarding";
 import { OnboardingActions, OnboardingScreen } from "./onboarding-layout";
 
 type Props = {
-  onFinish: () => void;
+  onContinue: () => void;
 };
 
-export function ThankYouScreen({ onFinish }: Props) {
+export function ThankYouScreen({ onContinue }: Props) {
   return (
     <OnboardingScreen
       title={content.thankYou.title}
       description={content.thankYou.description}
-      actions={<OnboardingActions onContinue={onFinish} continueLabel={content.actions.start} />}
+      actions={<OnboardingActions onContinue={onContinue} continueLabel={content.actions.start} />}
     />
   );
 }
