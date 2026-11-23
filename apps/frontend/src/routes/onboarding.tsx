@@ -1,18 +1,8 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
+import { createFileRoute } from "@tanstack/react-router";
+import { OnboardingPage } from "@/features/onboarding/onboarding-page";
+import { beforeOnboardingLoad } from "@/features/onboarding/onboarding-navigation";
 
 export const Route = createFileRoute("/onboarding")({
-  component: Onboarding,
+  beforeLoad: beforeOnboardingLoad,
+  component: OnboardingPage,
 });
-
-function Onboarding() {
-  return (
-    <>
-      <h1 className="text-2xl font-bold">Willkommen</h1>
-      <p>Was die App ist</p>
-      <Button asChild size="lg">
-        <Link to="/">Los geht's</Link>
-      </Button>
-    </>
-  );
-}

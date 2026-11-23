@@ -1,14 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { RouterProvider, createRouter, useRouterState } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { SplashScreen } from "./components/layout/splash-screen";
 import "@fontsource-variable/inter";
-import { api } from "./api";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
-
-// Creates the account on first open. Not awaited: any later request creates it too.
-void api.api.v1.accounts.me.$get();
 
 const queryClient = new QueryClient();
 
@@ -28,10 +25,21 @@ declare module "@tanstack/react-router" {
   }
 }
 
+function App() {
+  const initialLoad = useRouterState({ router, select: (state) => !state.resolvedLocation });
+
+  return (
+    <>
+      <RouterProvider router={router} />
+      {initialLoad && <SplashScreen />}
+    </>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <App />
     </QueryClientProvider>
   </StrictMode>,
 );
