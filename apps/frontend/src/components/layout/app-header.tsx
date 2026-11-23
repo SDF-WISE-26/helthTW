@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { HelpButton } from "./help-button";
 
 // Top-level screens show the app name, every other screen a back button.
-const TOP_LEVEL_PATHS = ["/", "/info", "/chat", "/onboarding"];
+const TOP_LEVEL_PATHS = ["/", "/info", "/chat"];
 
 export function AppHeader() {
   const { pathname } = useLocation();

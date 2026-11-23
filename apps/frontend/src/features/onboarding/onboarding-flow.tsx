@@ -29,6 +29,7 @@ export function OnboardingFlow({
 
   const stepIndex = onboardingSteps.indexOf(step);
   const stepNumber = stepIndex + 1;
+  const isLastStep = stepNumber === onboardingSteps.length;
 
   function goToNextStep() {
     const nextStep = onboardingSteps[stepIndex + 1];
@@ -51,7 +52,7 @@ export function OnboardingFlow({
     <OnboardingLayout
       stepNumber={stepNumber}
       totalSteps={onboardingSteps.length}
-      onSkip={onFinish}
+      onSkip={isLastStep ? undefined : onFinish}
       embedded={embedded}
     >
       {screens[step]}

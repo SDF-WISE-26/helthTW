@@ -7,7 +7,7 @@ export const onboardingContent = {
   professional: "Ich möchte die App zur Unterstützung nach belastenden Einsätzen nutzen",
   professionPlaceholder: "Berufsgruppe auswählen",
   professionError:
-    "Bitte wähle deinen Berufsgruppe aus, damit wir dich bestmöglich unterstützen können.",
+    "Bitte wähle deine Berufsgruppe aus, damit wir dich bestmöglich unterstützen können.",
   professions: {
     first_responder: "Ersthelfer/in",
     emergency_medical_services: "Rettungsdienst",
