@@ -23,7 +23,7 @@ export function SearchSuggestions({ onPick }: { onPick: (query: string) => void 
           <button
             type="button"
             onClick={() => onPick(tag.label)}
-            className="flex min-h-tap-min w-full items-center gap-3 rounded-lg py-2 text-left text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex min-h-tap-min w-full items-center gap-3 rounded-lg py-2 text-left text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-transform active:scale-[0.98]"
           >
             <Search aria-hidden="true" className="size-5 text-muted-foreground" />
             {tag.label}
@@ -96,7 +96,7 @@ export function SearchResults({
       )}
 
       {contacts.length > 0 && (
-        <section aria-labelledby="results-contacts" className="mt-4 flex flex-col gap-3">
+        <section aria-labelledby="results-contacts" className="flex flex-col gap-3">
           <h2 id="results-contacts" className="text-heading">
             Kontakte
           </h2>
