@@ -37,7 +37,14 @@ const topics = defineSingleton({
   filePath: `${root}/topics.yaml`,
   parser: list,
   schema: z.object({
-    entries: idList(z.object({ id: slug, title: text, description: text.optional() })),
+    entries: idList(
+      z.object({
+        // /info/contacts/… is the contact groups' route, a topic of that id would never show.
+        id: slug.refine((id) => id !== "contacts", "contacts is reserved for /info/contacts"),
+        title: text,
+        description: text.optional(),
+      }),
+    ),
   }),
 });
 const categories = defineSingleton({

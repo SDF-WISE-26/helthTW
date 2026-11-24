@@ -4,7 +4,7 @@ import { content, topicItems } from "./content";
 import type { Topic } from "./content";
 import { summarizeKinds } from "./item-kind";
 import { TopicArt } from "./topic-art";
-import { topicSurface, topicTransition } from "./topic-look";
+import { coverCard, topicSurface, topicTransition } from "./topic-look";
 
 export function TopicList() {
   return (
@@ -26,11 +26,7 @@ function TopicCard({ topic, index }: { topic: Topic; index: number }) {
       to="/info/$topic"
       params={{ topic: topic.id }}
       style={topicTransition(topic.id, "card")}
-      className={cn(
-        "relative flex min-h-28 flex-col justify-center gap-1 overflow-hidden rounded-2xl py-4 pr-32 pl-5 text-white",
-        "transition-transform outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]",
-        topicSurface(index),
-      )}
+      className={cn(coverCard, topicSurface(index))}
     >
       <span style={topicTransition(topic.id, "title")} className="text-card-title">
         {topic.title}

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ContactList } from "./contact-list";
+import { ContactGroupList } from "./contact-group-list";
 import { minQueryLength } from "./search";
 import type { SearchType } from "./search";
 import { SearchField } from "./search-field";
@@ -43,7 +43,12 @@ export function InfoPage() {
           <div className="mt-2">
             <TopicList />
           </div>
-          <ContactList />
+          <section aria-labelledby="contact-groups" className="mt-4 flex flex-col gap-3">
+            <h2 id="contact-groups" className="text-heading">
+              Kontakte
+            </h2>
+            <ContactGroupList />
+          </section>
         </>
       ) : typed ? (
         <SearchResults query={query} type={type} onType={setType} />

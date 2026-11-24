@@ -2,6 +2,7 @@ import { Globe, Mail, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "cn";
+import { initials } from "./contact-look";
 import { content } from "./content";
 import type { Contact } from "./content";
 
@@ -15,13 +16,6 @@ const tints = [
 
 // Stored as +49… without spaces, the space after the country code only helps reading.
 const formatPhone = (value: string) => value.replace(/^\+49/, "+49 ");
-
-// First letter of the first two words, e.g. "Berliner Krisendienst" → "BK".
-const initials = (name: string) =>
-  (name.match(/\p{L}+/gu) ?? [])
-    .slice(0, 2)
-    .map((word) => word[0].toUpperCase())
-    .join("");
 
 // A way to reach the contact: phone, mail or website.
 type Link = {

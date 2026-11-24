@@ -24,3 +24,6 @@ export const content = {
 
 export const topicItems = (topicId: string) =>
   content.items.filter((item) => item.topic === topicId);
+
+export const categoryContacts = (categoryId: string) =>
+  content.contacts.filter((contact) => contact.category === categoryId);

@@ -4,7 +4,7 @@ import { FeaturedItemCard, ItemCard } from "./item-card";
 import { summarizeKinds } from "./item-kind";
 import { InfoNotFound } from "./not-found";
 import { TopicArt } from "./topic-art";
-import { topicSurface, topicTransition } from "./topic-look";
+import { coverHeader, topicSurface, topicTransition } from "./topic-look";
 
 // A topic with all its items. The header repeats the topic card, so the tap feels continuous.
 export function TopicPage({ topicId }: { topicId: string }) {
@@ -20,10 +20,7 @@ export function TopicPage({ topicId }: { topicId: string }) {
     <>
       <header
         style={topicTransition(topic.id, "card")}
-        className={cn(
-          "relative flex min-h-36 flex-col justify-end gap-1 overflow-hidden rounded-2xl py-5 pr-32 pl-5 text-white",
-          topicSurface(index),
-        )}
+        className={cn(coverHeader, topicSurface(index))}
       >
         <h1 style={topicTransition(topic.id, "title")} className="text-title">
           {topic.title}

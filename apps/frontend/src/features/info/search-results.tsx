@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactCard } from "./contact-card";
-import { ContactList } from "./contact-list";
+import { ContactGroupList } from "./contact-group-list";
 import type { ContentItem } from "./content";
 import { ItemCard } from "./item-card";
 import { ofType, searchInfo, searchTypes, suggestedTags, typeLabel, typesIn } from "./search";
@@ -65,7 +65,7 @@ export function SearchResults({
           <p className="text-muted-foreground">
             Versuch ein anderes Wort, oder wende dich direkt an eine dieser Stellen.
           </p>
-          <ContactList />
+          <ContactGroupList />
         </section>
       </>
     );
