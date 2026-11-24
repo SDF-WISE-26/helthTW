@@ -1,8 +1,15 @@
 import MiniSearch from "minisearch";
 import { content } from "./content";
 import type { Contact, ContentItem } from "./content";
+import { itemKinds } from "./item-kind";
 
-type Hits = { items: ContentItem[]; contacts: Contact[] };
+export type Hits = { items: ContentItem[]; contacts: Contact[] };
+
+// What the results can be narrowed to: one item kind (in the order of itemKinds) or contacts.
+export type SearchType = ContentItem["kind"] | "contact";
+export const searchTypes = [...Object.keys(itemKinds), "contact"] as SearchType[];
+export const typeLabel = (type: SearchType) =>
+  type === "contact" ? "Kontakte" : itemKinds[type].many;
 
 // Items and contacts share one index, so how rare a word is counts across both.
 type Doc = { id: string; title: string; tags: string; text: string };
@@ -71,6 +78,28 @@ export function searchInfo(query: string): Hits {
   return results;
 }
 
-// Tags in use, in the order of tags.yaml: the suggestions before typing.
-const usedTags = new Set([...content.items, ...content.contacts].flatMap((entry) => entry.tags));
-export const suggestedTags = content.tags.filter((tag) => usedTags.has(tag.id));
+// The types among the results, in the order of searchTypes: the filters worth offering.
+export const typesIn = ({ items, contacts }: Hits) =>
+  searchTypes.filter((type) =>
+    type === "contact" ? contacts.length > 0 : items.some((item) => item.kind === type),
+  );
+
+export const ofType = (hits: Hits, type?: SearchType): Hits =>
+  type
+    ? {
+        items: hits.items.filter((item) => item.kind === type),
+        contacts: type === "contact" ? hits.contacts : [],
+      }
+    : hits;
+
+// Suggestions when the field is focused: a few tags as a start, those of the most items.
+// Items only: contacts share a few broad tags, which would push out the rest.
+const tagUse = new Map<string, number>();
+for (const entry of content.items) {
+  for (const tag of entry.tags) tagUse.set(tag, (tagUse.get(tag) ?? 0) + 1);
+}
+const uses = (id: string) => tagUse.get(id) ?? 0;
+export const suggestedTags = content.tags
+  .filter((tag) => uses(tag.id) > 0)
+  .toSorted((a, b) => uses(b.id) - uses(a.id))
+  .slice(0, 6);
