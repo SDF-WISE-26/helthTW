@@ -1,6 +1,6 @@
-name: Einsatznachsorgeteam (ENT) der Berliner Feuerwehr
+name: Berliner Feuerwehr – Einsatznachsorgeteam (ENT)
 category: psnv-e
-audience: Einsatzkräfte der Berliner Feuerwehr oder angegliederter Hilfsorganisationen
+audience: eigene Einsatzkräfte und angegliederte Hilfsorganisationen
 tags: [einsatznachsorge, psnv]
 channels:
   - type: phone
