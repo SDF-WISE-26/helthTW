@@ -29,7 +29,7 @@ function ContactGroupCard({ category }: { category: Category }) {
       to="/info/contacts/$category"
       params={{ category: category.id }}
       style={groupTransition(category.id, "card")}
-      className={cn(coverCard, groupSurface)}
+      className={cn(coverCard, groupSurface, "pr-5")}
     >
       <span style={groupTransition(category.id, "title")} className="text-card-title">
         {category.label}
