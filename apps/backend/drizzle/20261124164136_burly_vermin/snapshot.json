@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "de964609-c1a8-4357-89f0-ac6f84c7e4e9",
+  "id": "e643a5e1-019b-496e-9475-8ca95fd0d3aa",
   "prevIds": [
     "9e60ca08-e1c8-4a50-b603-b4657a852d57"
   ],
@@ -9,6 +9,12 @@
     {
       "isRlsEnabled": false,
       "name": "accounts",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "incident_steps",
       "entityType": "tables",
       "schema": "public"
     },
@@ -67,6 +73,80 @@
       "entityType": "columns",
       "schema": "public",
       "table": "accounts"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "incident_steps_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "incident_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "done_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
     },
     {
       "type": "integer",
@@ -138,19 +218,6 @@
       "generated": null,
       "identity": null,
       "name": "note",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "incidents"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "tips_read_at",
       "entityType": "columns",
       "schema": "public",
       "table": "incidents"
@@ -616,6 +683,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "incident_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "incidents",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "incident_steps_incident_id_incidents_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "account_id"
       ],
       "schemaTo": "public",
@@ -753,6 +837,16 @@
         "id"
       ],
       "nameExplicit": false,
+      "name": "incident_steps_pkey",
+      "schema": "public",
+      "table": "incident_steps",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
       "name": "incidents_pkey",
       "schema": "public",
       "table": "incidents",
@@ -797,6 +891,18 @@
       "schema": "public",
       "table": "scheduled_questionnaires",
       "entityType": "pks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "incident_id",
+        "type"
+      ],
+      "nullsNotDistinct": false,
+      "name": "incident_steps_incident_id_type_unique",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "incident_steps"
     },
     {
       "nameExplicit": false,
