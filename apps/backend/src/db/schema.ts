@@ -9,6 +9,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import type { UIMessage } from "ai";
 // Types only: drizzle-kit must not have to load the shared package.
 import type { Answers, QuestionnaireDefinition } from "@helthtw/shared/questionnaires";
 
@@ -97,4 +98,19 @@ export const questionnaireResponsesTable = pgTable(
       ],
     }),
   ],
+);
+
+// One row per UIMessage of the account's single chat. Rows are inserted, never updated.
+export const chatMessagesTable = pgTable(
+  "chat_messages",
+  {
+    id: varchar({ length: 64 }).primaryKey(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accountsTable.id, { onDelete: "cascade" }),
+    role: varchar({ length: 16 }).$type<"user" | "assistant">().notNull(),
+    parts: jsonb().$type<UIMessage["parts"]>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index().on(table.accountId, table.createdAt)],
 );
