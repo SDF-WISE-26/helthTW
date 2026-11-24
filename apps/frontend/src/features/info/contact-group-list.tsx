@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { categoryContacts, content } from "./content";
 import type { Category } from "./content";
-import { ContactFaces } from "./contact-faces";
-import { contactCount, groupSurface, groupTransition } from "./contact-look";
+import { groupSurface, groupTransition } from "./contact-look";
+import { ContactWays } from "./contact-ways";
 import { coverCard } from "./topic-look";
 
 // One card per contact group, in the order of contact-categories.yaml. Empty groups are left out.
@@ -34,10 +34,7 @@ function ContactGroupCard({ category }: { category: Category }) {
       <span style={groupTransition(category.id, "title")} className="text-card-title">
         {category.label}
       </span>
-      <span style={groupTransition(category.id, "meta")} className="text-small text-white/85">
-        {contactCount(contacts.length)}
-      </span>
-      <ContactFaces contacts={contacts} style={groupTransition(category.id, "art")} />
+      <ContactWays contacts={contacts} style={groupTransition(category.id, "meta")} />
     </Link>
   );
 }

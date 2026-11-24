@@ -30,10 +30,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# AI agent worktrees
-.claude/worktrees/
-md/
+# AI agent config and worktrees
+.claude
+.agents
 .codex
 .mcp.json
+skills-lock.json
+md/
 
 *.tanstack
