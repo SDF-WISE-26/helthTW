@@ -11,13 +11,15 @@ GitHub: release published (rollback manually) → .github/workflows/deploy.yml
              docker build → docker save | ssh prod deploy <sha> → health check from outside
 
 ops-vm   user github-runner: runner service, Docker for building, SSH key only for deploy.sh
+         folder /srv/monitoring: Beszel agent, only the prod-vm reaches it (see Monitoring)
 prod-vm  user deploy, folder /srv/helthtw (compose.yml, deploy.sh, .env, backend.env, tls/):
          web (Caddy, HTTPS on 443, 80 redirects) → backend (Node) → postgres (volume), migrate runs before every start
+         folder /srv/monitoring: Dozzle for container logs, Beszel for VM trends, only through an SSH tunnel
 ```
 
 - The runner connects to GitHub itself through the proxy. No VM is reachable from outside HTW, that is intended.
 - A deploy takes about 1.5 minutes, of which around 25 s on the prod-vm. The site is down for a few seconds during it.
-- Tested with Debian 13, Docker 29.9 and Compose 5.6 on VMs with 2 CPUs, 1.9 GB RAM and 15 GB disk.
+- Tested with Debian 13, Docker 29.9 and Compose 5.6. Both VMs have 4 CPUs, 7.8 GB RAM and 15 GB disk (until November 2026: 2 CPUs, 1.9 GB RAM).
 
 ## Values
 
@@ -206,7 +208,9 @@ sed -i '/hook forward/a\        ip saddr <htw-nets> ct status dnat accept' /tmp/
 sed -i '/hook forward/a\        iifname "br-*" oifname "br-*" accept' /tmp/nft.conf
 sed -i '/hook forward/a\        ct state established,related accept' /tmp/nft.conf
 sed -i '/hook forward/a\        # Docker: replies, containers among each other, ports from the HTW network' /tmp/nft.conf
-diff /etc/nftables.conf /tmp/nft.conf            # only the start and the 4 lines below hook forward
+sed -i '/hook output/a\        ip daddr <ops-ip> tcp dport 45876 accept' /tmp/nft.conf
+sed -i '/hook output/a\        # Beszel: the hub dials the ops-vm agent' /tmp/nft.conf
+diff /etc/nftables.conf /tmp/nft.conf            # the start, 4 lines below hook forward, 2 below hook output
 sudo nft -c -f /tmp/nft.conf && echo "syntax OK"
 
 sudo cp /tmp/nft.conf /etc/nftables.conf
@@ -251,7 +255,7 @@ All commands as `<admin>`, except where `sudo -iu github-runner` is written.
 
 ### 1. Updates and swap
 
-First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap, because builds are tight with 1.9 GB RAM:
+First [step 1 of the prod-vm](#1-updates). Plus 2 GB swap. It dates from when the VM had 1.9 GB RAM and is now only a reserve for builds:
 
 ```bash
 findmnt -no FSTYPE /                   # ext4, then a swap file needs nothing special
@@ -269,7 +273,7 @@ sudo swapon --show                     # /swapfile 2G, also after a reboot
 
 Docker as in [step 2 of the prod-vm](#2-docker), with the same `daemon.json`. To test, `sudo docker pull debian:trixie-slim`, the build needs it anyway.
 
-The ops-vm publishes no ports. Only the build containers (`docker build` runs every step on `docker0`) need something: the proxy and DNS, but no direct internet. Plus outgoing SSH, but only to the prod-vm.
+The ops-vm publishes no ports. Only the build containers (`docker build` runs every step on `docker0`) need something: the proxy and DNS, but no direct internet. Plus outgoing SSH, but only to the prod-vm, and the Beszel agent's port 45876, but only for the prod-vm.
 
 ```bash
 sudo cp -a /etc/nftables.conf /etc/nftables.conf.orig
@@ -283,7 +287,9 @@ sed -i '/hook forward/a\        ct state established,related accept' /tmp/nft.co
 sed -i '/hook forward/a\        # Docker builds: replies, proxy and DNS in the HTW network, nothing else' /tmp/nft.conf
 sed -i '/hook output/a\        ip daddr <prod-ip> tcp dport 22 accept' /tmp/nft.conf
 sed -i '/hook output/a\        # Deploys: SSH only to the prod-vm' /tmp/nft.conf
-diff /etc/nftables.conf /tmp/nft.conf            # the start, 4 lines below hook forward, 2 below hook output
+sed -i '/hook input/a\        ip saddr <prod-ip> tcp dport 45876 accept' /tmp/nft.conf
+sed -i '/hook input/a\        # Beszel: only the prod-vm hub reaches the agent' /tmp/nft.conf
+diff /etc/nftables.conf /tmp/nft.conf            # the start, 4 lines below hook forward, 2 below hook output, 2 below hook input
 sudo nft -c -f /tmp/nft.conf && echo "syntax OK"
 
 sudo cp /tmp/nft.conf /etc/nftables.conf
@@ -418,8 +424,154 @@ In GitHub, the runner then shows as **Idle**, with the labels `self-hosted`, `Li
 
 If only one VM is replaced, its address and keys change:
 
-- New ops-vm: adjust `from=` in the prod-vm's `authorized_keys`. In GitHub, remove the old runner under Actions → Runners.
-- New prod-vm: adjust the ops-vm's `OUTPUT` rule, `known_hosts`, `~/.ssh/config` and `PROD_URL` in the runner's `.env`. Then `sudo systemctl restart 'actions.runner.*'`.
+- New ops-vm: adjust `from=` in the prod-vm's `authorized_keys`, the prod-vm's Beszel `OUTPUT` rule and the system `ops-vm` in Beszel. In GitHub, remove the old runner under Actions → Runners.
+- New prod-vm: adjust the ops-vm's `OUTPUT` rule, its Beszel `input` rule, `known_hosts`, `~/.ssh/config` and `PROD_URL` in the runner's `.env`. Then `sudo systemctl restart 'actions.runner.*'`.
+
+## Monitoring
+
+Runs apart from the app as the Compose project `helthtw-monitoring` in `/srv/monitoring`: on the prod-vm with [`deploy/monitoring/compose.yml`](../deploy/monitoring/compose.yml), on the ops-vm with [`compose.ops-vm.yml`](../deploy/monitoring/compose.ops-vm.yml). Why it is built this way is in [`decisions/2026-11-10-monitoring.md`](decisions/2026-11-10-monitoring.md).
+
+- `dozzle` shows logs and resource use of all containers in the browser. It only streams what Docker keeps (3 × 10 MB per container, `daemon.json`) and stores nothing.
+- `beszel` (the hub) keeps CPU, memory, disk and network of both VMs and of the prod-vm's containers for about 30 days, the older the coarser. Its data is in `/srv/monitoring/beszel_data`.
+- `beszel-agent` measures one VM each. On the prod-vm the hub reaches it through a socket in `/srv/monitoring/beszel_socket`. On the ops-vm the hub dials port 45876 over SSH, which the firewall only opens for the prod-vm. The agent only accepts the hub's key and runs no commands.
+- `socket-proxy` and `socket-proxy-beszel` are the only containers with the Docker socket. They only pass on reading requests: Dozzle gets what it needs to read logs, the Beszel agent only container lists and stats, no environment variables.
+- `deploy.sh` and releases never touch it. Changes to the files are installed by hand as below.
+
+### Opening the monitoring
+
+The tools only listen on `127.0.0.1` of the prod-vm. Devs reach them through an SSH tunnel as the user `monitoring`, which can do nothing else ([Access for devs](#access-for-devs)). Dozzle has no login, Beszel logs everyone in as a read-only user. Once per machine:
+
+1. Connect to the HTW VPN with OpenVPN, as in HTW's [guide](https://rz.htw-berlin.de/en/tutorials/vpn/). Not needed inside the HTW network, e.g. on eduroam, where OpenVPN does not connect.
+2. Create a key with a passphrase and send only the `.pub` file to an admin, never the private key. Admins are the team members with their own sudo login on the prod-vm, ask in the team chat who that is. Also tell them the fingerprint in person or over a second channel, so they can check the key is yours:
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_helthtw_monitoring
+   cat ~/.ssh/id_ed25519_helthtw_monitoring.pub      # send this line
+   ssh-keygen -lf ~/.ssh/id_ed25519_helthtw_monitoring.pub   # fingerprint, SHA256:…
+   ```
+3. Once the admin has added it, add this to `~/.ssh/config` on your own machine:
+   ```
+   Host helthtw-logs
+     HostName <prod-host>
+     User monitoring
+     IdentityFile ~/.ssh/id_ed25519_helthtw_monitoring
+     IdentitiesOnly yes
+     LocalForward 8888 127.0.0.1:8888
+     LocalForward 8090 127.0.0.1:8090
+     SessionType none
+     ExitOnForwardFailure yes
+   ```
+
+Then, in the VPN, run `ssh helthtw-logs` and open Dozzle at http://localhost:8888 and Beszel at http://localhost:8090. The command prints nothing and keeps the tunnel open until Ctrl+C.
+
+- `IdentitiesOnly` makes SSH offer only this key, not every key in your agent. `SessionType none` does what `-N` does: only the tunnel, no shell. With `ExitOnForwardFailure`, SSH stops with an error if a port is taken on your machine. Then use e.g. `LocalForward 18888 127.0.0.1:8888` and `localhost:18888`.
+- `Permission denied (publickey)`: your key is not on the VM yet. `connect failed` in the SSH window: the tool is not running.
+- Admins can also use their own login: `ssh -N -L 8888:127.0.0.1:8888 -L 8090:127.0.0.1:8090 <admin>@<prod-host>`.
+- Requests to the site do not show up: Caddy has no access log and the backend only logs its start.
+
+### Access for devs
+
+The user `monitoring` has no password, no shell and no groups. Both the options on each key in its `authorized_keys` and `/etc/ssh/sshd_config.d/monitoring.conf` only allow local tunnels to `127.0.0.1:8888` and `127.0.0.1:8090`. Every key on the list can read all container logs, so only add team members and remove them when they leave.
+
+Set up once, as `<admin>`, with a second SSH session open in case sshd no longer lets you in:
+
+```bash
+sudo adduser --disabled-password --comment "Tunnel to monitoring" --shell /usr/sbin/nologin monitoring
+# authorized_keys belongs to root, so monitoring cannot add keys itself
+sudo install -d -o root -g root -m 755 /home/monitoring/.ssh
+sudo install -o root -g root -m 644 /dev/null /home/monitoring/.ssh/authorized_keys
+sudo tee /etc/ssh/sshd_config.d/monitoring.conf >/dev/null <<'EOF'
+# helthTW: this user may only forward to the monitoring tools on 127.0.0.1 (docs/deployment.md, "Monitoring").
+Match User monitoring
+	AuthenticationMethods publickey
+	AllowTcpForwarding local
+	PermitOpen 127.0.0.1:8888 127.0.0.1:8090
+	AllowStreamLocalForwarding no
+	AllowAgentForwarding no
+	X11Forwarding no
+	PermitTTY no
+	PermitTunnel no
+	ForceCommand /usr/sbin/nologin
+EOF
+sudo sshd -t
+sudo sshd -T -C user=monitoring,host=test,addr=127.0.0.1 | grep -iE '^(allowtcpforwarding|permitopen|forcecommand)'   # local, 127.0.0.1:8888 127.0.0.1:8090, /usr/sbin/nologin
+sudo sshd -T -C user=$USER,host=test,addr=127.0.0.1 | grep -iE '^(allowtcpforwarding|permitopen|forcecommand)'       # yes, any, none: your login is unchanged
+sudo systemctl reload ssh
+```
+
+Undo: `sudo rm /etc/ssh/sshd_config.d/monitoring.conf && sudo systemctl reload ssh`. The rules are in their own file, so updates never ask about a changed `sshd_config`.
+
+Add a dev with the `.pub` line they sent (never the private key), but only if its fingerprint matches the one they told you in person or over a second channel. Otherwise anyone could send a key in their name and read all logs. Replace the comment at the end of the line with their name, so the line can be found later. Names stay on the VM.
+
+```bash
+key='<the .pub line>'
+printf '%s\n' "$key" | ssh-keygen -lf -   # must match the fingerprint the dev told you
+printf 'restrict,port-forwarding,permitopen="127.0.0.1:8888",permitopen="127.0.0.1:8090" %s\n' "$key" | sudo tee -a /home/monitoring/.ssh/authorized_keys >/dev/null
+```
+
+- Remove a dev: delete their line with `sudo nano /home/monitoring/.ssh/authorized_keys`. Open tunnels stay until they close, `sudo pkill -u monitoring` ends all of them.
+- Test from your own machine: `ssh monitoring@<prod-host>` answers "This account is currently not available", `ssh -W 127.0.0.1:22 monitoring@<prod-host>` "administratively prohibited".
+- Another port needs a further `permitopen="127.0.0.1:<port>"` on every key line and the port in `PermitOpen` (separated by a space), then `sudo systemctl reload ssh`.
+
+### Install and update
+
+```bash
+# own machine: checksums of the reviewed commit
+git show <commit>:deploy/monitoring/compose.yml | shasum -a 256
+git show <commit>:deploy/monitoring/compose.ops-vm.yml | shasum -a 256
+```
+
+```bash
+# prod-vm
+cd /tmp
+curl -fsSL -o monitoring-compose.yml "https://raw.githubusercontent.com/SDF-WISE-26/helthTW/<commit>/deploy/monitoring/compose.yml"
+echo '<checksum>  monitoring-compose.yml' | sha256sum -c
+sudo install -d -o root -g root -m 755 /srv/monitoring
+# nobody, the user of all containers
+sudo install -d -o 65534 -g 65534 -m 700 /srv/monitoring/{socket,beszel_proxy_socket,beszel_data,beszel_socket,beszel_agent_data}
+sudo install -o root -g root -m 644 monitoring-compose.yml /srv/monitoring/compose.yml
+rm monitoring-compose.yml
+cd
+# group of the Docker socket, so the proxies can read it. BESZEL_KEY is filled in during the Beszel setup.
+[ -e /srv/monitoring/.env ] || printf 'DOCKER_GID=%s\nBESZEL_KEY=\n' "$(getent group docker | cut -d: -f3)" | sudo tee /srv/monitoring/.env
+sudo docker compose -f /srv/monitoring/compose.yml up -d --wait   # first install: only socket-proxy dozzle socket-proxy-beszel beszel, see Beszel setup
+sudo docker compose -f /srv/monitoring/compose.yml ps             # all healthy
+```
+
+```bash
+# ops-vm, only the agent. <key> is the hub's key from the Beszel setup.
+cd /tmp
+https_proxy=<proxy> curl -fsSL -o monitoring-compose.yml "https://raw.githubusercontent.com/SDF-WISE-26/helthTW/<commit>/deploy/monitoring/compose.ops-vm.yml"
+echo '<checksum>  monitoring-compose.yml' | sha256sum -c
+sudo install -d -o root -g root -m 755 /srv/monitoring
+sudo install -d -o 65534 -g 65534 -m 700 /srv/monitoring/beszel_agent_data
+sudo install -o root -g root -m 644 monitoring-compose.yml /srv/monitoring/compose.yml
+rm monitoring-compose.yml
+cd
+[ -e /srv/monitoring/.env ] || printf "BESZEL_KEY='%s'\n" '<key>' | sudo tee /srv/monitoring/.env
+sudo docker compose -f /srv/monitoring/compose.yml up -d --wait
+```
+
+- Images are pinned by digest. A newer version only comes with a change to the file.
+- After a change, click through Dozzle (logs, stats, host page) and Beszel, then check whether a proxy refused anything. No output means nothing was blocked:
+  `sudo docker logs helthtw-monitoring-socket-proxy-1 2>&1 | grep 'blocked request'`, the same for `socket-proxy-beszel-1`.
+- Remove: `sudo docker compose -f /srv/monitoring/compose.yml down` on each VM. The app keeps running.
+
+### Beszel setup
+
+Once after the first install. The agent on the prod-vm only starts with the hub's key, which the hub creates on its first start.
+
+1. Admin tunnel (`ssh -N -L 8090:127.0.0.1:8090 <admin>@<prod-host>`), open http://localhost:8090 and create the admin account right away. Any address works, Beszel sends no mail. Keep the password in a password manager.
+2. Click Add System, copy the public key (`ssh-ed25519 …`) and close the dialog. On the prod-vm:
+   ```bash
+   read -r -p 'Hub key: ' key
+   sudo sed -i "s|^BESZEL_KEY=.*|BESZEL_KEY='$key'|" /srv/monitoring/.env && unset key
+   sudo docker compose -f /srv/monitoring/compose.yml up -d --wait
+   ```
+3. Add System `prod-vm` with host `/beszel_socket/beszel.sock`, the path inside the hub. Install the ops-vm as above with the same key, then Add System `ops-vm` with host `<ops-ip>` and port 45876. Both turn green within a minute.
+4. On http://localhost:8090/_/ (admin login, if it fails see below) under Collections → users, create the record `viewer@monitoring.invalid` (set in `compose.yml`), any long password, role `readonly`, and tick `verified`. Without `verified` Beszel still shows the login form. From now on everyone gets in as this user, test it in a private window: both systems, no Add System.
+
+- Admin work after that happens on `/_/`. Lost admin password: `read -rs pw` and `sudo docker exec helthtw-monitoring-beszel-1 /beszel superuser upsert <email> "$pw"`, then set the same password on the admin record in users.
+- If `beszel_data` is lost, the hub creates a new key. Then put it into `.env` on both VMs and restart both agents.
 
 ## Pitfalls
 
