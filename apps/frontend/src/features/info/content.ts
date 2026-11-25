@@ -1,6 +1,6 @@
 import { allContacts, allItems, categoryList, tagList, topicList } from "content-collections";
 import type { CategoryList, TagList, TopicList } from "content-collections";
-import { itemKinds } from "./item-kind";
+import { itemKinds } from "./items/item-kind.ts";
 
 export type { Contact, ContentItem } from "content-collections";
 export type Topic = TopicList["entries"][number];
@@ -24,3 +24,6 @@ export const content = {
 
 export const topicItems = (topicId: string) =>
   content.items.filter((item) => item.topic === topicId);
+
+export const categoryContacts = (categoryId: string) =>
+  content.contacts.filter((contact) => contact.category === categoryId);

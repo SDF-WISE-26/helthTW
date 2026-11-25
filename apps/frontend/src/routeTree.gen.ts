@@ -20,6 +20,7 @@ import { Route as IncidentsNewRouteImport } from "./routes/incidents/new"
 import { Route as QuestionnairesQuestionnaireIdRouteImport } from "./routes/questionnaires/$questionnaireId"
 import { Route as TabsInfoIndexRouteImport } from "./routes/_tabs/info/index"
 import { Route as TabsInfoTopicRouteImport } from "./routes/_tabs/info/$topic"
+import { Route as TabsInfoContactsCategoryRouteImport } from "./routes/_tabs/info/contacts/$category"
 
 const TabsRoute = TabsRouteImport.update({
   id: "/_tabs",
@@ -76,6 +77,12 @@ const TabsInfoTopicRoute = TabsInfoTopicRouteImport.update({
   path: "/info/$topic",
   getParentRoute: () => TabsRoute,
 } as any)
+const TabsInfoContactsCategoryRoute =
+  TabsInfoContactsCategoryRouteImport.update({
+    id: "/info/contacts/$category",
+    path: "/info/contacts/$category",
+    getParentRoute: () => TabsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof TabsIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   "/questionnaires/$questionnaireId": typeof QuestionnairesQuestionnaireIdRoute
   "/info/$topic": typeof TabsInfoTopicRoute
   "/info/": typeof TabsInfoIndexRoute
+  "/info/contacts/$category": typeof TabsInfoContactsCategoryRoute
 }
 export interface FileRoutesByTo {
   "/install": typeof InstallRoute
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   "/": typeof TabsIndexRoute
   "/info/$topic": typeof TabsInfoTopicRoute
   "/info": typeof TabsInfoIndexRoute
+  "/info/contacts/$category": typeof TabsInfoContactsCategoryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   "/_tabs/": typeof TabsIndexRoute
   "/_tabs/info/$topic": typeof TabsInfoTopicRoute
   "/_tabs/info/": typeof TabsInfoIndexRoute
+  "/_tabs/info/contacts/$category": typeof TabsInfoContactsCategoryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | "/questionnaires/$questionnaireId"
     | "/info/$topic"
     | "/info/"
+    | "/info/contacts/$category"
   fileRoutesByTo: FileRoutesByTo
   to:
     | "/install"
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | "/"
     | "/info/$topic"
     | "/info"
+    | "/info/contacts/$category"
   id:
     | "__root__"
     | "/_tabs"
@@ -153,6 +165,7 @@ export interface FileRouteTypes {
     | "/_tabs/"
     | "/_tabs/info/$topic"
     | "/_tabs/info/"
+    | "/_tabs/info/contacts/$category"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,6 +256,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof TabsInfoTopicRouteImport
       parentRoute: typeof TabsRoute
     }
+    "/_tabs/info/contacts/$category": {
+      id: "/_tabs/info/contacts/$category"
+      path: "/info/contacts/$category"
+      fullPath: "/info/contacts/$category"
+      preLoaderRoute: typeof TabsInfoContactsCategoryRouteImport
+      parentRoute: typeof TabsRoute
+    }
   }
 }
 
@@ -252,6 +272,7 @@ interface TabsRouteChildren {
   TabsIndexRoute: typeof TabsIndexRoute
   TabsInfoTopicRoute: typeof TabsInfoTopicRoute
   TabsInfoIndexRoute: typeof TabsInfoIndexRoute
+  TabsInfoContactsCategoryRoute: typeof TabsInfoContactsCategoryRoute
 }
 
 const TabsRouteChildren: TabsRouteChildren = {
@@ -260,6 +281,7 @@ const TabsRouteChildren: TabsRouteChildren = {
   TabsIndexRoute: TabsIndexRoute,
   TabsInfoTopicRoute: TabsInfoTopicRoute,
   TabsInfoIndexRoute: TabsInfoIndexRoute,
+  TabsInfoContactsCategoryRoute: TabsInfoContactsCategoryRoute,
 }
 
 const TabsRouteWithChildren = TabsRoute._addFileChildren(TabsRouteChildren)

@@ -1,9 +1,9 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ContactCard } from "./contact-card";
-import { ContactList } from "./contact-list";
-import type { ContentItem } from "./content";
-import { ItemCard } from "./item-card";
+import { ContactCard } from "../contacts/contact-card";
+import { ContactGroupList } from "../contacts/contact-group-list";
+import type { ContentItem } from "../content";
+import { ItemCard } from "../items/item-card.tsx";
 import { ofType, searchInfo, searchTypes, suggestedTags, typeLabel, typesIn } from "./search";
 import type { SearchType } from "./search";
 import { TypeFilter } from "./type-filter";
@@ -65,7 +65,7 @@ export function SearchResults({
           <p className="text-muted-foreground">
             Versuch ein anderes Wort, oder wende dich direkt an eine dieser Stellen.
           </p>
-          <ContactList />
+          <ContactGroupList />
         </section>
       </>
     );

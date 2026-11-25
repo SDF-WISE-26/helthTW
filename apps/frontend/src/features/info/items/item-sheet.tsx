@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import {
   Drawer,
   DrawerBody,
@@ -8,11 +8,11 @@ import {
   DrawerDescription,
   DrawerFooter,
   DrawerTitle,
-} from "@/components/ui/drawer";
-import { ArticleBody } from "./article-body";
-import { content } from "./content";
-import type { ContentItem } from "./content";
-import { useCloseItem } from "./item-link";
+} from "@/components/ui/drawer.tsx";
+import { ArticleBody } from "./article-body.tsx";
+import { content } from "../content.ts";
+import type { ContentItem } from "../content.ts";
+import { useCloseItem } from "./item-link.ts";
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
