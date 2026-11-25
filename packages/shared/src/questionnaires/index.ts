@@ -45,7 +45,6 @@ export const scoringSchema = z.strictObject({ sum: z.array(identifier).min(1) })
 export const questionnaireTemplateSchema = z
   .strictObject({
     id: identifier,
-    version: z.number().int().positive(),
     title: z.string().min(1).max(120),
     tags: z.array(identifier).min(1).max(10),
     questions: z.array(questionSchema).min(1).max(60),
@@ -99,4 +98,4 @@ export const answersSchema = z.record(
 export type Question = z.infer<typeof questionSchema>;
 export type QuestionnaireTemplate = z.infer<typeof questionnaireTemplateSchema>;
 export type Answers = z.infer<typeof answersSchema>;
-export type QuestionnaireDefinition = Pick<QuestionnaireTemplate, "questions" | "scoring">;
+export { questionnaires } from "./list";

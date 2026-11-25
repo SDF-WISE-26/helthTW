@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vite-plus/test";
-import { answersSchema, questionnaireTemplateSchema, type QuestionnaireTemplate } from "./index";
+import {
+  answersSchema,
+  questionnaires,
+  questionnaireTemplateSchema,
+  type QuestionnaireTemplate,
+} from "./index";
+import { isi } from "./isi";
 
 const template: QuestionnaireTemplate = {
   id: "check-in-kurz",
-  version: 1,
   title: "Kurzer Check-in",
   tags: ["check-in"],
   questions: [
@@ -66,10 +71,6 @@ describe("questionnaireTemplateSchema", () => {
 
   it("rejects unknown fields, e.g. a typo", () => {
     expect(problems({ ...template, tag: ["x"] })).not.toEqual([]);
-  });
-
-  it("rejects a version of 0", () => {
-    expect(problems({ ...template, version: 0 })).not.toEqual([]);
   });
 
   it("rejects duplicate question ids", () => {
@@ -169,98 +170,29 @@ describe("answersSchema", () => {
   });
 });
 
-// Example only: the Insomnia Severity Index (7 questions, 0-4 points, total 0-28) shows that a real
-// instrument fits the format. Wording and licence are not settled, this is not content for the app.
-const scale = (labels: string[]) =>
-  labels.map((label, i) => ({ value: `p${i}`, label, points: i }));
-const severity = scale(["None", "Mild", "Moderate", "Severe", "Very severe"]);
-const intensity = scale(["Not at all", "A little", "Somewhat", "Much", "Very much"]);
-
-const isi: QuestionnaireTemplate = {
-  id: "isi",
-  version: 1,
-  title: "Insomnia Severity Index (example)",
-  tags: ["schlaf"],
-  questions: [
-    {
-      id: "falling-asleep",
-      type: "select-one",
-      text: "Difficulty falling asleep?",
-      options: severity,
-    },
-    {
-      id: "staying-asleep",
-      type: "select-one",
-      text: "Difficulty staying asleep?",
-      options: severity,
-    },
-    {
-      id: "waking-early",
-      type: "select-one",
-      text: "Problems waking up too early?",
-      options: severity,
-    },
-    {
-      id: "satisfaction",
-      type: "select-one",
-      text: "How satisfied are you with your current sleep pattern?",
-      // The scale runs backwards: the less satisfied, the more points.
-      options: scale([
-        "Very satisfied",
-        "Satisfied",
-        "Moderately satisfied",
-        "Dissatisfied",
-        "Very dissatisfied",
-      ]),
-    },
-    {
-      id: "noticeable",
-      type: "select-one",
-      text: "How noticeable to others is your sleep problem?",
-      options: intensity,
-    },
-    {
-      id: "worry",
-      type: "select-one",
-      text: "How worried are you about your sleep problem?",
-      options: intensity,
-    },
-    {
-      id: "interference",
-      type: "select-one",
-      text: "How much does it interfere with your daily life?",
-      options: intensity,
-    },
-  ],
-  scoring: {
-    sum: [
-      "falling-asleep",
-      "staying-asleep",
-      "waking-early",
-      "satisfaction",
-      "noticeable",
-      "worry",
-      "interference",
-    ],
-  },
-};
-
-describe("an instrument with its own scoring (ISI)", () => {
-  it("is a valid template", () => {
-    expect(problems(isi)).toEqual([]);
+describe("the questionnaires of the app", () => {
+  it("are all valid templates", () => {
+    for (const questionnaire of questionnaires) {
+      expect(problems(questionnaire)).toEqual([]);
+    }
   });
 
-  it("can reuse one answer scale for several questions", () => {
-    expect(isi.questions[0]).toMatchObject({ options: severity });
-    expect(isi.questions[1]).toMatchObject({ options: severity });
+  it("have unique ids", () => {
+    const ids = questionnaires.map((questionnaire) => questionnaire.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe("isi", () => {
+  it("has 7 questions with 5 answers each, worth 0 to 4 points", () => {
+    expect(isi.questions).toHaveLength(7);
+    for (const question of isi.questions) {
+      const points = question.type === "select-one" ? question.options.map((o) => o.points) : [];
+      expect(points).toEqual([0, 1, 2, 3, 4]);
+    }
   });
 
-  it("has a maximum score of 28", () => {
-    const max = isi.questions.reduce(
-      (sum, q) =>
-        sum + (q.type === "select-one" ? Math.max(...q.options.map((o) => o.points ?? 0)) : 0),
-      0,
-    );
-    expect(max).toBe(28);
+  it("scores all 7 questions, so the maximum is 28", () => {
+    expect(isi.scoring?.sum).toHaveLength(7);
   });
 });
