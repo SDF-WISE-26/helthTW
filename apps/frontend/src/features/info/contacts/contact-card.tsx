@@ -1,45 +1,51 @@
+import { ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { contactLinks, linkDescription, linkTarget } from "./contact-links";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { contactLinks, linkTarget, sharedAvailability } from "./contact-links";
 import type { ContactLink } from "./contact-links";
 import type { Contact } from "../content";
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-// The full card: on /info, in search and in contact groups. Every way to reach the contact as its own row.
-export function ContactCard({ contact }: { contact: Contact }) {
+// Every way to reach the contact as its own row. With `limit` (the AI chat), the rest folds away behind a button.
+export function ContactCard({ contact, limit }: { contact: Contact; limit?: number }) {
+  const links = contactLinks(contact);
+  // Hiding a single row would cost as much space as the button that shows it.
+  const cut = limit && links.length > limit + 1 ? limit : links.length;
+  const rest = links.slice(cut);
+
   return (
     <Card role="article">
       <CardContent>
         <ContactHeader contact={contact} />
         {contact.description && <p className="mt-3 text-small">{contact.description}</p>}
-        <ul className="mt-2 flex flex-col divide-y divide-border/60">
-          {contactLinks(contact).map((link) => (
-            <li key={link.href}>
-              <LinkRow link={link} />
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
-  );
-}
-
-// The small card in the AI chat: who it is, and the ways to reach them as icons.
-export function CompactContactCard({ contact }: { contact: Contact }) {
-  return (
-    <Card role="article">
-      <CardContent>
-        <ContactHeader contact={contact} />
-        {/* Each link is a full tap target around a smaller circle, so circles sit 8px apart both ways.
-            The margins take that 4px inset back, so the first circle lines up with the name. */}
-        <ul className="mt-1 -mb-1 ml-14 flex flex-wrap">
-          {contactLinks(contact).map((link) => (
-            <li key={link.href}>
-              <IconLink link={link} />
-            </li>
-          ))}
-        </ul>
+        <Collapsible>
+          <LinkList links={links.slice(0, cut)} className="mt-2" />
+          {rest.length > 0 && (
+            <>
+              <CollapsibleContent>
+                <LinkList links={rest} className="border-t border-border/60" />
+              </CollapsibleContent>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="group mt-1 -ml-2.5 h-tap-min text-small text-muted-foreground"
+                >
+                  <span className="group-data-[state=open]:hidden">
+                    {rest.length} weitere anzeigen
+                  </span>
+                  <span className="hidden group-data-[state=open]:inline">Weniger anzeigen</span>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="transition-transform group-data-[state=open]:rotate-180"
+                  />
+                </Button>
+              </CollapsibleTrigger>
+            </>
+          )}
+        </Collapsible>
       </CardContent>
     </Card>
   );
@@ -52,7 +58,10 @@ const initials = (name: string) =>
     .map((word) => word[0].toUpperCase())
     .join("");
 
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
 function ContactHeader({ contact }: { contact: Contact }) {
+  const availability = sharedAvailability(contact);
   return (
     <header className="flex items-center gap-3">
       <Avatar aria-hidden="true" className="size-12 shrink-0 after:hidden">
@@ -66,8 +75,23 @@ function ContactHeader({ contact }: { contact: Contact }) {
         {contact.audience && (
           <p className="text-small text-muted-foreground">Für {contact.audience}</p>
         )}
+        {availability && (
+          <p className="text-small text-muted-foreground">{capitalize(availability)}</p>
+        )}
       </div>
     </header>
+  );
+}
+
+function LinkList({ links, className = "" }: { links: ContactLink[]; className?: string }) {
+  return (
+    <ul className={`flex flex-col divide-y divide-border/60 ${className}`}>
+      {links.map((link) => (
+        <li key={link.href}>
+          <LinkRow link={link} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -88,25 +112,6 @@ function LinkRow({ link }: { link: ContactLink }) {
         {link.external && <span className="sr-only">, öffnet in neuem Tab</span>}
       </span>
       <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
-        <Icon aria-hidden="true" className="size-4" />
-      </span>
-    </a>
-  );
-}
-
-// Text hidden, so the full info goes into the accessible name and tooltip.
-function IconLink({ link }: { link: ContactLink }) {
-  const Icon = link.icon;
-  const description = linkDescription(link);
-  return (
-    <a
-      href={link.href}
-      {...linkTarget(link)}
-      aria-label={description}
-      title={description}
-      className="group flex size-tap-min items-center justify-center rounded-full outline-none transition-opacity active:opacity-60"
-    >
-      <span className="flex size-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground group-focus-visible:ring-3 group-focus-visible:ring-ring/50">
         <Icon aria-hidden="true" className="size-4" />
       </span>
     </a>

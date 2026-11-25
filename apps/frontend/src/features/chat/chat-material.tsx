@@ -1,5 +1,5 @@
 import type { MaterialSelection } from "@helthtw/shared/chat";
-import { CompactContactCard } from "@/features/info/contacts/contact-card";
+import { ContactCard } from "@/features/info/contacts/contact-card";
 import { content } from "@/features/info/content";
 import { ItemCard } from "@/features/info/items/item-card.tsx";
 
@@ -14,10 +14,10 @@ export function ChatMaterial({ selection }: { selection: MaterialSelection }) {
   return (
     <div className="flex flex-col gap-2">
       {items.map((item) => (
-        <ItemCard item={item} />
+        <ItemCard key={item.id} item={item} />
       ))}
       {contacts.map((contact) => (
-        <CompactContactCard key={contact.id} contact={contact} />
+        <ContactCard key={contact.id} contact={contact} limit={2} />
       ))}
     </div>
   );
