@@ -1,43 +1,47 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { contactLinks, linkDescription, linkTarget } from "./contact-links";
 import type { ContactLink } from "./contact-links";
 import type { Contact } from "../content";
 
-const card = "flex flex-col rounded-2xl bg-card p-4 text-card-foreground ring-1 ring-foreground/5";
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 // The full card: on /info, in search and in contact groups. Every way to reach the contact as its own row.
 export function ContactCard({ contact }: { contact: Contact }) {
   return (
-    <article className={card}>
-      <ContactHeader contact={contact} />
-      {contact.description && <p className="mt-3 text-small">{contact.description}</p>}
-      <ul className="mt-2 flex flex-col divide-y divide-border/60">
-        {contactLinks(contact).map((link) => (
-          <li key={link.href}>
-            <LinkRow link={link} />
-          </li>
-        ))}
-      </ul>
-    </article>
+    <Card role="article">
+      <CardContent>
+        <ContactHeader contact={contact} />
+        {contact.description && <p className="mt-3 text-small">{contact.description}</p>}
+        <ul className="mt-2 flex flex-col divide-y divide-border/60">
+          {contactLinks(contact).map((link) => (
+            <li key={link.href}>
+              <LinkRow link={link} />
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 
 // The small card in the AI chat: who it is, and the ways to reach them as icons.
 export function CompactContactCard({ contact }: { contact: Contact }) {
   return (
-    <article className={card}>
-      <ContactHeader contact={contact} />
-      {/* Each link is a full tap target around a smaller circle, so circles sit 8px apart both ways.
-          The margins take that 4px inset back, so the first circle lines up with the name. */}
-      <ul className="mt-1 -mb-1 ml-14 flex flex-wrap">
-        {contactLinks(contact).map((link) => (
-          <li key={link.href}>
-            <IconLink link={link} />
-          </li>
-        ))}
-      </ul>
-    </article>
+    <Card role="article">
+      <CardContent>
+        <ContactHeader contact={contact} />
+        {/* Each link is a full tap target around a smaller circle, so circles sit 8px apart both ways.
+            The margins take that 4px inset back, so the first circle lines up with the name. */}
+        <ul className="mt-1 -mb-1 ml-14 flex flex-wrap">
+          {contactLinks(contact).map((link) => (
+            <li key={link.href}>
+              <IconLink link={link} />
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 
