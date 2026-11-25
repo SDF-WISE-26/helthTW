@@ -1,9 +1,12 @@
 import {
+  date,
   foreignKey,
   index,
   integer,
   jsonb,
   pgTable,
+  text,
+  time,
   timestamp,
   unique,
   uuid,
@@ -97,4 +100,46 @@ export const questionnaireResponsesTable = pgTable(
       ],
     }),
   ],
+);
+
+// No status or progress column: closed once `closedAt` is set, progress comes from the steps.
+// `date`, `time` and `note` are health data: never log them.
+export const incidentsTable = pgTable(
+  "incidents",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accountsTable.id, { onDelete: "cascade" }),
+    // When the incident happened, in local time. A string, so no time zone shifts the day.
+    date: date({ mode: "string" }).notNull(),
+    time: time(),
+    note: text(),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index().on(table.accountId, table.date)],
+);
+
+// Aftercare steps the person checks off, e.g. "tips", created open with the incident.
+// Questionnaires are no rows here: they are steps through `scheduled_questionnaires` (#67)
+// and done once answered, so "done" is never stored twice.
+export const incidentStepsTable = pgTable(
+  "incident_steps",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    incidentId: integer("incident_id")
+      .notNull()
+      .references(() => incidentsTable.id, { onDelete: "cascade" }),
+    // Checked with Zod instead of a Postgres enum, so a new type needs no migration.
+    type: varchar({ length: 50 }).notNull(),
+    // Open while null. The backend sets the time, the person only checks the step off.
+    doneAt: timestamp("done_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique().on(table.incidentId, table.type)],
 );
