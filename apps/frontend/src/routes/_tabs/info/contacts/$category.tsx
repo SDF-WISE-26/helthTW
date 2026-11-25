@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ContactGroupPage } from "@/features/info/contact-group-page";
+import { ContactGroupPage } from "@/features/info/contacts/contact-group-page";
 
 export const Route = createFileRoute("/_tabs/info/contacts/$category")({
   component: ContactGroup,

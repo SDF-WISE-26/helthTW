@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
-import { ContactGroupList } from "./contact-group-list";
-import { minQueryLength } from "./search";
-import type { SearchType } from "./search";
-import { SearchField } from "./search-field";
-import { SearchResults, SearchSuggestions } from "./search-results";
-import { TopicList } from "./topic-list";
+import { ContactGroupList } from "./contacts/contact-group-list";
+import { minQueryLength } from "./search/search";
+import type { SearchType } from "./search/search";
+import { SearchField } from "./search/search-field";
+import { SearchResults, SearchSuggestions } from "./search/search-results";
+import { TopicList } from "./topics/topic-list";
 
 export function InfoPage() {
   const [query, setQuery] = useState("");

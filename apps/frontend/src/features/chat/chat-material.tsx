@@ -1,5 +1,5 @@
 import type { MaterialSelection } from "@helthtw/shared/chat";
-import { ContactCard } from "@/features/info/contact-card";
+import { ContactCard } from "@/features/info/contacts/contact-card";
 import { content } from "@/features/info/content";
 import { ItemCard } from "@/features/info/item-card";
 

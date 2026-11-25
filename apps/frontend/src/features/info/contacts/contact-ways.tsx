@@ -1,6 +1,6 @@
 import { Globe, Mail, Phone } from "lucide-react";
 import type { CSSProperties } from "react";
-import type { Contact } from "./content";
+import type { Contact } from "../content";
 
 const contactCount = (count: number) => `${count} ${count === 1 ? "Kontakt" : "Kontakte"}`;
 

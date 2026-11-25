@@ -2,7 +2,7 @@ import { Globe, Mail, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "cn";
-import type { Contact } from "./content";
+import type { Contact } from "../content";
 
 type Channel = Contact["channels"][number];
 

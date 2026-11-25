@@ -1,9 +1,9 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ContactCard } from "./contact-card";
-import { ContactGroupList } from "./contact-group-list";
-import type { ContentItem } from "./content";
-import { ItemCard } from "./item-card";
+import { ContactCard } from "../contacts/contact-card";
+import { ContactGroupList } from "../contacts/contact-group-list";
+import type { ContentItem } from "../content";
+import { ItemCard } from "../item-card";
 import { ofType, searchInfo, searchTypes, suggestedTags, typeLabel, typesIn } from "./search";
 import type { SearchType } from "./search";
 import { TypeFilter } from "./type-filter";

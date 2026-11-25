@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
-import { content, topicItems } from "./content";
-import type { Topic } from "./content";
-import { summarizeKinds } from "./item-kind";
+import { content, topicItems } from "../content";
+import type { Topic } from "../content";
+import { summarizeKinds } from "../item-kind";
 import { TopicArt } from "./topic-art";
-import { coverCard, topicSurface, topicTransition } from "./cover-look";
+import { coverCard, topicSurface, topicTransition } from "../cover-look";
 
 export function TopicList() {
   return (
