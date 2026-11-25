@@ -8,7 +8,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { TabBar } from "@/components/layout/tab-bar";
 
 const ItemSheet = lazy(() =>
-  import("@/features/info/item-sheet").then((module) => ({ default: module.ItemSheet })),
+  import("@/features/info/items/item-sheet.tsx").then((module) => ({ default: module.ItemSheet })),
 );
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({

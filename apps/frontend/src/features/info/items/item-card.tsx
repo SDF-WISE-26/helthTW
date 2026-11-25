@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import type { ContentItem } from "./content";
-import { itemKinds, kindLabel } from "./item-kind";
-import { itemLink } from "./item-link";
+import type { ContentItem } from "../content.ts";
+import { itemKinds, kindLabel } from "./item-kind.ts";
+import { itemLink } from "./item-link.ts";
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 

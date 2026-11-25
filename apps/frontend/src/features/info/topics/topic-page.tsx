@@ -1,10 +1,10 @@
 import { cn } from "cn";
 import { content, topicItems } from "../content";
-import { FeaturedItemCard, ItemCard } from "../item-card";
-import { summarizeKinds } from "../item-kind";
+import { FeaturedItemCard, ItemCard } from "../items/item-card.tsx";
+import { summarizeKinds } from "../items/item-kind.ts";
 import { InfoNotFound } from "../not-found";
 import { TopicArt } from "./topic-art";
-import { coverHeader, topicSurface, topicTransition } from "../cover-look";
+import { coverHeader, topicSurface, topicTransition } from "./topic-look";
 
 // A topic with all its items. The header repeats the topic card, so the tap feels continuous.
 export function TopicPage({ topicId }: { topicId: string }) {

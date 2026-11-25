@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { categoryContacts, content } from "../content";
 import type { Category } from "../content";
-import { coverCard, groupSurface, groupTransition } from "../cover-look";
+import { groupSurface, groupTransition } from "./contact-look";
+import { coverCard } from "../topics/topic-look";
 import { ContactWays } from "./contact-ways";
 
 // One card per contact group, in the order of contact-categories.yaml. Empty groups are left out.

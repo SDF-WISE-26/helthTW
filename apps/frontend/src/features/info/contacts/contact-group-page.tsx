@@ -1,6 +1,7 @@
 import { cn } from "cn";
 import { ContactCard } from "./contact-card";
-import { coverHeader, groupSurface, groupTransition } from "../cover-look";
+import { groupSurface, groupTransition } from "./contact-look";
+import { coverHeader } from "../topics/topic-look";
 import { ContactWays } from "./contact-ways";
 import { categoryContacts, content } from "../content";
 import { InfoNotFound } from "../not-found";

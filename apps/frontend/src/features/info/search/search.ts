@@ -1,7 +1,7 @@
 import MiniSearch from "minisearch";
 import { content } from "../content";
 import type { Contact, ContentItem } from "../content";
-import { itemKinds } from "../item-kind";
+import { itemKinds } from "../items/item-kind.ts";
 
 export type Hits = { items: ContentItem[]; contacts: Contact[] };
 

@@ -1,6 +1,6 @@
 import { FileDown, FileText, Link } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ContentItem } from "./content";
+import type { ContentItem } from "../content.ts";
 
 type Kind = ContentItem["kind"];
 
