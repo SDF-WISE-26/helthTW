@@ -1,10 +1,9 @@
 import { cn } from "cn";
 import { ContactCard } from "./contact-card";
-import { groupSurface, groupTransition } from "./contact-look";
+import { coverHeader, groupSurface, groupTransition } from "./cover-look";
 import { ContactWays } from "./contact-ways";
 import { categoryContacts, content } from "./content";
 import { InfoNotFound } from "./not-found";
-import { coverHeader } from "./topic-look";
 
 // A contact group with all its contacts. The header repeats the group card, like a topic page.
 export function ContactGroupPage({ categoryId }: { categoryId: string }) {

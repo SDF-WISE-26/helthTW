@@ -5,10 +5,9 @@ import type { Contact } from "./content";
 const contactCount = (count: number) => `${count} ${count === 1 ? "Kontakt" : "Kontakte"}`;
 
 export function ContactWays({ contacts, style }: { contacts: Contact[]; style?: CSSProperties }) {
-  const offers = (type: Contact["channels"][number]["type"]) =>
-    contacts.some((contact) => contact.channels.some((channel) => channel.type === type));
-  const hasPhone = offers("phone");
-  const hasEmail = offers("email");
+  const channels = contacts.flatMap((contact) => contact.channels.map((channel) => channel.type));
+  const hasPhone = channels.includes("phone");
+  const hasEmail = channels.includes("email");
   const hasWebsite = contacts.some((contact) => contact.website);
 
   return (
