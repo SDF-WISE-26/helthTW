@@ -1,4 +1,5 @@
 import { useChat } from "@ai-sdk/react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport } from "ai";
 import { ChatEmpty } from "./chat-empty";
 import { ChatThread, type ChatUIMessage } from "./chat-thread";
@@ -6,25 +7,59 @@ import { ChatInput } from "./chat-input";
 import { ChatError } from "@/features/chat/chat-error.tsx";
 import { ChatAiNotice } from "@/features/chat/chat-ai-notice.tsx";
 import { api } from "@/api";
+import { getAccountId } from "@/features/account/account-id";
 import { chatCatalog } from "./chat-catalog";
+import { chatHistoryQuery } from "./chat-history";
 
 const transport = new DefaultChatTransport<ChatUIMessage>({
   api: api.api.v1.chat.$path(),
-  body: { catalog: chatCatalog },
+  headers: () => ({ "X-Account-Id": getAccountId() }),
+  prepareSendMessagesRequest: ({ messages }) => ({
+    // only send latest message + catalog to backend
+    body: { message: messages.at(-1), catalog: chatCatalog },
+  }),
 });
 
 export function ChatMain() {
-  const { messages, sendMessage, status, error, regenerate, clearError, setMessages } =
-    useChat<ChatUIMessage>({
-      transport,
-    });
-  const busy = status === "submitted" || status === "streaming";
+  const history = useQuery(chatHistoryQuery);
 
   return (
     <div className="-m-4 flex min-h-0 flex-1 flex-col">
       <ChatAiNotice />
+      {history.isSuccess ? (
+        <ChatSession initialMessages={history.data} />
+      ) : (
+        <>
+          <div className="flex-1" />
+          <div className="p-4">
+            {history.isError && (
+              <ChatError error={history.error} onRetry={() => void history.refetch()} />
+            )}
+            <ChatInput disabled onSend={() => {}} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
-      {messages.length === 0 ? <ChatEmpty /> : <ChatThread messages={messages} status={status} />}
+function ChatSession({ initialMessages }: { initialMessages: ChatUIMessage[] }) {
+  const queryClient = useQueryClient();
+  const { messages, sendMessage, status, error, regenerate, clearError } = useChat<ChatUIMessage>({
+    transport,
+    messages: initialMessages,
+    // keep cached messages of useChat hook in sync with the live chat ui messages
+    onFinish: ({ messages }) => queryClient.setQueryData(chatHistoryQuery.queryKey, messages),
+  });
+  const busy = status === "submitted" || status === "streaming";
+
+  return (
+    <>
+      {messages.length === 0 ? (
+        <ChatEmpty />
+      ) : (
+        <ChatThread messages={messages} status={status} onRetry={() => regenerate()} />
+      )}
 
       <div className="p-4">
         {error && (
@@ -34,15 +69,11 @@ export function ChatMain() {
               clearError();
               regenerate();
             }}
-            onNewChat={() => {
-              clearError();
-              setMessages([]);
-            }}
             onDismiss={clearError}
           />
         )}
         <ChatInput disabled={busy} onSend={(text) => sendMessage({ text })} />
       </div>
-    </div>
+    </>
   );
 }

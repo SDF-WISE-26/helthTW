@@ -4,6 +4,7 @@ import {
   toUIMessageStream,
   type UIMessage,
   smoothStream,
+  createIdGenerator,
 } from "ai";
 import { desc, eq } from "drizzle-orm";
 import type { ChatCatalog } from "@helthtw/shared/chat";
@@ -13,7 +14,19 @@ import { chatModel } from "../../lib/llm";
 import { buildSystemPrompt } from "./prompt/chat.prompt-utils";
 import { createChatTools } from "./chat.tools";
 
-export async function streamChatReply(messages: UIMessage[], catalog: ChatCatalog) {
+const CONTEXT_MESSAGES = 20;
+
+const generateMessageId = createIdGenerator({ prefix: "msg" });
+
+export async function streamChatReply(accountId: string, message: UIMessage, catalog: ChatCatalog) {
+  // load history before saving the newest message, the filter covers retries
+  const history = (await loadMessages(accountId, CONTEXT_MESSAGES)).filter(
+    (m) => m.id !== message.id,
+  );
+  await saveMessage(accountId, message);
+
+  const messages = [...history, message];
+
   const result = streamText({
     model: chatModel,
     instructions: buildSystemPrompt(catalog),
@@ -23,13 +36,23 @@ export async function streamChatReply(messages: UIMessage[], catalog: ChatCatalo
     experimental_transform: smoothStream(),
   });
 
-  return toUIMessageStream({ stream: result.stream });
+  return toUIMessageStream({
+    stream: result.stream,
+    originalMessages: messages,
+    generateMessageId,
+    onEnd: async ({ responseMessage, outcome }) => {
+      if (outcome.status !== "completed") return;
+      try {
+        await saveMessage(accountId, responseMessage);
+      } catch (error) {
+        console.error("Saving the chat reply failed:", error);
+      }
+    },
+  });
 }
 
-const DISPLAY_LIMIT = 100;
-
-// The newest `limit` messages of the account's chat, oldest first.
-export async function loadMessages(accountId: string, limit = DISPLAY_LIMIT): Promise<UIMessage[]> {
+// The newest `amount` messages of the account's chat, oldest first.
+export async function loadMessages(accountId: string, amount: number): Promise<UIMessage[]> {
   const rows = await db
     .select({
       id: chatMessagesTable.id,
@@ -39,7 +62,7 @@ export async function loadMessages(accountId: string, limit = DISPLAY_LIMIT): Pr
     .from(chatMessagesTable)
     .where(eq(chatMessagesTable.accountId, accountId))
     .orderBy(desc(chatMessagesTable.createdAt))
-    .limit(limit);
+    .limit(amount);
   return rows.reverse();
 }
 
@@ -54,8 +77,4 @@ export async function saveMessage(accountId: string, message: UIMessage) {
       parts: message.parts,
     })
     .onConflictDoNothing();
-}
-
-export async function clearMessages(accountId: string) {
-  await db.delete(chatMessagesTable).where(eq(chatMessagesTable.accountId, accountId));
 }
