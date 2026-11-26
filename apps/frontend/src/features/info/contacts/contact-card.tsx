@@ -9,18 +9,31 @@ import type { Contact } from "../content";
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-// Every way to reach the contact as its own row. With `limit` (the AI chat), the rest folds away behind a button.
-export function ContactCard({ contact, limit }: { contact: Contact; limit?: number }) {
+// Every way to reach the contact as its own row. Size "sm" is for the AI chat: smaller text,
+// and only the first rows, the rest folds away behind a button. The parts below follow the
+// Card's data-size (group-data-[size=sm]/card), so the size is not passed down.
+export function ContactCard({
+  contact,
+  size = "default",
+}: {
+  contact: Contact;
+  size?: "default" | "sm";
+}) {
   const links = contactLinks(contact);
+  const limit = size === "sm" ? 2 : undefined;
   // Hiding a single row would cost as much space as the button that shows it.
   const cut = limit && links.length > limit + 1 ? limit : links.length;
   const rest = links.slice(cut);
 
   return (
-    <Card role="article">
+    <Card role="article" size={size}>
       <CardContent>
         <ContactHeader contact={contact} />
-        {contact.description && <p className="mt-3 text-small">{contact.description}</p>}
+        {contact.description && (
+          <p className="mt-3 text-small group-data-[size=sm]/card:text-caption">
+            {contact.description}
+          </p>
+        )}
         <Collapsible>
           <LinkList links={links.slice(0, cut)} className="mt-2" />
           {rest.length > 0 && (
@@ -31,7 +44,7 @@ export function ContactCard({ contact, limit }: { contact: Contact; limit?: numb
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="group mt-1 -ml-2.5 h-tap-min text-small text-muted-foreground"
+                  className="group mt-1 -ml-2.5 h-tap-min text-small text-muted-foreground group-data-[size=sm]/card:text-caption"
                 >
                   <span className="group-data-[state=open]:hidden">
                     {rest.length} weitere anzeigen
@@ -64,19 +77,28 @@ function ContactHeader({ contact }: { contact: Contact }) {
   const availability = sharedAvailability(contact);
   return (
     <header className="flex items-center gap-3">
-      <Avatar aria-hidden="true" className="size-12 shrink-0 after:hidden">
-        <AvatarFallback className="bg-secondary text-label text-secondary-foreground">
+      <Avatar
+        aria-hidden="true"
+        className="size-12 shrink-0 after:hidden group-data-[size=sm]/card:size-10"
+      >
+        <AvatarFallback className="bg-secondary text-label text-secondary-foreground group-data-[size=sm]/card:text-small">
           {initials(contact.name)}
         </AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-col">
-        <h4 className="text-label text-balance">{contact.name}</h4>
+        <h4 className="text-label text-balance group-data-[size=sm]/card:text-small group-data-[size=sm]/card:font-semibold">
+          {contact.name}
+        </h4>
         {/* The content writes audience to read after "Für", without repeating the name. */}
         {contact.audience && (
-          <p className="text-small text-muted-foreground">Für {contact.audience}</p>
+          <p className="text-small text-muted-foreground group-data-[size=sm]/card:text-caption">
+            Für {contact.audience}
+          </p>
         )}
         {availability && (
-          <p className="text-small text-muted-foreground">{capitalize(availability)}</p>
+          <p className="text-small text-muted-foreground group-data-[size=sm]/card:text-caption">
+            {capitalize(availability)}
+          </p>
         )}
       </div>
     </header>
@@ -105,13 +127,13 @@ function LinkRow({ link }: { link: ContactLink }) {
       className={`flex min-h-tap-min items-center gap-3 rounded-lg py-2 transition-opacity active:opacity-60 ${focus}`}
     >
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-body font-medium break-all text-primary tabular-nums">
+        <span className="text-body font-medium break-all text-primary tabular-nums group-data-[size=sm]/card:text-small">
           {link.value}
         </span>
         {link.details && <span className="text-caption text-muted-foreground">{link.details}</span>}
         {link.external && <span className="sr-only">, öffnet in neuem Tab</span>}
       </span>
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground group-data-[size=sm]/card:size-8">
         <Icon aria-hidden="true" className="size-4" />
       </span>
     </a>
