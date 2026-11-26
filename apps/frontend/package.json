@@ -25,6 +25,7 @@
     "class-variance-authority": "catalog:",
     "cn": "catalog:",
     "hono": "catalog:",
+    "livekit-client": "catalog:",
     "lucide-react": "catalog:",
     "minisearch": "catalog:",
     "radix-ui": "catalog:",

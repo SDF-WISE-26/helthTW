@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowUpIcon, MicIcon } from "lucide-react";
+import { ArrowUpIcon, AudioLinesIcon, MicIcon } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -10,10 +10,11 @@ import * as React from "react";
 
 type ChatInputProps = {
   onSend: (text: string) => void;
+  onVoice: () => void;
   disabled?: boolean;
 };
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, onVoice, disabled }: ChatInputProps) {
   const [text, setText] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -59,16 +60,30 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           >
             <MicIcon />
           </InputGroupButton>
-          <InputGroupButton
-            type="submit"
-            size="icon-sm"
-            variant="default"
-            className="rounded-full"
-            disabled={!canSend}
-            aria-label="Abschicken"
-          >
-            <ArrowUpIcon />
-          </InputGroupButton>
+          {hasText ? (
+            <InputGroupButton
+              type="submit"
+              size="icon-sm"
+              variant="default"
+              className="rounded-full"
+              disabled={!canSend}
+              aria-label="Abschicken"
+            >
+              <ArrowUpIcon />
+            </InputGroupButton>
+          ) : (
+            <InputGroupButton
+              type="button"
+              size="icon-sm"
+              variant="default"
+              className="rounded-full bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              disabled={disabled}
+              onClick={onVoice}
+              aria-label="Sprachmodus starten"
+            >
+              <AudioLinesIcon />
+            </InputGroupButton>
+          )}
         </InputGroupAddon>
       </InputGroup>
     </form>

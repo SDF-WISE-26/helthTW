@@ -27,6 +27,7 @@ Contract of the REST API between backend and frontend.
 | 404    | resource or route missing        |
 | 409    | conflict with the current state  |
 | 500    | error in the backend, no details |
+| 503    | feature not configured           |
 
 ## Input and privacy
 
