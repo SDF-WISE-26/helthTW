@@ -9,9 +9,6 @@ import type { Contact } from "../content";
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-// Every way to reach the contact as its own row. Size "sm" is for the AI chat: smaller text,
-// and only the first rows, the rest folds away behind a button. The parts below follow the
-// Card's data-size (group-data-[size=sm]/card), so the size is not passed down.
 export function ContactCard({
   contact,
   size = "default",
@@ -21,7 +18,7 @@ export function ContactCard({
 }) {
   const links = contactLinks(contact);
   const limit = size === "sm" ? 2 : undefined;
-  // Hiding a single row would cost as much space as the button that shows it.
+
   const cut = limit && links.length > limit + 1 ? limit : links.length;
   const rest = links.slice(cut);
 
@@ -44,7 +41,7 @@ export function ContactCard({
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="group mt-1 -ml-2.5 h-tap-min text-small text-muted-foreground group-data-[size=sm]/card:text-caption"
+                  className="group mt-1 -ml-2.5 h-tap-min text-muted-foreground group-data-[size=sm]/card:text-caption aria-expanded:bg-transparent aria-expanded:text-muted-foreground"
                 >
                   <span className="group-data-[state=open]:hidden">
                     {rest.length} weitere anzeigen
@@ -64,7 +61,6 @@ export function ContactCard({
   );
 }
 
-// First letter of the first two words, e.g. "Berliner Krisendienst" → "BK".
 const initials = (name: string) =>
   (name.match(/\p{L}+/gu) ?? [])
     .slice(0, 2)
@@ -81,8 +77,11 @@ function ContactHeader({ contact }: { contact: Contact }) {
         aria-hidden="true"
         className="size-12 shrink-0 after:hidden group-data-[size=sm]/card:size-10"
       >
-        <AvatarFallback className="bg-secondary text-label text-secondary-foreground group-data-[size=sm]/card:text-small">
-          {initials(contact.name)}
+        {/* The size sits on a span: cn reads text-label as a color and drops it next to text-secondary-foreground. */}
+        <AvatarFallback className="bg-secondary text-secondary-foreground">
+          <span className="text-label group-data-[size=sm]/card:text-small">
+            {initials(contact.name)}
+          </span>
         </AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-col">
@@ -106,6 +105,7 @@ function ContactHeader({ contact }: { contact: Contact }) {
 }
 
 function LinkList({ links, className = "" }: { links: ContactLink[]; className?: string }) {
+  if (links.length === 0) return null;
   return (
     <ul className={`flex flex-col divide-y divide-border/60 ${className}`}>
       {links.map((link) => (
