@@ -43,6 +43,12 @@ vp run dev
 vp run ready
 ```
 
+- Start the voice worker (needs `LIVEKIT_*` and `ELEVENLABS_API_KEY` in `apps/backend/.env`):
+
+```bash
+vp run backend#dev:voice
+```
+
 - Run the tests:
 
 ```bash

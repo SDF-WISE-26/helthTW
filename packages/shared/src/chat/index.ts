@@ -47,3 +47,14 @@ export type MaterialSelection = { itemIds: string[]; contactIds: string[] };
 export type ChatTools = {
   show_material: { input: z.output<typeof showMaterialInputSchema>; output: MaterialSelection };
 };
+
+// The voice history travels inside the token, which the LiveKit client sends as a URL parameter.
+export const VOICE_HISTORY_MAX_MESSAGES = 4;
+export const VOICE_HISTORY_MAX_CHARS = 500;
+
+export const conversationMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  text: z.string().trim().min(1).max(VOICE_HISTORY_MAX_CHARS),
+});
+
+export type ConversationMessage = z.infer<typeof conversationMessageSchema>;

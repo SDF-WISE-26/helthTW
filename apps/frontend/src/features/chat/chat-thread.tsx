@@ -12,17 +12,10 @@ import { Message, MessageContent } from "@/components/ui/message";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { ChatMarkdown } from "@/features/chat/chat-markdown.tsx";
 import { ChatMaterial } from "./chat-material";
+import { textOf } from "./chat-text";
 
 export type ChatUIMessage = UIMessage<unknown, UIDataTypes, ChatTools>;
 type Part = ChatUIMessage["parts"][number];
-
-// Free text, or else the reply the model wrote into show_material (shown while it streams in).
-function textOf(message: ChatUIMessage) {
-  const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
-  if (text) return text;
-  const material = message.parts.find((p) => p.type === "tool-show_material");
-  return material?.input?.reply ?? "";
-}
 
 // Tool results the chat shows: the picked material. Calls still streaming show nothing yet.
 const isShown = (p: Part) => p.type === "tool-show_material" && p.state === "output-available";

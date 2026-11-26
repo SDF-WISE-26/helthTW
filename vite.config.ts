@@ -42,6 +42,9 @@ export default defineConfig({
       LLM_BASE_URL: "http://localhost:9999/v1",
       LLM_API_KEY: "test-key",
       LLM_MODEL: "test-model",
+      LIVEKIT_URL: "wss://livekit.test",
+      LIVEKIT_API_KEY: "test-livekit-key",
+      LIVEKIT_API_SECRET: "test-livekit-secret-at-least-32-chars",
     },
   },
 });
