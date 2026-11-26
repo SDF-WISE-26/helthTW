@@ -57,7 +57,7 @@ function NoReply({ onRetry }: { onRetry: () => void }) {
       <Message align="start">
         <MessageContent>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>Das war schwer...</span>
+            <span>Darauf habe ich keine Antwort...</span>
             <Button size="sm" variant="outline" onClick={onRetry}>
               Erneut versuchen
             </Button>

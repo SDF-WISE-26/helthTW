@@ -26,7 +26,7 @@ export function ChatMain() {
   return (
     <div className="-m-4 flex min-h-0 flex-1 flex-col">
       <ChatAiNotice />
-      {history.isSuccess ? (
+      {history.data ? (
         <ChatSession initialMessages={history.data} />
       ) : (
         <>
@@ -48,8 +48,10 @@ function ChatSession({ initialMessages }: { initialMessages: ChatUIMessage[] }) 
   const { messages, sendMessage, status, error, regenerate, clearError } = useChat<ChatUIMessage>({
     transport,
     messages: initialMessages,
-    // keep cached messages of useChat hook in sync with the live chat ui messages
-    onFinish: ({ messages }) => queryClient.setQueryData(chatHistoryQuery.queryKey, messages),
+    onFinish: ({ messages, isError, isAbort }) => {
+      if (isError || isAbort) return;
+      queryClient.setQueryData(chatHistoryQuery.queryKey, messages);
+    },
   });
   const busy = status === "submitted" || status === "streaming";
 

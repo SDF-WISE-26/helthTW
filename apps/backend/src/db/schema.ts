@@ -11,6 +11,7 @@ import {
   unique,
   uuid,
   varchar,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import type { UIMessage } from "ai";
 // Types only: drizzle-kit must not have to load the shared package.
@@ -149,7 +150,7 @@ export const incidentStepsTable = pgTable(
 export const chatMessagesTable = pgTable(
   "chat_messages",
   {
-    id: varchar({ length: 64 }).primaryKey(),
+    id: varchar({ length: 64 }).notNull(),
     accountId: uuid("account_id")
       .notNull()
       .references(() => accountsTable.id, { onDelete: "cascade" }),
@@ -157,5 +158,8 @@ export const chatMessagesTable = pgTable(
     parts: jsonb().$type<UIMessage["parts"]>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index().on(table.accountId, table.createdAt)],
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.id] }),
+    index().on(table.accountId, table.createdAt),
+  ],
 );

@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "f280baec-bcd1-4e20-9257-db2109a4f029",
+  "id": "05dc31cd-4581-4e2b-9732-5f0b928f56f9",
   "prevIds": [
-    "9e60ca08-e1c8-4a50-b603-b4657a852d57"
+    "e643a5e1-019b-496e-9475-8ca95fd0d3aa"
   ],
   "ddl": [
     {
@@ -15,6 +15,18 @@
     {
       "isRlsEnabled": false,
       "name": "chat_messages",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "incident_steps",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "incidents",
       "entityType": "tables",
       "schema": "public"
     },
@@ -132,6 +144,193 @@
       "entityType": "columns",
       "schema": "public",
       "table": "chat_messages"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "incident_steps_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "incident_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "done_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "incidents_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "account_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "time",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "time",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "note",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "closed_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "incidents"
     },
     {
       "type": "integer",
@@ -507,6 +706,34 @@
           "opclass": null
         },
         {
+          "value": "date",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "incidents_account_id_date_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "incidents"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "account_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
           "value": "created_at",
           "isExpression": false,
           "asc": true,
@@ -568,6 +795,40 @@
       "entityType": "fks",
       "schema": "public",
       "table": "chat_messages"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "incident_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "incidents",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "incident_steps_incident_id_incidents_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "incident_steps"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "account_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "accounts",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "incidents_account_id_accounts_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "incidents"
     },
     {
       "nameExplicit": false,
@@ -679,6 +940,17 @@
     },
     {
       "columns": [
+        "account_id",
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "chat_messages_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "chat_messages"
+    },
+    {
+      "columns": [
         "id"
       ],
       "nameExplicit": false,
@@ -692,9 +964,19 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "chat_messages_pkey",
+      "name": "incident_steps_pkey",
       "schema": "public",
-      "table": "chat_messages",
+      "table": "incident_steps",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "incidents_pkey",
+      "schema": "public",
+      "table": "incidents",
       "entityType": "pks"
     },
     {
@@ -736,6 +1018,18 @@
       "schema": "public",
       "table": "scheduled_questionnaires",
       "entityType": "pks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "incident_id",
+        "type"
+      ],
+      "nullsNotDistinct": false,
+      "name": "incident_steps_incident_id_type_unique",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "incident_steps"
     },
     {
       "nameExplicit": false,

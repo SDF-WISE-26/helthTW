@@ -4,6 +4,7 @@ import type { ChatUIMessage } from "./chat-thread";
 
 export const chatHistoryQuery = queryOptions({
   queryKey: ["chat", "history"],
+  staleTime: Infinity,
   queryFn: async () => {
     const res = await api.api.v1.chat.$get();
     if (!res.ok) throw new Error(`Loading the chat failed: ${res.status}`);
