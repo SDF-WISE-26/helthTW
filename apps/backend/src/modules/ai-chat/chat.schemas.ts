@@ -1,16 +1,14 @@
 import { z } from "zod";
 import { chatCatalogSchema } from "@helthtw/shared/chat";
 
-// schema is mirroring the useChat hook from AI SDK
-const uiMessageSchema = z
-  .object({
-    id: z.string(),
-    role: z.enum(["user", "assistant"]),
-    parts: z.array(z.object({ type: z.string() }).loose()),
-  })
-  .loose();
+// The client sends only the new message from the user
+const userMessageSchema = z.object({
+  id: z.string().min(1).max(64),
+  role: z.literal("user"),
+  parts: z.array(z.object({ type: z.literal("text"), text: z.string().min(1) })).min(1),
+});
 
 export const chatRequestSchema = z.object({
-  messages: z.array(uiMessageSchema).min(1),
+  message: userMessageSchema,
   catalog: chatCatalogSchema,
 });

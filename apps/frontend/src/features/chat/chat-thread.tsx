@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { ChatStatus, UIDataTypes, UIMessage } from "ai";
 import type { ChatTools } from "@helthtw/shared/chat";
 import {
@@ -7,10 +8,12 @@ import {
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerButton,
+  useMessageScroller,
 } from "@/components/ui/message-scroller";
 import { Message, MessageContent } from "@/components/ui/message";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { ChatMarkdown } from "@/features/chat/chat-markdown.tsx";
+import { Button } from "@/components/ui/button";
 import { ChatMaterial } from "./chat-material";
 
 export type ChatUIMessage = UIMessage<unknown, UIDataTypes, ChatTools>;
@@ -47,6 +50,32 @@ function Thinking() {
   );
 }
 
+// The last question got no reply, e.g. the app was closed while it was streaming.
+function NoReply({ onRetry }: { onRetry: () => void }) {
+  return (
+    <MessageScrollerItem messageId="no-reply">
+      <Message align="start">
+        <MessageContent>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span>Darauf habe ich keine Antwort...</span>
+            <Button size="sm" variant="outline" onClick={onRetry}>
+              Erneut versuchen
+            </Button>
+          </div>
+        </MessageContent>
+      </Message>
+    </MessageScrollerItem>
+  );
+}
+
+function ScrollToEndOnSend({ status }: { status: ChatStatus }) {
+  const { scrollToEnd } = useMessageScroller();
+  useEffect(() => {
+    if (status === "submitted") scrollToEnd({ behavior: "smooth" });
+  }, [status, scrollToEnd]);
+  return null;
+}
+
 function ToolResult({ part }: { part: Part }) {
   if (part.type === "tool-show_material" && part.state === "output-available") {
     return <ChatMaterial selection={part.output} />;
@@ -57,21 +86,24 @@ function ToolResult({ part }: { part: Part }) {
 export function ChatThread({
   messages,
   status,
+  onRetry,
 }: {
   messages: ChatUIMessage[];
   status: ChatStatus;
+  onRetry: () => void;
 }) {
   const last = messages.at(-1);
   const lastHasContent = !!last && (textOf(last).length > 0 || last.parts.some(isShown));
 
-  // "submitted": request sent, nothing back yet.
-  // "streaming" with an empty assistant message: stream opened, first token or tool result not here yet.
   const thinking =
     status === "submitted" ||
     (status === "streaming" && last?.role === "assistant" && !lastHasContent);
 
+  const noReply = status === "ready" && last?.role === "user";
+
   return (
     <MessageScrollerProvider autoScroll>
+      <ScrollToEndOnSend status={status} />
       <MessageScroller className="min-h-0 flex-1">
         <MessageScrollerViewport className="scrollbar-none [&::-webkit-scrollbar]:hidden">
           <MessageScrollerContent className="p-4">
@@ -79,11 +111,11 @@ export function ChatThread({
               const isUser = m.role === "user";
               const text = textOf(m);
               const tools = isUser ? [] : m.parts.filter(isShown);
-              if (!isUser && !text && !tools.length) return null; // stream to AI is open, but no response from AI loaded yet -> the thinking indicator covers this case
+              if (!isUser && !text && !tools.length) return null; // the thinking indicator covers this case
 
               const align = isUser ? "end" : "start";
               return (
-                <MessageScrollerItem key={m.id} messageId={m.id} scrollAnchor={isUser}>
+                <MessageScrollerItem key={m.id} messageId={m.id}>
                   <Message align={align}>
                     <MessageContent>
                       {text && (
@@ -106,6 +138,7 @@ export function ChatThread({
               );
             })}
             {thinking && <Thinking />}
+            {noReply && <NoReply onRetry={onRetry} />}
           </MessageScrollerContent>
         </MessageScrollerViewport>
         <MessageScrollerButton />

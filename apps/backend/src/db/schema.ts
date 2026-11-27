@@ -11,7 +11,9 @@ import {
   unique,
   uuid,
   varchar,
+  primaryKey,
 } from "drizzle-orm/pg-core";
+import type { UIMessage } from "ai";
 // Types only: drizzle-kit must not have to load the shared package.
 import type { Answers, QuestionnaireDefinition } from "@helthtw/shared/questionnaires";
 
@@ -142,4 +144,22 @@ export const incidentStepsTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique().on(table.incidentId, table.type)],
+);
+
+// One row per UIMessage of the account's single chat. Rows are inserted, never updated.
+export const chatMessagesTable = pgTable(
+  "chat_messages",
+  {
+    id: varchar({ length: 64 }).notNull(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accountsTable.id, { onDelete: "cascade" }),
+    role: varchar({ length: 16 }).$type<"user" | "assistant">().notNull(),
+    parts: jsonb().$type<UIMessage["parts"]>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.id] }),
+    index().on(table.accountId, table.createdAt),
+  ],
 );

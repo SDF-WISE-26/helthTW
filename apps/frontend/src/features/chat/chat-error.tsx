@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 type ChatErrorProps = {
   error: Error;
   onRetry: () => void;
-  onNewChat: () => void;
-  onDismiss: () => void;
+  onDismiss?: () => void;
 };
 
 // backend responds with { error: { code, message } }, and useChat puts that body into error.message
@@ -32,11 +31,13 @@ export function ChatError({ error, onRetry, onDismiss }: ChatErrorProps) {
         <p>{description}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={onRetry}>
-            Try again
+            Erneut versuchen
           </Button>
-          <Button size="sm" variant="ghost" onClick={onDismiss}>
-            Dismiss
-          </Button>
+          {onDismiss && (
+            <Button size="sm" variant="ghost" onClick={onDismiss}>
+              Verwerfen
+            </Button>
+          )}
         </div>
       </AlertDescription>
     </Alert>

@@ -1,12 +1,19 @@
 import { Hono } from "hono";
-import { createUIMessageStreamResponse, type UIMessage } from "ai";
+import { createUIMessageStreamResponse } from "ai";
 import { chatRequestSchema } from "./chat.schemas";
-import { streamChatReply } from "./chat.service";
+import { loadMessages, streamChatReply } from "./chat.service";
 import { validate } from "../../lib/validate";
+import { requireAccount } from "../../middleware/require-account";
 
-export const chatRoutes = new Hono().post("/", validate("json", chatRequestSchema), async (c) => {
-  const { messages, catalog } = c.req.valid("json");
+const DISPLAY_MESSAGES = 50;
 
-  const stream = await streamChatReply(messages as UIMessage[], catalog);
-  return createUIMessageStreamResponse({ stream });
-});
+export const chatRoutes = new Hono()
+  .get("/", requireAccount, async (c) =>
+    c.json({ messages: await loadMessages(c.get("accountId"), DISPLAY_MESSAGES) }, 200),
+  )
+  .post("/", requireAccount, validate("json", chatRequestSchema), async (c) => {
+    const { message, catalog } = c.req.valid("json");
+
+    const stream = await streamChatReply(c.get("accountId"), message, catalog);
+    return createUIMessageStreamResponse({ stream });
+  });
