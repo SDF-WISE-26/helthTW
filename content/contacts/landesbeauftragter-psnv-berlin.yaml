@@ -1,6 +1,6 @@
-name: Landesbeauftragter PSNV Berlin (länderübergreifende PSNV)
+name: Landesbeauftragter PSNV Berlin
 category: psnv-e
-audience: organisationsübergreifend
+audience: alle Organisationen, auch länderübergreifend
 tags: [psnv, einsatznachsorge]
 channels:
   - type: phone

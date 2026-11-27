@@ -1,6 +1,6 @@
-name: Johanniter Regionalverband Berlin – PSNV
+name: Johanniter Berlin – PSNV
 category: psnv-e
-audience: Einsatzkräfte der Johanniter Berlin
+audience: eigene Einsatzkräfte
 tags: [einsatznachsorge, psnv]
 channels:
   - type: phone

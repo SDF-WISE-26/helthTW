@@ -12,12 +12,12 @@ export function ChatMaterial({ selection }: { selection: MaterialSelection }) {
   const contacts = byId(content.contacts, selection.contactIds);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-4/5 flex-col gap-2">
       {items.map((item) => (
-        <ItemCard item={item} />
+        <ItemCard key={item.id} item={item} />
       ))}
       {contacts.map((contact) => (
-        <ContactCard key={contact.id} contact={contact} compact />
+        <ContactCard key={contact.id} contact={contact} size="sm" />
       ))}
     </div>
   );

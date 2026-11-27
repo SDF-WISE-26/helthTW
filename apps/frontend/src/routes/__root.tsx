@@ -26,7 +26,7 @@ function RootLayout() {
   return (
     <div className="mx-auto flex h-dvh max-w-md flex-col">
       {!onboarding && <AppHeader />}
-      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <main className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
         <Outlet />
       </main>
       {tabs && <TabBar />}
