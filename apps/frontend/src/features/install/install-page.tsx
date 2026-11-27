@@ -1,4 +1,5 @@
 import { installContent as content } from "@/content/install";
+import { InstallDrawer } from "./install-drawer";
 import { useInstallStatus } from "./use-install-status";
 
 export function InstallPage() {
@@ -11,8 +12,8 @@ export function InstallPage() {
         <p>{content.alreadyInstalled}</p>
       ) : (
         <>
-          {platform === "android" && <p>{content.platforms.android}</p>}
-          {platform === "ios" && <p>{content.platforms.ios}</p>}
+          <p>{content.description}</p>
+          <InstallDrawer />
           {platform === "other" && <p>{content.unsupportedPlatform}</p>}
         </>
       )}

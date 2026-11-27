@@ -3,9 +3,13 @@ import { RouterProvider, createRouter, useRouterState } from "@tanstack/react-ro
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { SplashScreen } from "./components/layout/splash-screen";
+import { startInstallStatus } from "./features/install/install-status";
 import "@fontsource-variable/inter";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
+
+const stopInstallStatus = startInstallStatus();
+if (import.meta.hot) import.meta.hot.dispose(stopInstallStatus);
 
 const queryClient = new QueryClient();
 

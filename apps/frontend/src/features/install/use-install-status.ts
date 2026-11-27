@@ -1,8 +1,14 @@
 import { useSyncExternalStore } from "react";
-import { getInstallPlatform, getIsInstalled, subscribeToInstallStatus } from "./install-status";
+import {
+  getCanInstall,
+  getInstallPlatform,
+  getIsInstalled,
+  subscribeToInstallStatus,
+} from "./install-status";
 
 export function useInstallStatus() {
   const isInstalled = useSyncExternalStore(subscribeToInstallStatus, getIsInstalled);
+  const canInstall = useSyncExternalStore(subscribeToInstallStatus, getCanInstall);
 
-  return { platform: getInstallPlatform(), isInstalled };
+  return { platform: getInstallPlatform(), isInstalled, canInstall };
 }
