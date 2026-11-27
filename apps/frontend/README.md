@@ -1,32 +1,42 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The helthTW PWA. Setup and the shared commands are in the [root README](../../README.md).
 
-Currently, two official plugins are available:
+React with TanStack Router and Query, Tailwind and shadcn/ui, React Hook Form with Zod, vite-plugin-pwa. The reasons are in [`docs/decisions/`](../../docs/decisions/).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Layout
 
-## React Compiler
+| Path                      | What                                                                   |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `src/routes/`             | Thin screens, file-based routing. `routeTree.gen.ts` is generated      |
+| `src/features/<area>/`    | Components, queries and hooks of one area (decision 0013)              |
+| `src/components/ui/`      | shadcn/ui components                                                   |
+| `src/components/layout/`  | App shell                                                              |
+| `src/content/`            | Fixed texts in code, e.g. the crisis screen                            |
+| `src/api.ts`              | Typed Hono client for the backend                                      |
+| `src/sw.ts`               | Service worker                                                         |
+| `content-collections.ts`  | Schemas for the files in [`content/`](../../content/README.md)         |
+| `Dockerfile`, `Caddyfile` | Image for the prod-vm, see [`deployment.md`](../../docs/deployment.md) |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Commands
 
-## Expanding the Oxlint configuration
+Run from the repo root:
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- Generate the types for `content/` without a full build:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+vp run frontend#content
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- Try the PWA: the service worker and manifest only exist in the build:
+
+```bash
+vp run frontend#build
+vp run frontend#preview
+```
+
+- Regenerate the icons in `public/` after changing `public/favicon.svg`:
+
+```bash
+vp run frontend#generate-pwa-assets
+```
