@@ -3,6 +3,10 @@ export const installContent = {
   description: "Füge helthTW deinem Startbildschirm hinzu, damit du die App schnell wiederfindest.",
   alreadyInstalled: "Die App ist bereits installiert.",
   unsupportedPlatform: "Die Installationsanleitung ist für Android und iOS verfügbar.",
+  card: {
+    label: "helthTW installieren",
+    dismissLabel: "Installationshinweis ausblenden",
+  },
   actions: {
     openGuide: "Installationsanleitung öffnen",
     install: "App installieren",
