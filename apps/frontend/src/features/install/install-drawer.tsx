@@ -14,19 +14,15 @@ import {
 } from "@/components/ui/drawer";
 import { installContent as content } from "@/content/install";
 import { InstallGuide } from "./install-guide";
-import { useInstallStatus } from "./use-install-status";
 
 export function InstallDrawer({ children }: { children?: ReactElement }) {
   const [open, setOpen] = useState(false);
-  const { isInstalled, platform } = useInstallStatus();
-
-  if (isInstalled || platform === "other") return null;
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         {children ?? (
-          <Button type="button" variant="outline" className="min-h-12 text-base">
+          <Button type="button" variant="outline">
             {content.actions.openGuide}
           </Button>
         )}

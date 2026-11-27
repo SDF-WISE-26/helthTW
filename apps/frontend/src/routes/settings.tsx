@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DeleteAllData } from "@/features/account/delete-all-data";
+import { InstallDrawer } from "@/features/install/install-drawer";
 import { OnboardingDrawer } from "@/features/onboarding/onboarding-drawer";
 import { ThemeSwitch } from "@/features/settings/theme-switch";
 
@@ -13,6 +14,7 @@ function Settings() {
       <h1 className="text-2xl font-bold">Einstellungen</h1>
       <ThemeSwitch />
       <OnboardingDrawer />
+      <InstallDrawer />
       <DeleteAllData />
     </>
   );
