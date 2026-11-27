@@ -128,7 +128,6 @@ function LinkRow({ link }: { link: ContactLink }) {
           {link.value}
         </span>
         {link.details && <span className="text-caption text-muted-foreground">{link.details}</span>}
-        {link.external && <span className="sr-only">, öffnet in neuem Tab</span>}
       </span>
       <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground group-data-[size=sm]/card:size-8">
         <Icon aria-hidden="true" className="size-4" />

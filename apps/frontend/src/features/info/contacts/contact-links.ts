@@ -38,7 +38,6 @@ export const contactLinks = (contact: Contact): ContactLink[] => [
     ? [
         {
           href: contact.website,
-          // An arrow out, like iOS and most apps use for "this leaves the app".
           icon: ArrowUpRight,
           value: new URL(contact.website).hostname.replace(/^www\./, ""),
           external: true,
