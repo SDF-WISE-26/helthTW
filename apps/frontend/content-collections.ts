@@ -126,6 +126,7 @@ const contacts = defineCollection({
     category: slug,
     audience: text.optional(),
     description: text.optional(),
+    availability: text.optional(),
     tags: z.array(slug).default([]),
     channels: z
       .array(

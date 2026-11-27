@@ -32,5 +32,5 @@ Info material and contacts for `/info`.
 - IDs in `topics.yaml`, `contact-categories.yaml` and `tags.yaml` must be unique.
 - Phone numbers as `+49…` without spaces, so they can be called directly.
 - Contact `name`: organisation – service, short (e.g. `THW – Einsatznachsorgeteam (ENT)`). `audience` reads after "Für" and doesn't repeat the name (`eigene Einsatzkräfte`, not `Einsatzkräfte des THW`).
-- Channels: `label` says which line (district, Zentrale, Mobil), never what it is ("Telefon", "Ansprechperson"). The person goes in `person`, opening hours in `availability`. Leave out what is not known.
+- Channels: `label` says which line (district, Zentrale, Mobil), never what it is ("Telefon", "Ansprechperson"). The person goes in `person`. Opening hours go in `availability`: on the contact when they hold for the whole service (capitalized, it stands alone under the name), on the channel only for a line with its own hours (lowercase, it follows the label). Leave out what is not known.
 - Unknown fields are ignored, so a new field can be added before the app uses it.

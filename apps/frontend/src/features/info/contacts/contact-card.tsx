@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { contactLinks, linkTarget, sharedAvailability } from "./contact-links";
+import { contactLinks, linkTarget } from "./contact-links";
 import type { ContactLink } from "./contact-links";
 import type { Contact } from "../content";
 
@@ -67,10 +67,7 @@ const initials = (name: string) =>
     .map((word) => word[0].toUpperCase())
     .join("");
 
-const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-
 function ContactHeader({ contact }: { contact: Contact }) {
-  const availability = sharedAvailability(contact);
   return (
     <header className="flex items-center gap-3">
       <Avatar
@@ -94,9 +91,9 @@ function ContactHeader({ contact }: { contact: Contact }) {
             Für {contact.audience}
           </p>
         )}
-        {availability && (
+        {contact.availability && (
           <p className="text-small text-muted-foreground group-data-[size=sm]/card:text-caption">
-            {capitalize(availability)}
+            {contact.availability}
           </p>
         )}
       </div>
