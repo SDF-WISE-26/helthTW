@@ -27,6 +27,7 @@ function LogIncident() {
           </Link>
         </Button>
         <p>Anderer Zeitpunkt</p>
+        <InstallHint iosOnly />
       </>
     );
   }
@@ -59,6 +60,7 @@ function LogIncident() {
       <Button asChild size="lg">
         <Link to="/">Fertig</Link>
       </Button>
+      <InstallHint iosOnly />
     </>
   );
 }
