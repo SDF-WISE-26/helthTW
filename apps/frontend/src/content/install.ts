@@ -8,7 +8,7 @@ export const installContent = {
     dismissLabel: "Installationshinweis ausblenden",
   },
   actions: {
-    openGuide: "Installationsanleitung öffnen",
+    openGuide: "App installieren",
     install: "App installieren",
     installing: "Bitte warten …",
     close: "Schließen",
