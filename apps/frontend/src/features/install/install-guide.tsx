@@ -11,8 +11,6 @@ export function InstallGuide() {
   const [outcome, setOutcome] = useState<InstallOutcome | null>(null);
   const [hasError, setHasError] = useState(false);
 
-  // TODO (#96): Test the native prompt on a real Android device over HTTPS
-  // (accept, dismiss, and check that installation hints stay hidden in app mode).
   async function installApp() {
     setIsInstalling(true);
     setHasError(false);

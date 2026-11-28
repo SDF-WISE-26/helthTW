@@ -2,7 +2,7 @@ export const installContent = {
   title: "Installieren",
   description: "Füge helthTW deinem Startbildschirm hinzu, damit du die App schnell wiederfindest.",
   alreadyInstalled: "Die App ist bereits installiert.",
-  unsupportedPlatform: "Die Installationsanleitung ist für Android und iOS verfügbar.",
+  unsupportedPlatform: "Die Installation ist nur für Android und iOS möglich.",
   card: {
     label: "helthTW installieren",
     dismissLabel: "Installationshinweis ausblenden",
@@ -16,7 +16,7 @@ export const installContent = {
   android: {
     description: "Installiere helthTW über deinen Browser.",
     manualInstall:
-      "Falls kein Installationsbutton erscheint, öffne das Menü deines Browsers. Wähle dort „App installieren“ oder „Zum Startbildschirm hinzufügen“, falls angeboten.",
+      "Falls kein Installationsbutton erscheint, öffne das Menü deines Browsers. Wähle dort „App installieren“ oder „Zum Startbildschirm hinzufügen“.",
     accepted: "Die Installation wurde bestätigt. Öffne helthTW anschließend über das App-Symbol.",
     dismissed: "Du hast die Installation abgebrochen. Du kannst helthTW weiter im Browser nutzen.",
     error: "Die Installation konnte nicht gestartet werden. Versuche es über das Browsermenü.",
