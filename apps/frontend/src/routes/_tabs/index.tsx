@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { InstallCard } from "@/features/install/install-card";
+import { InstallHint } from "@/features/install/install-hint";
 import { beforeHomeLoad } from "@/features/onboarding/onboarding-navigation";
 
 export const Route = createFileRoute("/_tabs/")({
@@ -20,7 +20,7 @@ function Start() {
           <Link to="/incidents/new">Harten Einsatz loggen</Link>
         </Button>
       </div>
-      <InstallCard />
+      <InstallHint dismissible />
     </>
   );
 }

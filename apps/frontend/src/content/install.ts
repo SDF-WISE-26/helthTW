@@ -4,7 +4,7 @@ export const installContent = {
   alreadyInstalled: "Die App ist bereits installiert.",
   unsupportedPlatform: "Die Installation ist nur für Android und iOS möglich.",
   card: {
-    label: "helthTW installieren",
+    description: "Die Installation von helthTW ist optional.",
     dismissLabel: "Installationshinweis ausblenden",
   },
   actions: {
@@ -23,7 +23,6 @@ export const installContent = {
   },
   ios: {
     description: "Auf iPhone und iPad:",
-    incidentHint: "Die Installation von helthTW ist optional.",
     steps: [
       "Öffne die Seite in Safari und tippe auf „Teilen“.",
       "Wähle „Zum Home-Bildschirm“, aktiviere „Als Web-App öffnen“ und tippe auf „Hinzufügen“.",

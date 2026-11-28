@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { IncidentInstallHint } from "@/features/install/incident-install-hint";
+import { InstallHint } from "@/features/install/install-hint";
 
 // One route, three steps: when → reminders → tips. The step lives in the URL so back works.
 export const Route = createFileRoute("/incidents/new")({
@@ -41,7 +41,7 @@ function LogIncident() {
             Weiter
           </Link>
         </Button>
-        <IncidentInstallHint />
+        <InstallHint iosOnly />
       </>
     );
   }
