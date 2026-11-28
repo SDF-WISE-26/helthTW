@@ -23,12 +23,13 @@ export const installContent = {
   },
   ios: {
     description: "Auf iPhone und iPad:",
+    incidentHint: "Die Installation von helthTW ist optional.",
     steps: [
       "Öffne die Seite in Safari und tippe auf „Teilen“.",
-      "Wähle „Zum Home-Bildschirm“, aktiviere „Als Web-App öffnen“, falls angezeigt, und tippe auf „Hinzufügen“.",
+      "Wähle „Zum Home-Bildschirm“, aktiviere „Als Web-App öffnen“ und tippe auf „Hinzufügen“.",
       "Starte helthTW über das neue Symbol.",
     ],
     pushHint:
-      "Push-Benachrichtigungen benötigen die Installation auf dem Home-Bildschirm und deine Zustimmung.",
+      "Für Push-Benachrichtigungen auf iPhone und iPad musst du helthTW zum Home-Bildschirm hinzufügen und Benachrichtigungen erlauben.",
   },
 } as const;
