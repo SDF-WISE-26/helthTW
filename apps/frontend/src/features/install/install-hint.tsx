@@ -72,7 +72,7 @@ export function InstallHint({ iosOnly = false, dismissible = false }: InstallHin
           type="button"
           variant="ghost"
           size="icon"
-          className="absolute top-1/2 right-1 size-tap-min -translate-y-1/2 text-muted-foreground"
+          className="absolute inset-y-0 right-1 my-auto size-tap-min translate-none! text-muted-foreground"
           aria-label={content.card.dismissLabel}
           onClick={dismissHint}
         >
